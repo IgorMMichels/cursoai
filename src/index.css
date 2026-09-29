@@ -505,6 +505,10 @@ details > summary:hover { color: #fff; transform: translateX(3px); }
   .not-found-footer { font-size: 8px; }
   .review-empty-footer { align-items: flex-start; flex-direction: column; gap: 7px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
 .dark {
   --background: #09090d;
   --foreground: #eceaf2;

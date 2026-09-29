@@ -1,17 +1,16 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { AsciiRenderer, OrbitControls, useGLTF } from '@react-three/drei'
-import { CanvasTexture, SRGBColorSpace, type Group } from 'three'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { AsciiEffect } from 'three-stdlib'
+import { CanvasTexture, SRGBColorSpace, type Group, type WebGLRenderer } from 'three'
 
 interface ModelProps {
   scale: number
   rotation: [number, number, number]
-  modelUrl?: string
   position: [number, number, number]
 }
 
-function BitcoinCoin({ scale, rotation, position }: Omit<ModelProps, 'modelUrl'>) {
+function BitcoinCoin({ scale, rotation, position, reduced, speed }: ModelProps & { reduced: boolean; speed: number }) {
   const coin = useRef<Group>(null)
   const symbolTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -36,9 +35,10 @@ function BitcoinCoin({ scale, rotation, position }: Omit<ModelProps, 'modelUrl'>
 
   useFrame((state, delta) => {
     if (!coin.current) return
-    coin.current.rotation.x = rotation[0]
-    coin.current.rotation.y += delta * 0.16
-    coin.current.rotation.z = rotation[2] + Math.sin(state.clock.elapsedTime * 0.7) * 0.08
+    if (reduced) return
+    coin.current.rotation.x = rotation[0] + Math.sin(state.clock.elapsedTime * 0.55) * 0.035
+    coin.current.rotation.y = rotation[1] + Math.sin(state.clock.elapsedTime * 0.7) * 0.09
+    coin.current.rotation.z += delta * speed
     coin.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 1.15) * 0.045
   })
 
@@ -66,11 +66,6 @@ function BitcoinCoin({ scale, rotation, position }: Omit<ModelProps, 'modelUrl'>
   </group>
 }
 
-function GltfModel({ modelUrl, scale, rotation, position }: ModelProps & { modelUrl: string }) {
-  const { scene } = useGLTF(modelUrl)
-  return <primitive object={scene} scale={scale} rotation={rotation} position={position} />
-}
-
 function AsciiFallback({ onReady }: { onReady?: () => void }) {
   useEffect(() => onReady?.(), [onReady])
   const art = [
@@ -94,8 +89,55 @@ function AsciiFallback({ onReady }: { onReady?: () => void }) {
   </div>
 }
 
+function attachAsciiEffect(effect: AsciiEffect, gl: WebGLRenderer, fgColor: string, bgColor: string) {
+  effect.domElement.style.position = 'absolute'
+  effect.domElement.style.inset = '0'
+  effect.domElement.style.pointerEvents = 'none'
+  effect.domElement.style.color = fgColor
+  effect.domElement.style.backgroundColor = bgColor
+  gl.domElement.style.opacity = '0'
+  gl.domElement.parentNode?.appendChild(effect.domElement)
+  return () => {
+    gl.domElement.style.opacity = '1'
+    effect.domElement.remove()
+  }
+}
+
+function ThrottledAsciiRenderer({
+  resolution,
+  characters,
+  fgColor,
+  bgColor,
+  invert,
+  maxFps = 14,
+}: {
+  resolution: number
+  characters: string
+  fgColor: string
+  bgColor: string
+  invert: boolean
+  maxFps?: number
+}) {
+  const { size, gl, scene, camera } = useThree()
+  const effect = useMemo(() => new AsciiEffect(gl, characters, { invert, color: false, resolution }), [characters, gl, invert, resolution])
+  const frameInterval = 1 / maxFps
+  const elapsed = useRef(frameInterval)
+
+  useLayoutEffect(() => attachAsciiEffect(effect, gl, fgColor, bgColor), [bgColor, effect, fgColor, gl])
+
+  useEffect(() => effect.setSize(size.width, size.height), [effect, size.height, size.width])
+
+  useFrame((_, delta) => {
+    elapsed.current += delta
+    if (elapsed.current < frameInterval) return
+    elapsed.current %= frameInterval
+    effect.render(scene, camera)
+  }, 1)
+
+  return null
+}
+
 export interface AsciiModelViewerProps {
-  modelUrl?: string
   baseScale?: number
   position?: [number, number, number]
   resolution?: number
@@ -106,13 +148,10 @@ export interface AsciiModelViewerProps {
   invert?: boolean
   className?: string
   autoRotateSpeed?: number
-  interactive?: boolean
   showLoadingOverlay?: boolean
-  onReady?: () => void
 }
 
 export default function AsciiModelViewer({
-  modelUrl,
   baseScale = 1,
   position = [0, -0.05, 0],
   resolution = 0.16,
@@ -123,11 +162,10 @@ export default function AsciiModelViewer({
   invert = false,
   className = '',
   autoRotateSpeed = 0.48,
-  interactive = true,
   showLoadingOverlay = true,
-  onReady,
 }: AsciiModelViewerProps) {
   const finalScale = baseScale * userScale
+  const reduceMotion = useReducedMotion()
   const [canvasReady, setCanvasReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState(0)
@@ -138,11 +176,10 @@ export default function AsciiModelViewer({
     return () => window.clearTimeout(timer)
   }, [canvasReady])
 
-  const handleCanvasReady = useMemo(() => () => {
+  const handleCanvasReady = useCallback(() => {
     setProgress(100)
     setCanvasReady(true)
-    onReady?.()
-  }, [onReady])
+  }, [])
 
   return <div className={`ascii-viewer ${className}`}>
     <Canvas
@@ -156,19 +193,14 @@ export default function AsciiModelViewer({
       <directionalLight position={[3, 4, 5]} intensity={3.2} color="#fff0cf" />
       <pointLight position={[-3, -2, 3]} intensity={2.6} color="#a98aff" />
       <pointLight position={[2, 1, -3]} intensity={2} color="#68dff0" />
-      <Suspense fallback={null}>
-        {modelUrl
-          ? <GltfModel key={modelUrl} modelUrl={modelUrl} scale={finalScale} rotation={[0, 0, 0]} position={position} />
-          : <BitcoinCoin scale={finalScale} rotation={[0, 0, 0]} position={position} />}
-      </Suspense>
-      <AsciiRenderer
+      <BitcoinCoin scale={finalScale} rotation={[0, 0, 0]} position={position} reduced={!!reduceMotion} speed={autoRotateSpeed} />
+      <ThrottledAsciiRenderer
         resolution={resolution}
         characters={characters}
         fgColor={fgColor}
         bgColor={bgColor}
         invert={invert}
       />
-      <OrbitControls autoRotate autoRotateSpeed={autoRotateSpeed} enablePan={false} enableZoom={false} enableRotate={interactive} />
     </Canvas>
     <AnimatePresence>
       {showLoadingOverlay && isLoading && <motion.div

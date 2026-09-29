@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { SessionProvider } from '@/contexts/session-context'
 import { RequireRole } from '@/components/guards'
 import { ReferralTracker, PlatformEntryAnimation } from '@/components/app-utilities'
@@ -48,6 +49,6 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter>
+  return <MotionConfig reducedMotion="user"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
 }
 

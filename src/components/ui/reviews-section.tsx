@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { ArrowUpRight, MessageSquareQuote, Star } from 'lucide-react'
-import { motion, useAnimationControls } from 'motion/react'
+import { motion, useAnimationControls } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GlowCard } from '@/components/ui/spotlight-card'
 
