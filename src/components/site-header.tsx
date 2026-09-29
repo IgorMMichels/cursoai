@@ -19,9 +19,9 @@ export function SiteHeader() {
           <Link to="/login" className="dock-login inline-flex px-2 py-2 text-xs text-[#b1abbc] hover:text-white">Entrar</Link>
           <Link to={landing ? '/login' : '/landing#planos'} className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">{landing ? 'Começar agora' : 'Ver os planos'}<ArrowUpRight size={15} /></Link>
         </div>
-        <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white sm:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
+        <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white md:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
-      {open && <nav className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] rounded-2xl p-2 shadow-2xl sm:hidden" aria-label="Navegação móvel">
+      {open && <nav className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] rounded-2xl p-2 shadow-2xl md:hidden" aria-label="Navegação móvel">
         <div className="mx-auto flex max-w-xl flex-col gap-1">{links.map((item) => <a key={item.label} href={item.href} onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{item.label}</a>)}<Link to="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">Entrar na plataforma</Link></div>
       </nav>}
     </header>
