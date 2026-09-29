@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { AsciiRenderer, Environment, OrbitControls, useGLTF, useProgress } from '@react-three/drei'
+import { AsciiRenderer, OrbitControls, useGLTF } from '@react-three/drei'
 import { CanvasTexture, SRGBColorSpace, type Group } from 'three'
 
 interface ModelProps {
@@ -71,20 +71,23 @@ function GltfModel({ modelUrl, scale, rotation, position }: ModelProps & { model
   return <primitive object={scene} scale={scale} rotation={rotation} position={position} />
 }
 
-function LoadingProgress({ onProgress }: { onProgress: (active: boolean, progress: number) => void }) {
-  const { active, progress } = useProgress()
-  useEffect(() => onProgress(active, progress), [active, onProgress, progress])
-  return null
-}
-
 function AsciiFallback({ onReady }: { onReady?: () => void }) {
   useEffect(() => onReady?.(), [onReady])
   const art = [
-    '     +=================+',
-    '     |    .-------.    |',
-    '     |   |   ₿   |    |',
-    '     |    -------     |',
-    '     +================+',
+    '             .-==-.',
+    '         .-+*#####*+-.',
+    '       :+#%#########%#+:',
+    '      +%###############+',
+    '     *#######==#########*',
+    '    +######  ₿  #########+',
+    '    *####################*',
+    '    *####################*',
+    '    +###################+',
+    '     *#################*',
+    '      +%#############%+',
+    '       :+#%#######%#+:',
+    '         .-+*###*+-.',
+    '             `--`',
   ].join('\n')
   return <div className="ascii-fallback" aria-label="Símbolo do Bitcoin em arte ASCII">
     <pre>{art}</pre>
@@ -105,7 +108,6 @@ export interface AsciiModelViewerProps {
   autoRotateSpeed?: number
   interactive?: boolean
   showLoadingOverlay?: boolean
-  showHint?: boolean
   onReady?: () => void
 }
 
@@ -123,7 +125,6 @@ export default function AsciiModelViewer({
   autoRotateSpeed = 0.48,
   interactive = true,
   showLoadingOverlay = true,
-  showHint = true,
   onReady,
 }: AsciiModelViewerProps) {
   const finalScale = baseScale * userScale
@@ -132,34 +133,33 @@ export default function AsciiModelViewer({
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    if (!canvasReady || isLoading) return
-    const timer = window.setTimeout(() => setIsLoading(false), 780)
+    if (!canvasReady) return
+    const timer = window.setTimeout(() => setIsLoading(false), 480)
     return () => window.clearTimeout(timer)
-  }, [canvasReady, isLoading])
+  }, [canvasReady])
 
-  const reportProgress = useMemo(() => (active: boolean, value: number) => {
-    setProgress(value)
-    setIsLoading(active)
-  }, [])
+  const handleCanvasReady = useMemo(() => () => {
+    setProgress(100)
+    setCanvasReady(true)
+    onReady?.()
+  }, [onReady])
 
   return <div className={`ascii-viewer ${className}`}>
     <Canvas
       camera={{ position: [0, 0, 3.25], fov: 43 }}
       dpr={[1, 1.25]}
       gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-      fallback={<AsciiFallback onReady={onReady} />}
-      onCreated={() => { setCanvasReady(true); onReady?.() }}
+      fallback={<AsciiFallback onReady={handleCanvasReady} />}
+      onCreated={handleCanvasReady}
     >
       <ambientLight intensity={1.4} />
       <directionalLight position={[3, 4, 5]} intensity={3.2} color="#fff0cf" />
       <pointLight position={[-3, -2, 3]} intensity={2.6} color="#a98aff" />
       <pointLight position={[2, 1, -3]} intensity={2} color="#68dff0" />
-      <LoadingProgress onProgress={reportProgress} />
       <Suspense fallback={null}>
         {modelUrl
           ? <GltfModel key={modelUrl} modelUrl={modelUrl} scale={finalScale} rotation={[0, 0, 0]} position={position} />
           : <BitcoinCoin scale={finalScale} rotation={[0, 0, 0]} position={position} />}
-        <Environment preset="studio" />
       </Suspense>
       <AsciiRenderer
         resolution={resolution}
@@ -185,6 +185,5 @@ export default function AsciiModelViewer({
         <div className="ascii-loader-track"><span style={{ width: `${Math.max(8, progress)}%` }} /></div>
       </motion.div>}
     </AnimatePresence>
-    {showHint && <span className="ascii-viewer-hint" aria-hidden="true">arraste para girar</span>}
   </div>
 }

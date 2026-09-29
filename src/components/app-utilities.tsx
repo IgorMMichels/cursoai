@@ -64,10 +64,10 @@ export function PlatformEntryAnimation({ onVisibilityChange }: { onVisibilityCha
   return visible && <div className={`platform-entry fixed inset-0 z-[100] grid place-items-center ${closing ? 'platform-entry-closing' : ''}`}>
     <div className="platform-loader-content">
       <div className="platform-loader-brand"><Brand compact /><span>Cripto do Zero</span></div>
-      <div className="platform-ascii-stage" role="img" aria-label="Moeda de Bitcoin em arte ASCII 3D girando">
-        <div className="platform-ascii-stage-heading"><span><i /> BITCOIN · VISUALIZAÇÃO ASCII</span><span>3D · AUTO ROTATIVO</span></div>
+      <div className="platform-ascii-stage" role="img" aria-label="Moeda de Bitcoin em arte ASCII">
+        <div className="platform-ascii-stage-heading"><span><i /> BITCOIN · VISUALIZAÇÃO ASCII</span></div>
         <Suspense fallback={<div className="platform-ascii-pending" role="img" aria-label="Carregando esfera de Bitcoin em ASCII"><pre>{'       .,:;-=+*#*=-:,.\n    .-+*#%@@@@@@@@@%#*+-.\n  :+#%@@@@@@@₿@@@@@@@%#+:\n  :+#%@@@@@@@@@@@@@@@@@%#+:\n    .-+*#%@@@@@@@@@%#*+-.\n       .,:;-=+*#*=-:,.'}</pre></div>}>
-          <AsciiModelViewer className="absolute inset-0" baseScale={1.12} interactive={false} showLoadingOverlay={false} showHint={false} onReady={onViewerReady} />
+          <AsciiModelViewer className="absolute inset-0" baseScale={1.12} interactive={false} showLoadingOverlay={false} onReady={onViewerReady} />
         </Suspense>
       </div>
       <div className="platform-loading-label"><span>{location.pathname === '/landing' ? 'PREPARANDO SUA JORNADA' : 'PREPARANDO SUA TRILHA'}</span><span>{progress}%</span></div>

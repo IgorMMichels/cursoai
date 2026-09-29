@@ -159,10 +159,8 @@ function HeroVisual() {
         <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-[9px] font-semibold uppercase tracking-[.16em] text-white/75 backdrop-blur-md">
           <span className="size-1.5 animate-pulse rounded-full bg-violet-200 shadow-[0_0_14px_#bca8ff]" /> Bitcoin · visualização ASCII
         </div>
-        <div className="absolute right-4 top-4 z-10 rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-[9px] tracking-[.1em] text-white/50 backdrop-blur-md">3D · INTERATIVO</div>
         <div className="absolute bottom-5 left-5 right-5 z-10 flex items-end justify-between gap-4">
           <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">pergunta antes da entrada</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">O que faria você mudar de ideia?</p></div>
-          <div className="hidden rounded-lg border border-white/10 bg-black/30 px-3 py-2 backdrop-blur sm:block"><p className="font-mono text-[9px] text-white/50">INTERAÇÃO</p><p className="mt-1 text-xs font-medium text-white">arraste para girar</p></div>
         </div>
         <div className="image-grain pointer-events-none absolute inset-0 z-10" />
       </div>
