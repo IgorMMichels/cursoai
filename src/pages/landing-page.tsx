@@ -2,11 +2,12 @@ import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, LockKeyhole, Plus, Shield, Sparkles } from 'lucide-react'
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, LockKeyhole, Plus, Shield, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { setPendingOrder } from '@/lib/storage'
+import { WalletGuideSection } from '@/components/wallet-guides'
 
 const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
 
@@ -90,6 +91,65 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className="landing-overview-section border-y border-white/[.055] bg-[#0d0e13] py-20 sm:py-24">
+        <div className="page-shell">
+          <div className="landing-overview-heading">
+            <div><p className="eyebrow">dentro da trilha</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Uma visão ampla do mercado. Critério em cada decisão.</h2></div>
+            <p className="max-w-md text-sm leading-relaxed text-[#92959e]">Bitcoin é ponto de partida. A trilha também cobre Ethereum, custódia, DeFi e futuros, com atenção ao risco de cada tema.</p>
+          </div>
+
+          <div className="landing-overview-bento mt-10">
+            <article className="market-bento-card market-bento-assets">
+              <div className="market-bento-topline"><span>ESCOPO DO CURSO</span><BookOpen size={15} /></div>
+              <div className="market-asset-orbit" aria-label="Bitcoin, Ethereum, DeFi e futuros">
+                <span className="market-asset-chip market-asset-btc">₿ <small>BITCOIN</small></span>
+                <span className="market-asset-chip market-asset-eth">◆ <small>ETHEREUM</small></span>
+                <span className="market-asset-chip market-asset-defi">DEFI</span>
+                <span className="market-asset-chip market-asset-futures">FUTUROS</span>
+                <i /><i /><i />
+              </div>
+              <div className="market-bento-copy"><h3>Cripto além de um ativo.</h3><p>Entenda redes, custódia, protocolos e formas diferentes de exposição.</p></div>
+            </article>
+
+            <article className="market-bento-card market-bento-security">
+              <div className="market-bento-topline"><span>SEGURANÇA</span><KeyRound size={15} /></div>
+              <div className="market-security-orbit"><i /><i /><span><FingerprintPattern size={36} strokeWidth={1.35} /></span></div>
+              <div className="market-bento-copy"><h3>Proteção começa nas chaves.</h3><p>Autocustódia, permissões e golpes explicados com passos práticos.</p></div>
+            </article>
+
+            <article className="market-bento-card market-bento-scenarios">
+              <div className="market-bento-topline"><span>CENÁRIO DIDÁTICO</span><Activity size={15} /></div>
+              <svg className="market-scenario-chart" viewBox="0 0 300 92" role="img" aria-labelledby="landing-scenario-title landing-scenario-desc">
+                <title id="landing-scenario-title">Ilustração de oscilações de mercado</title><desc id="landing-scenario-desc">Traçado esquemático sem dados de preço ou previsão de desempenho.</desc>
+                <path className="market-scenario-gridline" d="M0 18H300M0 46H300M0 74H300" />
+                <path className="market-scenario-line" d="M5 61C21 57 23 28 42 37S63 70 81 53 104 18 121 31 145 64 162 49 181 39 199 46 218 68 236 51 255 20 270 33 287 45 296 26" />
+                <circle cx="296" cy="26" r="3.5" />
+              </svg>
+              <div className="market-bento-copy"><h3>Movimento não é sinal.</h3><p>Compare cenários e exposição. O gráfico é didático, não uma cotação.</p></div>
+            </article>
+
+            <article className="market-bento-card market-bento-markets">
+              <div className="market-bento-topline"><span>FORMAS DE EXPOSIÇÃO</span><ArrowRight size={15} /></div>
+              <div className="market-exposure-compare">
+                <div><span>SPOT</span><strong>Ativo</strong><small>Compra · rede · custódia</small></div>
+                <div><span>FUTUROS</span><strong>Contrato</strong><small>Long/short · margem · liquidação</small></div>
+              </div>
+              <p className="market-exposure-note"><Shield size={14} /> Margem pode ampliar perdas quando o mercado anda contra a posição.</p>
+            </article>
+
+            <article className="market-bento-card market-bento-questions">
+              <div className="market-bento-topline"><span>PROCESSO DE ANÁLISE</span><FingerprintPattern size={15} /></div>
+              <h3>Antes do ticker, três perguntas.</h3>
+              <ul className="market-review-list">
+                <li><span>01</span>Que evidência sustenta a tese?</li>
+                <li><span>02</span>O que faria você mudar de ideia?</li>
+                <li><span>03</span>Qual perda cabe no seu limite?</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section id="jornada" className="scroll-mt-24 border-y border-white/[.055] bg-[#0f1017] py-20 sm:py-24">
         <div className="page-shell"><div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">a jornada</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Do vocabulário básico a um processo próprio.</h2></div><p className="max-w-sm text-sm leading-relaxed text-[#8da096]">Cada etapa prepara a próxima. Avance em ordem ou volte ao assunto que precisa de mais tempo.</p></div>
           <div className="module-grid landing-modules-bento mt-11">{topics.map((topic) => <GlowCard key={topic.number} glowColor={topicGlow[topic.color as keyof typeof topicGlow]} customSize className="module-glow-card"><Link to="/login" className={`module-card module-${topic.color} group`}><span className="module-card-index">MÓDULO {topic.number}</span><span className="module-card-rule" /><h3>{topic.title}</h3><p>{topic.text}</p><span className="module-card-link">Explorar conteúdo <ArrowRight size={13} /></span></Link></GlowCard>)}</div>
@@ -110,6 +170,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      <WalletGuideSection />
 
       <ReviewsSection />
 

@@ -8,20 +8,10 @@ import { welcomeNarration } from '@/lib/audio-tracks'
 import { welcomeScript } from '@/lib/narration-script'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, modules } from '@/lib/course'
+import { moduleCovers } from '@/lib/course-media'
 import { getStoredValue, setStoredValue } from '@/lib/storage'
 
 const moduleIcons: Record<string, string> = { Blocks: '▦', ArrowLeftRight: '↔', Bitcoin: '₿', ScanSearch: '⌕', Scale: '⚖', ShieldCheck: '⌑', Orbit: '◉', ChartNoAxesCombined: '↗', Compass: '⌖' }
-const moduleCovers: Record<string, string> = {
-  m1: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=900&q=78',
-  m2: 'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?auto=format&fit=crop&w=900&q=78',
-  m8: 'https://images.unsplash.com/photo-1641266794308-45cef9acb4cb?auto=format&fit=crop&w=900&q=78',
-  m3: 'https://images.unsplash.com/photo-1742076553114-cfd4f27de46f?auto=format&fit=crop&w=900&q=78',
-  m4: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&w=900&q=78',
-  m5: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=900&q=78',
-  m6: 'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?auto=format&fit=crop&w=900&q=78',
-  m9: 'https://images.unsplash.com/photo-1742076553114-cfd4f27de46f?auto=format&fit=crop&w=900&q=78',
-  m7: 'https://images.unsplash.com/photo-1641266794308-45cef9acb4cb?auto=format&fit=crop&w=900&q=78',
-}
 const reviewCards = [
   { id: 'blockchain', prompt: 'O que uma blockchain ajuda a fazer?', answer: 'Manter um histórico compartilhado de transações validado pelas regras da rede.' },
   { id: 'custody', prompt: 'O que uma carteira realmente protege?', answer: 'As chaves que autorizam transações; as moedas ficam registradas na rede.' },
@@ -72,7 +62,7 @@ export function CourseDashboard() {
     </section>
 
     <section id="modulos" className="scroll-mt-24">
-      <div className="mb-5 flex items-end justify-between gap-4"><div><p className="eyebrow">a jornada completa</p><h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#eeeaf4]">Nove módulos. Uma base melhor.</h2></div><span className="hidden text-xs text-[#92909d] sm:block">{allLessons.length} aulas · quizzes com explicação</span></div>
+      <div className="mb-5"><p className="eyebrow">a jornada completa</p><h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#eeeaf4]">Nove módulos. Uma base melhor.</h2></div>
       <div className="course-modules-bento">
         {modules.map((module, index) => {
           const done = module.lessons.filter((lesson) => completedLessons.includes(lesson.id)).length

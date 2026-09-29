@@ -1,26 +1,28 @@
 import { getLessonNarration } from '@/lib/audio-tracks'
 import { useMemo, useState, type ReactNode } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
-import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BookOpen, ChevronDown, CircleDollarSign, MousePointer2, Users, WalletCards } from 'lucide-react'
+import { Activity, ArrowDownRight, ArrowRight, ArrowUpRight, BookOpen, ChevronDown, CircleDollarSign, MessageSquareQuote, MousePointer2, Star, Trash2, Users, WalletCards } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Brand } from '@/components/brand'
 import { useSession } from '@/contexts/session-context'
 import { modules } from '@/lib/course'
 import { affiliateRate } from '@/lib/offers'
-import { getMockEvents, getMockOrders, getMockPayouts } from '@/lib/storage'
+import { getMockEvents, getMockOrders, getMockPayouts, getReviews, removeReview, type StudentReview } from '@/lib/storage'
 
-type Section = 'overview' | 'content' | 'affiliates' | 'orders'
+type Section = 'overview' | 'content' | 'affiliates' | 'orders' | 'reviews'
 const nav: { id: Section; label: string; icon: typeof Activity }[] = [
   { id: 'overview', label: 'Visão geral', icon: Activity },
   { id: 'content', label: 'Conteúdo do curso', icon: BookOpen },
   { id: 'affiliates', label: 'Afiliados', icon: Users },
   { id: 'orders', label: 'Pedidos demo', icon: WalletCards },
+  { id: 'reviews', label: 'Avaliações', icon: MessageSquareQuote },
 ]
 const emptyChart = Array.from({ length: 7 }, (_, index) => { const date = new Date(); date.setDate(date.getDate() - (6 - index)); return { dia: date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), cliques: 0, pedidos: 0 } })
 
 export function AdminPage() {
   const [section, setSection] = useState<Section>('overview')
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [reviews, setReviews] = useState<StudentReview[]>(getReviews)
   const { user, signOut } = useSession()
   const navigate = useNavigate()
   const events = getMockEvents()
@@ -41,6 +43,7 @@ export function AdminPage() {
   const solCommission = orders.filter((order) => order.currency === 'SOL').reduce((sum, order) => sum + order.commission, 0)
 
   const logout = () => { signOut(); navigate('/login') }
+  const deleteReview = (id: string) => { removeReview(id); setReviews(getReviews()) }
   return <div className="min-h-screen bg-[#09090d] text-[#e6eee9] lg:grid lg:grid-cols-[245px_minmax(0,1fr)]">
     <aside className="hidden border-r border-white/[.07] bg-[#0d0e14] p-5 lg:fixed lg:inset-y-0 lg:flex lg:w-[245px] lg:flex-col"><Brand /><div className="mt-11"><p className="px-3 pb-3 text-[9px] font-semibold uppercase tracking-[.18em] text-[#687b70]">operação</p><nav className="space-y-1">{nav.map(({ id, label, icon: Icon }) => <button type="button" key={id} onClick={() => setSection(id)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-xs transition-colors ${section === id ? 'bg-[#a78bfa]/[.09] text-[#c1acff]' : 'text-[#8da095] hover:bg-white/[.04] hover:text-white'}`}><Icon size={16} />{label}</button>)}</nav></div><div className="mt-auto rounded-xl border border-white/[.07] bg-[#14151c] p-4"><span className="rounded-full border border-[#98abff]/15 bg-[#98abff]/[.06] px-2 py-1 text-[9px] font-semibold uppercase tracking-[.12em] text-[#aab8ff]">modo demo</span><p className="mt-3 text-xs font-medium text-[#d8e3db]">{user?.name}</p><p className="mt-1 text-[10px] text-[#778a7f]">admin da plataforma</p><button onClick={logout} type="button" className="mt-4 text-[10px] text-[#899c91] hover:text-white">Sair</button></div></aside>
     <main className="min-w-0 lg:col-start-2">
@@ -62,10 +65,25 @@ export function AdminPage() {
 
         {section === 'orders' && <section className="rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-6"><div className="mb-5 flex items-center justify-between"><div><h2 className="font-display text-base font-medium text-[#e0eae3]">Pedidos deste navegador</h2><p className="mt-1 text-[10px] text-[#7f9287]">Cada linha representa uma confirmação de demonstração.</p></div><span className="text-[10px] text-[#7b8f83]">{orders.length} registros</span></div><OrdersTable orders={orders.slice().reverse()} payouts={payouts} /></section>}
 
+        {section === 'reviews' && <section className="space-y-4"><div className="flex flex-wrap items-end justify-between gap-3 rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-6"><div><h2 className="font-display text-base font-medium text-[#e0eae3]">Avaliações recebidas</h2><p className="mt-1 max-w-xl text-[10px] leading-relaxed text-[#7f9287]">Remova comentários inadequados. Exemplos iniciais estão identificados como conteúdo fictício de demonstração.</p></div><span className="text-[10px] text-[#9b8dbb]">{reviews.length} itens · dados deste navegador</span></div>{reviews.length ? reviews.slice().reverse().map((review) => <ReviewModerationCard key={review.id} review={review} onDelete={deleteReview} />) : <div className="grid min-h-36 place-items-center rounded-xl border border-dashed border-white/[.1] text-center"><div><MessageSquareQuote size={20} className="mx-auto text-[#75668e]" /><p className="mt-3 text-xs text-[#a8a1b1]">Nenhuma avaliação publicada.</p><p className="mt-1 text-[10px] text-[#746e7d]">Novas avaliações aparecerão aqui.</p></div></div>}</section>}
+
         <p className="mt-7 flex items-start gap-2 text-[10px] leading-relaxed text-[#65796d]"><span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-[#e4bc76]" />Este painel é um protótipo local. Não é fonte de verdade para faturamento, comissão, afiliados ou acesso. Conecte os eventos a um backend com autenticação e permissões antes de operar dados reais.</p>
       </div>
     </main>
   </div>
+}
+
+function ReviewModerationCard({ review, onDelete }: { review: StudentReview; onDelete: (id: string) => void }) {
+  return <article className="rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-6">
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2"><span className="text-xs font-medium text-[#ded8e7]">{review.name}</span>{review.isSample && <span className="rounded-md border border-amber-100/15 px-2 py-1 text-[9px] text-amber-100/70">Exemplo demonstrativo</span>}<time dateTime={review.createdAt} className="text-[10px] text-[#77717f]">{new Date(review.createdAt).toLocaleDateString('pt-BR')}</time></div>
+        <div className="mt-3 flex items-center gap-1 text-[#e9c577]" aria-label={`${review.rating} de 5 estrelas`}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={12} fill={index < review.rating ? 'currentColor' : 'none'} />)}</div>
+        <p className="mt-3 max-w-4xl whitespace-pre-wrap text-xs leading-relaxed text-[#b8b2c0]">{review.text}</p>
+      </div>
+      <button type="button" onClick={() => onDelete(review.id)} title="Remover avaliação" aria-label={`Remover avaliação de ${review.name}`} className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-[#e58e91]/15 px-3 text-[10px] text-[#eaa2a4] transition-all hover:-translate-y-0.5 hover:border-[#e58e91]/35 hover:bg-[#e58e91]/[.07]"><Trash2 size={13} />Remover</button>
+    </div>
+  </article>
 }
 
 function Metric({ icon, label, value, note, tone }: { icon: ReactNode; label: string; value: string; note: string; tone: 'mint' | 'blue' | 'amber' | 'lilac' }) {

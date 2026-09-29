@@ -120,7 +120,7 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
           {buffering ? <LoaderCircle size={17} className="animate-spin" /> : playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}
         </button>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold text-[#f0edf9]">Narração da aula</p><span className="rounded-md border border-violet-300/20 px-2 py-0.5 text-[9px] text-violet-200">Voz IA · português</span></div>
+          <p className="text-sm font-semibold text-[#f0edf9]">Narração da aula</p>
           {!compact && <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-[#aaa6b7]">{summary ?? track?.summary}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">

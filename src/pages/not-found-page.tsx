@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowUpRight, Compass } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Brand } from '@/components/brand'
 
 export function NotFoundPage() {
+  const { pathname } = useLocation()
   return <main className="not-found-page min-h-screen overflow-hidden bg-[#09090d] text-[#e6eee9]">
     <div className="not-found-grid" aria-hidden="true" />
     <div className="page-shell relative z-10 flex min-h-screen flex-col py-6 sm:py-8">
@@ -21,6 +22,7 @@ export function NotFoundPage() {
           <p className="eyebrow">404 · caminho não encontrado</p>
           <h1 className="display-lg mt-4 max-w-xl text-[#edf4ef]">Essa página saiu do bloco.</h1>
           <p className="mt-5 max-w-lg text-sm leading-relaxed text-[#9693a0]">O endereço pode ter mudado ou não existir. Volte ao início e continue pela trilha.</p>
+          <p className="not-found-path">Endereço solicitado <code>{pathname}</code></p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/landing" className="button-motion not-found-primary"><ArrowLeft size={15} />Voltar ao início</Link>
             <Link to="/landing#jornada" className="button-motion not-found-secondary">Explorar módulos <ArrowUpRight size={15} /></Link>
