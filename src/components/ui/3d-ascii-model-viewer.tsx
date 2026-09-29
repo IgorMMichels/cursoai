@@ -77,7 +77,8 @@ function LoadingProgress({ onProgress }: { onProgress: (active: boolean, progres
   return null
 }
 
-function AsciiFallback() {
+function AsciiFallback({ onReady }: { onReady?: () => void }) {
+  useEffect(() => onReady?.(), [onReady])
   const art = [
     '     +=================+',
     '     |    .-------.    |',
@@ -101,6 +102,11 @@ export interface AsciiModelViewerProps {
   bgColor?: string
   invert?: boolean
   className?: string
+  autoRotateSpeed?: number
+  interactive?: boolean
+  showLoadingOverlay?: boolean
+  showHint?: boolean
+  onReady?: () => void
 }
 
 export default function AsciiModelViewer({
@@ -114,6 +120,11 @@ export default function AsciiModelViewer({
   bgColor = 'rgba(9, 9, 13, 0.18)',
   invert = false,
   className = '',
+  autoRotateSpeed = 0.48,
+  interactive = true,
+  showLoadingOverlay = true,
+  showHint = true,
+  onReady,
 }: AsciiModelViewerProps) {
   const finalScale = baseScale * userScale
   const [canvasReady, setCanvasReady] = useState(false)
@@ -134,10 +145,10 @@ export default function AsciiModelViewer({
   return <div className={`ascii-viewer ${className}`}>
     <Canvas
       camera={{ position: [0, 0, 3.25], fov: 43 }}
-      dpr={[1, 1.5]}
+      dpr={[1, 1.25]}
       gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
-      fallback={<AsciiFallback />}
-      onCreated={() => setCanvasReady(true)}
+      fallback={<AsciiFallback onReady={onReady} />}
+      onCreated={() => { setCanvasReady(true); onReady?.() }}
     >
       <ambientLight intensity={1.4} />
       <directionalLight position={[3, 4, 5]} intensity={3.2} color="#fff0cf" />
@@ -157,10 +168,10 @@ export default function AsciiModelViewer({
         bgColor={bgColor}
         invert={invert}
       />
-      <OrbitControls autoRotate autoRotateSpeed={0.48} enablePan={false} enableZoom={false} enableRotate />
+      <OrbitControls autoRotate autoRotateSpeed={autoRotateSpeed} enablePan={false} enableZoom={false} enableRotate={interactive} />
     </Canvas>
     <AnimatePresence>
-      {isLoading && <motion.div
+      {showLoadingOverlay && isLoading && <motion.div
         className="ascii-loader"
         role="status"
         aria-live="polite"
@@ -174,6 +185,6 @@ export default function AsciiModelViewer({
         <div className="ascii-loader-track"><span style={{ width: `${Math.max(8, progress)}%` }} /></div>
       </motion.div>}
     </AnimatePresence>
-    <span className="ascii-viewer-hint" aria-hidden="true">arraste para girar</span>
+    {showHint && <span className="ascii-viewer-hint" aria-hidden="true">arraste para girar</span>}
   </div>
 }
