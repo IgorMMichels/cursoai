@@ -2,7 +2,6 @@ export type Lesson = {
   id: string
   title: string
   duration: string
-  audio?: string
   content: string[]
   takeaway: string
   sources?: { label: string; url: string }[]
@@ -27,7 +26,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm1', number: '01', title: 'Entenda o terreno', subtitle: 'Blockchain, Bitcoin e o que uma carteira realmente guarda.', icon: 'Blocks', color: 'mint', duration: '24 min',
     lessons: [
-      { id: 'm1l1', title: 'Uma rede que mantém o próprio livro-caixa', duration: '7 min', audio: '/audio/m1_blockchain.mp3', content: [
+      { id: 'm1l1', title: 'Uma rede que mantém o próprio livro-caixa', duration: '7 min', content: [
         'Imagine um livro-caixa que milhares de computadores mantêm em conjunto. Quando um grupo de transações é confirmado, a rede acrescenta uma nova página ligada criptograficamente à anterior. Alterar uma página antiga exigiria convencer a rede a reescrever também as seguintes.',
         'Esse registro distribuído é a blockchain. Participantes seguem regras públicas para validar as transações; cada rede define como chega a um acordo. Isso reduz a dependência de um único operador, mas não torna todo projeto confiável nem toda transação reversível.',
         'A rede resolve um problema de coordenação. O preço de um ativo continua dependendo de procura, oferta, utilidade percebida, liquidez e confiança. Tecnologia interessante não é sinônimo de bom investimento.'
@@ -52,7 +51,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm2', number: '02', title: 'Faça o básico bem feito', subtitle: 'Exchanges, ordens e transferências sem pressa.', icon: 'ArrowLeftRight', color: 'blue', duration: '20 min',
     lessons: [
-      { id: 'm2l1', title: 'Como avaliar uma exchange', duration: '7 min', audio: '/audio/m2_comprar_seguro.mp3', content: [
+      { id: 'm2l1', title: 'Como avaliar uma exchange', duration: '7 min', content: [
         'Uma exchange aproxima compradores e vendedores, mas cada plataforma tem regras, custos, limites e formas de custódia diferentes. Compare quem opera o serviço, onde está estabelecido, quais ativos e redes oferece e como publica taxas e regras de saque.',
         'Procure histórico verificável de incidentes, avisos de órgãos oficiais, demonstrações de reservas com escopo claro e canais de atendimento que você consiga confirmar fora de anúncios. Nenhum selo ou grande volume substitui sua própria verificação.',
         'Faça um depósito pequeno de teste e entenda como retirar antes de concentrar saldo. Não deixe a facilidade de comprar esconder a pergunta mais importante: como e quando você pode recuperar seus recursos?'
@@ -102,7 +101,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm3', number: '04', title: 'Leia além do ticker', subtitle: 'Uma rotina de pesquisa antes de formar opinião.', icon: 'ScanSearch', color: 'lilac', duration: '23 min',
     lessons: [
-      { id: 'm3l1', title: 'Comece pelo problema, não pelo preço', duration: '8 min', audio: '/audio/m3_analise.mp3', content: [
+      { id: 'm3l1', title: 'Comece pelo problema, não pelo preço', duration: '8 min', content: [
         'Toda análise começa com uma hipótese verificável. Que problema o projeto tenta resolver? Quem tem esse problema? Por que essa rede ou aplicação seria útil, e o que mudaria se o token deixasse de existir?',
         'Leia a documentação original e identifique o que já funciona, o que ainda é promessa e quem mantém o projeto. Diferencie código aberto, auditorias, uso real e linguagem promocional; cada item informa algo distinto e nenhum, sozinho, elimina o risco.',
         'Escreva sua tese em poucas linhas e anote o que a refutaria. Uma tese que não admite evidência contrária vira torcida, não método.'
@@ -127,7 +126,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm4', number: '05', title: 'Defina o risco antes da entrada', subtitle: 'Orçamento, cenários e uma estratégia que caiba na sua vida.', icon: 'Scale', color: 'amber', duration: '22 min',
     lessons: [
-      { id: 'm4l1', title: 'Capacidade de risco e dinheiro necessário', duration: '7 min', audio: '/audio/m4_risco.mp3', content: [
+      { id: 'm4l1', title: 'Capacidade de risco e dinheiro necessário', duration: '7 min', content: [
         'Capacidade de risco é o que suas finanças suportam sem comprometer necessidades e planos. Tolerância é como você se sente diante da oscilação. Uma pessoa pode tolerar uma queda emocionalmente, mas não ter capacidade de esperar pela recuperação.',
         'Separe reserva de emergência, despesas próximas e dívidas do capital especulativo. Não use dinheiro necessário para aluguel, saúde ou obrigações. Se perder o valor alteraria sua rotina, o tamanho provavelmente está grande demais para seu contexto.',
         'Criptoativos podem perder grande parte ou todo o valor. Antes de investir, considere também risco de plataforma, custódia, fraude, liquidez, tecnologia e regulação.'
@@ -152,7 +151,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm5', number: '06', title: 'Proteja o acesso', subtitle: 'Engenharia social, permissões e resposta a incidentes.', icon: 'ShieldCheck', color: 'mint', duration: '21 min',
     lessons: [
-      { id: 'm5l1', title: 'Golpes que começam com pressa', duration: '7 min', audio: '/audio/m5_golpes.mp3', content: [
+      { id: 'm5l1', title: 'Golpes que começam com pressa', duration: '7 min', content: [
         'Golpistas costumam combinar urgência, autoridade e uma promessa atraente: sorteio, airdrop, suporte, vaga de investimento ou recuperação de carteira. A história muda; a pressão para agir antes de verificar se repete.',
         'Rug pull, phishing e falso suporte exploram pontos diferentes. Em todos, confira o domínio por um canal independente, pesquise a equipe e a operação, leia o que você está assinando e interrompa qualquer processo que peça uma transferência urgente.',
         'Desconfie de lucro garantido, retorno extraordinário ou “última chance”. Alertas da CVM sobre criptoativos e ofertas irregulares são uma boa referência para reconhecer sinais de fraude.'
@@ -227,7 +226,7 @@ export const modules: CourseModule[] = [
   {
     id: 'm7', number: '09', title: 'Transforme estudo em processo', subtitle: 'Psicologia, política pessoal e próximos 30 dias.', icon: 'Compass', color: 'lilac', duration: '18 min',
     lessons: [
-      { id: 'm7l1', title: 'Decida fora do ruído', duration: '6 min', audio: '/audio/m7_mentalidade.mp3', content: [
+      { id: 'm7l1', title: 'Decida fora do ruído', duration: '6 min', content: [
         'Euforia pode levar a comprar depois de uma alta; medo pode levar a vender no pior momento para seus objetivos. Alertas, redes sociais e gráficos em tempo real aumentam a pressão por uma decisão imediata.',
         'Crie uma pausa operacional: escreva a tese, a perda possível, o tamanho e o que mudou. Espere até conseguir explicar a decisão sem depender de uma manchete ou de um influenciador.',
         'Um diário de decisões registra expectativa, evidências e resultado. Ele ajuda a distinguir uma decisão coerente com as informações disponíveis de uma decisão que apenas terminou bem ou mal.'

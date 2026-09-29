@@ -50,18 +50,34 @@ src/
   components/       Layouts, identidade visual, controles e componentes shadcn/ui
   contexts/         Sessão e acesso de demonstração
   lib/course.ts     9 módulos, 27 aulas, atividades e quizzes tipados
-  lib/audio-tracks.ts  roteiros e descrições das narrações
-  components/audio-narration.tsx  player, voz do navegador e transcrição destacada
+  lib/audio-tracks.ts  faixas de áudio válidas para os roteiros atuais
+  lib/narration-script.ts  textos e tipos compartilhados entre curso e áudio
+  lib/narration-timing.ts  validação e sincronização de palavras
+  lib/generated/narrations.ts  catálogo gerado de 28 narrações
+  styles/bento.css  grids responsivos por prioridade de conteúdo
+  components/audio-narration.tsx  player MP3 e transcrição sincronizada
   lib/offers.ts     Preços e comissão
   lib/storage.ts    Persistência local de sessão, progresso e eventos mockados
   pages/            Quiz, landing, login, curso, admin e afiliado
-public/audio/       Áudios fornecidos para boas-vindas e módulos 1–5 e 7
-docs/               Roteiros de narração para o módulo sem MP3
+public/audio/narrated/ MP3s e marcações de tempo gerados por aula
+scripts/            Geração e atualização das narrações
+docs/               Documentação e material de apoio
 supabase/
   migrations/       Esquema inicial com RLS para futura integração
 ```
 
-Imagens de capa usam URLs do Unsplash e precisam de conexão com a internet. Os áudios recebidos foram copiados para `public/audio`; módulos sem MP3 usam a voz portuguesa disponível no navegador. O player destaca palavras na narração gerada e acompanha aproximadamente a transcrição nos MP3s existentes. O módulo 6 está sem MP3; consulte [docs/audio-roteiro-modulo-06.md](docs/audio-roteiro-modulo-06.md).
+Imagens de capa usam URLs do Unsplash e precisam de conexão com a internet. Cada uma das 27 aulas e a abertura tem uma narração em português, produzida a partir do texto publicado na própria aula. Transcrições usam marcações reais de palavras da geração de voz; o player verifica que texto, duração e marcações correspondem antes de exibir acompanhamento. Se aula mudar, faixa antiga deixa de aparecer até regeneração.
+
+### Regenerar narrações
+
+Use Python 3.10+, Node.js e FFmpeg (`ffprobe` no PATH). Geração usa Edge TTS e voz `pt-BR-AntonioNeural`:
+
+```bash
+python -m pip install -r scripts/audio-requirements.txt
+python scripts/generate-narrations.py
+```
+
+O script exporta o conteúdo atual do curso, cria MP3s e marcações de palavra em `public/audio/narrated/` e atualiza `src/lib/generated/narrations.ts`. Revise texto da aula antes de publicar; transcrição gerada sempre espelha roteiro e áudio.
 
 ## Conectar ao Supabase
 

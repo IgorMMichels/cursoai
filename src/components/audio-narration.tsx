@@ -1,167 +1,153 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { AudioLines, Pause, Play, RotateCcw, Volume2 } from 'lucide-react'
-import { audioTracks } from '@/lib/audio-tracks'
+import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { AudioLines, LoaderCircle, Pause, Play, RotateCcw } from 'lucide-react'
+import type { AudioWord, NarrationTrack } from '@/lib/narration-script'
+import { activeWordAt, parseCaptions } from '@/lib/narration-timing'
 
-type AudioNarrationProps = {
-  src?: string
-  title: string
-  transcript: string
-  summary?: string
-}
-
+type Props = { title: string; track?: NarrationTrack; transcript: string; summary?: string; compact?: boolean }
 const rates = [0.8, 1, 1.2, 1.5]
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 
-export function AudioNarration({ src, title, transcript, summary }: AudioNarrationProps) {
+export function AudioNarration(props: Props) {
+  return <NarrationPlayer key={`${props.track?.src ?? 'unavailable'}:${props.title}`} {...props} />
+}
+
+function NarrationPlayer({ title, track, transcript, summary, compact = false }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null)
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
-  const speechTimerRef = useRef<number | undefined>(undefined)
+  const transcriptRef = useRef<HTMLParagraphElement>(null)
+  const mounted = useRef(true)
   const [playing, setPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
+  const [buffering, setBuffering] = useState(false)
+  const [time, setTime] = useState(0)
+  const [duration, setDuration] = useState(track?.duration ?? 0)
   const [rateIndex, setRateIndex] = useState(1)
-  const [activeWord, setActiveWord] = useState(-1)
-  const [speechSupported, setSpeechSupported] = useState(true)
-  const track = src ? audioTracks[src] : undefined
-  const resolvedSummary = summary ?? track?.summary ?? `Narração desta aula: ${title}. Ouça a explicação e acompanhe a transcrição.`
-  const words = useMemo(() => Array.from(transcript.matchAll(/\S+/g), (match) => ({ text: match[0], start: match.index ?? 0 })), [transcript])
-  const estimatedDuration = Math.max(1, words.length / (2.25 * rates[rateIndex]!))
-  const playbackDuration = src ? duration : estimatedDuration
-  const progress = src ? (duration ? currentTime / duration : 0) : Math.min(1, (activeWord + 1) / Math.max(1, words.length))
+  const [words, setWords] = useState<AudioWord[]>([])
+  const [captionStatus, setCaptionStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [captionAttempt, setCaptionAttempt] = useState(0)
+  const [error, setError] = useState('')
+  const [follow, setFollow] = useState(true)
+  const [showTranscript, setShowTranscript] = useState(!compact)
+  const activeWord = useMemo(() => activeWordAt(words, time), [words, time])
+  const progress = duration > 0 ? Math.min(1, time / duration) : 0
+  const buttonStyle = 'rounded-xl border border-white/10 px-2.5 py-1.5 text-[10px] font-semibold text-[#cac6d4] hover:border-violet-200/30 hover:bg-violet-200/[.06] disabled:opacity-40'
 
   useEffect(() => {
-    setSpeechSupported(typeof window !== 'undefined' && 'speechSynthesis' in window)
-    return () => {
-      if (typeof window !== 'undefined' && speechTimerRef.current !== undefined) window.clearInterval(speechTimerRef.current)
-      if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel()
-    }
+    mounted.current = true
+    const audio = audioRef.current
+    return () => { mounted.current = false; audio?.pause() }
   }, [])
 
-  const seekActiveWord = (seconds: number, total: number) => {
-    if (!words.length || total <= 0) return
-    const target = Math.max(0, Math.min(0.999, seconds / total))
-    const targetStart = target * transcript.length
-    let index = 0
-    while (index < words.length - 1 && words[index + 1]!.start <= targetStart) index += 1
-    setActiveWord(index)
-  }
+  useEffect(() => {
+    if (!track) return
+    const controller = new AbortController()
+    fetch(track.captionsSrc, { signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error('Legendas indisponíveis'); return response.json() })
+      .then(data => {
+        const cues = parseCaptions(data, transcript, track.duration)
+        if (!controller.signal.aborted) { setWords(cues); setCaptionStatus('ready') }
+      })
+      .catch(() => { if (!controller.signal.aborted) { setWords([]); setCaptionStatus('error') } })
+    return () => controller.abort()
+  }, [track, transcript, captionAttempt])
 
-  const speak = (fromWord = 0, speedIndex = rateIndex) => {
-    if (!speechSupported) return
-    if (speechTimerRef.current !== undefined) window.clearInterval(speechTimerRef.current)
-    window.speechSynthesis.cancel()
-    const startAt = Math.max(0, Math.min(words.length - 1, fromWord))
-    const startIndex = words[startAt]?.start ?? 0
-    const spokenText = `${transcript.slice(startIndex)}`
-    const utterance = new SpeechSynthesisUtterance(spokenText)
-    const voice = window.speechSynthesis.getVoices().find((item) => item.lang.toLowerCase().startsWith('pt-br'))
-    if (voice) utterance.voice = voice
-    utterance.lang = voice?.lang ?? 'pt-BR'
-    utterance.rate = rates[speedIndex]!
-    utterance.onboundary = (event) => {
-      if (event.name !== 'word') return
-      const absoluteIndex = startIndex + event.charIndex
-      let index = startAt
-      while (index < words.length - 1 && words[index + 1]!.start <= absoluteIndex) index += 1
-      setActiveWord(index)
+  useEffect(() => {
+    if (!playing) return
+    let frame = 0
+    let previous = 0
+    const update = (now: number) => {
+      if (now - previous >= 40) { setTime(audioRef.current?.currentTime ?? 0); previous = now }
+      frame = requestAnimationFrame(update)
     }
-    let spokenMs = 0
-    let lastTick = performance.now()
-    speechTimerRef.current = window.setInterval(() => {
-      const now = performance.now()
-      if (!window.speechSynthesis.paused && window.speechSynthesis.speaking) spokenMs += now - lastTick
-      lastTick = now
-      const fallbackIndex = startAt + Math.floor((spokenMs / 1000) * 2.25 * rates[speedIndex]!)
-      if (fallbackIndex < words.length) setActiveWord((current) => Math.max(current, fallbackIndex))
-    }, 180)
-    utterance.onend = () => { if (speechTimerRef.current !== undefined) window.clearInterval(speechTimerRef.current); setPlaying(false); setActiveWord(words.length - 1) }
-    utterance.onerror = () => { if (speechTimerRef.current !== undefined) window.clearInterval(speechTimerRef.current); setPlaying(false) }
-    utteranceRef.current = utterance
-    setCurrentTime(0)
-    setPlaying(true)
-    window.speechSynthesis.speak(utterance)
-  }
+    frame = requestAnimationFrame(update)
+    return () => cancelAnimationFrame(frame)
+  }, [playing])
 
-  const togglePlayback = () => {
-    if (src) {
-      const audio = audioRef.current
-      if (!audio) return
-      if (audio.paused) void audio.play()
-      else audio.pause()
-      return
+  useEffect(() => {
+    if (!playing || !follow || !showTranscript || activeWord < 0) return
+    const container = transcriptRef.current
+    const word = container?.querySelector<HTMLElement>('[data-active="true"]')
+    if (!container || !word) return
+    const outer = container.getBoundingClientRect()
+    const inner = word.getBoundingClientRect()
+    if (inner.top < outer.top + 12 || inner.bottom > outer.bottom - 12) {
+      container.scrollTo({ top: container.scrollTop + inner.top - outer.top - outer.height / 2, behavior: 'smooth' })
     }
-    if (!speechSupported) return
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause()
-      setPlaying(false)
-    } else if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume()
-      setPlaying(true)
-    } else {
-      speak(activeWord >= 0 ? activeWord : 0)
-    }
-  }
+  }, [activeWord, follow, playing, showTranscript])
 
+  const play = async () => {
+    const audio = audioRef.current
+    if (!audio) return
+    setError('')
+    setBuffering(true)
+    if (audio.error) audio.load()
+    try { await audio.play() }
+    catch (cause) {
+      if (mounted.current && !(cause instanceof DOMException && cause.name === 'AbortError')) {
+        setError('Não foi possível reproduzir o áudio. Confira sua conexão e tente novamente.')
+        setPlaying(false)
+      }
+    } finally { if (mounted.current) setBuffering(false) }
+  }
+  const toggle = () => {
+    if (audioRef.current && !audioRef.current.paused) audioRef.current.pause()
+    else void play()
+  }
   const cycleRate = () => {
     const next = (rateIndex + 1) % rates.length
     setRateIndex(next)
-    if (src && audioRef.current) audioRef.current.playbackRate = rates[next]!
-    else if (window.speechSynthesis?.speaking) speak(Math.max(0, activeWord), next)
+    if (audioRef.current) audioRef.current.playbackRate = rates[next]
   }
-
   const restart = () => {
-    if (src && audioRef.current) {
-      audioRef.current.currentTime = 0
-      setCurrentTime(0)
-      setActiveWord(-1)
-      void audioRef.current.play()
-    } else {
-      setActiveWord(-1)
-      speak(0)
-    }
+    if (!audioRef.current) return
+    audioRef.current.currentTime = 0
+    setTime(0)
+    void play()
   }
 
-  return <section className="audio-console mt-7 overflow-hidden rounded-xl border border-violet-300/20 bg-[#12121a]" aria-label={`Áudio da aula: ${title}`}>
-    {src && <audio
-      ref={audioRef}
-      preload="metadata"
-      src={src}
-      onLoadedMetadata={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
-      onDurationChange={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
-      onTimeUpdate={(event) => { const time = event.currentTarget.currentTime; setCurrentTime(time); seekActiveWord(time, event.currentTarget.duration) }}
-      onPlay={() => setPlaying(true)}
-      onPause={() => setPlaying(false)}
-      onEnded={() => setPlaying(false)}
-      className="hidden"
+  return <section className={`audio-console ${compact ? 'audio-console-compact' : 'mt-7'} overflow-hidden rounded-xl border border-violet-300/20 bg-[#12121a]`} aria-label={`Áudio da aula: ${title}`}>
+    {track && <audio ref={audioRef} preload="metadata" src={track.src}
+      onLoadedMetadata={event => { if (Number.isFinite(event.currentTarget.duration)) setDuration(event.currentTarget.duration) }}
+      onTimeUpdate={event => setTime(event.currentTarget.currentTime)}
+      onSeeking={event => setTime(event.currentTarget.currentTime)}
+      onPlay={() => setPlaying(true)} onPlaying={() => setBuffering(false)}
+      onWaiting={() => setBuffering(true)} onCanPlay={() => setBuffering(false)}
+      onPause={() => { setPlaying(false); setBuffering(false) }}
+      onEnded={event => { setPlaying(false); setBuffering(false); setTime(event.currentTarget.duration) }}
+      onError={() => { setError('Áudio indisponível. Confira sua conexão e tente novamente.'); setPlaying(false); setBuffering(false) }}
     />}
-    <div className="audio-orbit" aria-hidden="true"><span /><span /><span /></div>
     <div className="relative z-10 p-4 sm:p-5">
       <div className="flex flex-wrap items-start gap-3">
-        <button type="button" onClick={togglePlayback} disabled={!src && !speechSupported} aria-label={playing ? 'Pausar narração' : 'Reproduzir narração'} className="audio-play-button grid size-11 shrink-0 place-items-center rounded-xl bg-violet-300 text-[#100c19] transition-transform hover:scale-105 disabled:opacity-40">
-          {playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} className="translate-x-px" fill="currentColor" />}
+        <button type="button" onClick={toggle} disabled={!track} aria-label={playing ? 'Pausar narração' : 'Reproduzir narração'} className="audio-play-button grid size-11 shrink-0 place-items-center rounded-xl bg-violet-300 text-[#100c19] disabled:opacity-40">
+          {buffering ? <LoaderCircle size={17} className="animate-spin" /> : playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}
         </button>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold tracking-[-.02em] text-[#f0edf9]">Narração da aula</p><span className="rounded-md border border-violet-300/20 bg-violet-300/[.07] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[.1em] text-violet-200">{src ? 'áudio' : 'voz do navegador'}</span></div>
-          <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-[#9a98a8]">{resolvedSummary}</p>
+          <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-semibold text-[#f0edf9]">Narração da aula</p><span className="rounded-md border border-violet-300/20 px-2 py-0.5 text-[9px] text-violet-200">Voz IA · português</span></div>
+          {!compact && <p className="mt-1 max-w-3xl text-[11px] leading-relaxed text-[#aaa6b7]">{summary ?? track?.summary}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <button type="button" onClick={cycleRate} className="rounded-lg border border-white/[.09] px-2.5 py-1.5 text-[10px] font-semibold text-[#cac6d4] transition-colors hover:border-violet-200/30 hover:bg-violet-200/[.06]" aria-label="Alterar velocidade da narração">{rates[rateIndex]}×</button>
-          <button type="button" onClick={restart} className="grid size-8 place-items-center rounded-lg text-[#9a98a8] transition-colors hover:bg-white/[.05] hover:text-white" aria-label="Recomeçar narração"><RotateCcw size={14} /></button>
+          <button type="button" onClick={cycleRate} disabled={!track} className={buttonStyle} aria-label={`Velocidade ${rates[rateIndex]} vezes. Alterar velocidade`}>{rates[rateIndex]}×</button>
+          <button type="button" onClick={restart} disabled={!track} className={buttonStyle} aria-label="Recomeçar narração"><RotateCcw size={14} /></button>
         </div>
       </div>
-
       <div className="mt-4 flex items-center gap-3">
-        <span className="w-8 text-right font-mono text-[9px] tabular-nums text-[#807e8b]">{src ? formatTime(currentTime) : formatTime(progress * playbackDuration)}</span>
-        {src ? <input aria-label="Avançar ou voltar no áudio" type="range" min={0} max={duration || 1} step={0.1} value={Math.min(currentTime, duration || 1)} onChange={(event) => { const time = Number(event.currentTarget.value); if (audioRef.current) audioRef.current.currentTime = time; setCurrentTime(time) }} className="audio-seek min-w-0 flex-1" style={{ '--audio-progress': `${progress * 100}%` } as React.CSSProperties} /> : <div className="audio-progress min-w-0 flex-1" style={{ '--audio-progress': `${progress * 100}%` } as React.CSSProperties}><div /></div>}
-        <span className="w-8 font-mono text-[9px] tabular-nums text-[#807e8b]">{src ? formatTime(duration) : `~${formatTime(playbackDuration)}`}</span>
+        <span className="w-8 text-right font-mono text-[10px] tabular-nums text-[#aaa6b7]">{formatTime(time)}</span>
+        <input aria-label="Avançar ou voltar no áudio" aria-valuetext={`${formatTime(time)} de ${formatTime(duration)}`} type="range" min={0} max={duration || 1} step={0.01} disabled={!track} value={Math.min(time, duration || 1)} onChange={event => {
+          const target = Number(event.currentTarget.value)
+          if (audioRef.current) audioRef.current.currentTime = target
+          setTime(target)
+        }} className="audio-seek min-w-0 flex-1" style={{ '--audio-progress': `${progress * 100}%` } as CSSProperties} />
+        <span className="w-8 font-mono text-[10px] tabular-nums text-[#aaa6b7]">{track ? formatTime(duration) : '—'}</span>
       </div>
-
-      <div className="mt-4 flex items-center justify-between"><div className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[.12em] text-violet-200/75"><AudioLines size={13} />Transcrição acompanhada</div><span className="flex items-center gap-1 text-[9px] text-[#777582]"><Volume2 size={11} />{src ? 'Destaque acompanha o progresso' : 'Palavra destacada durante a fala'}</span></div>
-      <p className="mt-1.5 text-[9px] leading-relaxed text-[#777582]">{src ? 'No áudio gravado, a marcação segue o roteiro e a duração do arquivo.' : 'A voz do navegador destaca palavra a palavra; a voz disponível depende do dispositivo.'}</p>
-      <p className="audio-transcript mt-2 max-h-44 overflow-y-auto rounded-lg border border-white/[.055] bg-black/20 p-3 text-[12px] leading-[2] text-[#aaa7b4]" aria-label="Transcrição da narração" aria-live="off">
-        {words.map((word, index) => <span key={`${word.start}-${index}`} className={index === activeWord ? 'audio-word-active' : index < activeWord ? 'text-[#c2becb]' : ''}>{word.text}{' '}</span>)}
-      </p>
-      {!src && !speechSupported && <p className="mt-2 text-[10px] text-amber-200/80">Narração indisponível neste navegador. A transcrição segue disponível acima.</p>}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        {compact ? <button type="button" aria-expanded={showTranscript} onClick={() => setShowTranscript(value => !value)} className="inline-flex items-center gap-2 text-[11px] text-violet-200"><AudioLines size={13} />{showTranscript ? 'Fechar transcrição' : 'Ver transcrição'}</button> : <div className="flex items-center gap-2 text-[10px] font-semibold text-violet-200"><AudioLines size={13} />Transcrição da narração</div>}
+        {showTranscript && track && captionStatus === 'ready' && <button type="button" aria-pressed={follow} onClick={() => setFollow(value => !value)} className={buttonStyle}>{follow ? 'Acompanhar leitura: ligado' : 'Acompanhar leitura: desligado'}</button>}
+      </div>
+      {showTranscript && track && captionStatus === 'loading' && <p className="mt-2 text-[10px] text-[#aaa6b7]">Carregando marcações da narração…</p>}
+      {showTranscript && track && captionStatus === 'error' && <p className="mt-2 text-[10px] text-amber-200">Sincronização indisponível. Você pode ouvir e ler o texto. <button type="button" className="underline" onClick={() => { setCaptionStatus('loading'); setCaptionAttempt(value => value + 1) }}>Tentar novamente</button></p>}
+      {showTranscript && <p ref={transcriptRef} className="audio-transcript mt-3 max-h-60 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/[.07] bg-black/20 p-4 text-[13px] leading-[2] text-[#b9b5c4]" aria-label="Transcrição da narração" aria-live="off">
+        {words.length ? <>{words.map((word, index) => <Fragment key={index}>{transcript.slice(index ? words[index - 1].charEnd : 0, word.charStart)}<span data-active={index === activeWord ? 'true' : undefined} className={index === activeWord ? 'audio-word-active' : word.end <= time ? 'text-[#e0dbe9]' : undefined}>{transcript.slice(word.charStart, word.charEnd)}</span></Fragment>)}{transcript.slice(words[words.length - 1].charEnd)}</> : transcript}
+      </p>}
+      {error && <p role="alert" className="mt-3 text-xs text-amber-200">{error}</p>}
+      {!track && <p className="mt-3 text-xs text-amber-200">A narração desta versão da aula ainda não está disponível. O roteiro completo está acima.</p>}
     </div>
   </section>
 }

@@ -7,7 +7,8 @@ import { Slider } from '@/components/ui/slider'
 import { AudioNarration } from '@/components/audio-narration'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, findLesson, modules } from '@/lib/course'
-import { audioTracks } from '@/lib/audio-tracks'
+import { getLessonNarration } from '@/lib/audio-tracks'
+import { lessonTranscript } from '@/lib/narration-script'
 
 export function LessonPage() {
   const { moduleId = '', lessonId = '' } = useParams()
@@ -37,14 +38,14 @@ export function LessonPage() {
 
   return <div className="mx-auto max-w-[970px]">
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><Link to="/curso#modulos" className="inline-flex items-center gap-2 text-xs text-[#8ca096] transition-colors hover:text-white"><ArrowLeft size={14} />Trilha completa</Link><div className="flex items-center gap-3 text-[10px] text-[#7e9287]"><span>Módulo {module.number}</span><span className="size-1 rounded-full bg-[#52665b]" /><span>Aula {moduleLesson + 1} de {module.lessons.length}</span></div></div>
-    <div className="mb-8 flex items-center gap-3"><Progress value={((moduleLesson + 1) / module.lessons.length) * 100} className="h-1 flex-1 bg-white/[.08] [&>div]:bg-[#a78bfa]" /><span className="text-[10px] text-[#7f9287]">{module.duration}</span></div>
+    <div className="mb-8 flex items-center gap-3"><Progress value={((moduleLesson + 1) / module.lessons.length) * 100} className="h-1 flex-1 bg-white/[.08] [&_[data-slot=progress-indicator]]:bg-[#a78bfa]" /><span className="text-[10px] text-[#7f9287]">{module.duration}</span></div>
 
     <article className="rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-9">
       <div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#a78bfa]/15 bg-[#a78bfa]/[.055] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[.14em] text-[#b49cff]">{module.title}</span><span className="flex items-center gap-1 text-[10px] text-[#71857a]"><Clock3 size={12} />{lesson.duration}</span></div>
       <h1 className="mt-5 max-w-3xl font-display text-3xl font-medium leading-[1.12] tracking-[-.055em] text-[#eaf2ec] sm:text-[42px]">{lesson.title}</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#93a69b]">Uma aula prática de {lesson.duration.replace(' min', ' minutos')}. Leia com calma, ouça o áudio quando disponível e responda à atividade para registrar a aula.</p>
+      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#93a69b]">Tempo de estudo estimado: {lesson.duration.replace(' min', ' minutos')}, incluindo leitura e atividade. A duração da narração aparece no player.</p>
 
-      <AudioNarration src={lesson.audio} title={lesson.title} transcript={audioTracks[lesson.audio ?? '']?.transcript ?? lesson.content.join(' ')} summary={audioTracks[lesson.audio ?? '']?.summary ?? `Narração desta aula: ${lesson.title}. Ouça a explicação e acompanhe cada palavra da transcrição.`} />
+      <AudioNarration title={lesson.title} track={getLessonNarration(lesson)} transcript={lessonTranscript(lesson)} summary={lesson.takeaway} />
 
       <div className="mt-8 space-y-5">{lesson.content.map((paragraph, index) => <p key={index} className="max-w-[760px] text-[14px] leading-[1.9] text-[#c0ccc4]">{paragraph}</p>)}</div>
       {lesson.sources?.length ? <aside className="mt-6 rounded-xl border border-white/[.07] bg-white/[.025] p-4"><p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#aaa1ca]">Fontes para continuar</p><ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2">{lesson.sources.map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" className="text-[11px] text-[#c2b5fa] underline decoration-violet-300/25 underline-offset-4 transition-colors hover:text-white">{source.label}</a></li>)}</ul></aside> : null}
