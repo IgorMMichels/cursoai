@@ -1,0 +1,127 @@
+/* Content-first bento layouts. DOM order remains the reading and keyboard order. */
+.bento-panel {
+  min-width: 0;
+  border: 1px solid #302b3e;
+  border-radius: 12px;
+  background: linear-gradient(145deg,#18151f,#101017);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.bento-icon { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid #3a304e; border-radius: 12px; background: #211a30; color: #c8b4ff; }
+.bento-kicker { display: inline-flex; border: 1px solid #473759; border-radius: 12px; padding: 5px 10px; color: #ccb9ff; background: #261e34; font-size: 10px; font-weight: 600; }
+.study-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+.study-bento > *, .study-metrics > *, .course-modules-bento > *, .landing-modules-bento > *, .practice-bento > *, .pricing-bento > *, .admin-bento > *, .affiliate-bento > * { min-width: 0; }
+.study-hero { position: relative; isolation: isolate; overflow: hidden; display: block; padding: clamp(24px,3vw,36px); align-self: start; }
+.study-hero-copy { position: relative; z-index: 1; }
+.study-hero-copy h2 { max-width: 23ch; margin-top: 22px; color: #f5f0fb; font-size: clamp(23px,2.2vw,32px); font-weight: 500; line-height: 1.15; letter-spacing: -.045em; text-wrap: balance; }
+.study-hero-copy > p { max-width: 44ch; margin-top: 12px; color: #b7adca; font-size: 12px; line-height: 1.8; }
+.study-hero-art { position: absolute; z-index: 0; inset: 0 0 0 40%; pointer-events: none; opacity: .2; }
+.study-hero-art img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.6); }
+.study-hero-art span { position: absolute; inset: 0; background: linear-gradient(90deg,#18151f,rgba(20,17,29,.25) 75%),linear-gradient(0deg,#101017,transparent 80%); }
+.study-hero-progress { max-width: 420px; margin-top: 30px; color: #b3a8c4; }
+.study-welcome { display: flex; flex-direction: column; justify-content: space-between; gap: 20px; padding: 24px; align-self: start; }
+.study-welcome .audio-console { margin: 0; background: rgba(8,7,13,.45); }
+.audio-console-compact > .relative { padding: 14px; }
+.audio-console-compact .audio-transcript { max-height: 160px; }
+.study-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.bento-metric { padding: 20px; }
+.bento-metric > p:first-of-type { margin-top: 24px; color: #eee6f7; line-height: 1.25; overflow-wrap: anywhere; }
+.bento-metric:nth-child(-n+2) > p:first-of-type { font-size: 27px; font-variant-numeric: tabular-nums; }
+.bento-metric > p:last-of-type { margin-top: 9px; color: #a59bad; line-height: 1.5; }
+.study-review { padding: 22px; }
+.course-modules-bento, .landing-modules-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+.course-module-tile { display: block; min-width: 0; border-radius: 12px; }
+.bento-module-card { height: 100%; padding: 0; overflow: hidden; transition: transform .4s cubic-bezier(.16,1,.3,1),border-color .3s,box-shadow .4s; }
+.course-module-tile:hover .bento-module-card { transform: translateY(-4px); border-color: #675283; box-shadow: 0 16px 40px #0005,0 0 25px #a78bfa14; }
+.course-module-tile.is-current .bento-module-card { border-color: #705493; }
+.bento-module-content { display: grid; grid-template-rows: 140px 1fr; height: 100%; padding: 0; }
+.bento-module-cover { position: relative; min-width: 0; overflow: hidden; background: #1c1728; }
+.bento-module-cover::after { position: absolute; inset: 0; content: ''; background: linear-gradient(0deg,#15121ccc,transparent 90%); pointer-events: none; }
+.bento-module-cover img { height: 100%; width: 100%; object-fit: cover; opacity: .65; transition: transform .7s,opacity .5s; }
+.course-module-tile:hover .bento-module-cover img { transform: scale(1.055); opacity: .85; }
+.bento-module-number { position: absolute; z-index: 1; left: 16px; top: 16px; padding: 5px 9px; border: 1px solid #ffffff24; border-radius: 12px; background: #09090db3; color: #eee8fa; font-size: 10px; backdrop-filter: blur(10px); }
+.bento-module-symbol { position: absolute; z-index: 1; right: 18px; bottom: 12px; color: #ded0ff; font-size: 32px; text-shadow: 0 0 24px #b49cff77; }
+.bento-module-copy { display: flex; min-width: 0; flex-direction: column; padding: 24px; }
+.bento-module-copy h3 { margin-top: 10px; color: #f0eaf6; font-size: 22px; font-weight: 500; line-height: 1.15; letter-spacing: -.035em; text-wrap: balance; }
+.bento-module-copy > p { margin-top: 10px; color: #a89fb7; font-size: 12px; line-height: 1.75; }
+.bento-module-footer { margin-top: auto; padding-top: 24px; }
+.landing-modules-bento .module-glow-card { min-width: 0; height: 100%; }
+.landing-modules-bento .module-card { min-height: 226px; height: 100%; padding: 26px; }
+.landing-modules-bento .module-card h3 { max-width: 28ch; font-size: 22px; line-height: 1.2; text-wrap: balance; }
+.landing-modules-bento .module-card > p { max-width: 48ch; }
+.practice-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+.practice-bento .practice-card { display: flex; min-width: 0; min-height: 0; flex-direction: column; padding: 26px; }
+.practice-bento .practice-card h3 { margin-top: 18px; }
+.pricing-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; max-width: 1120px; align-items: stretch; }
+.pricing-bento .pricing-card { margin-block: 0; padding-top: 54px; }
+.pricing-bento .pricing-card > span { position: absolute; top: 16px; left: 24px; margin-bottom: 0; }
+.pricing-bento .pricing-card > ul { flex: 1; }
+.security-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 14px; }
+.security-bento > button { min-width: 0; min-height: 128px; padding: 24px; }
+.security-bento > button:first-child { border-color: #695184; background: linear-gradient(120deg,#241c32,#14121c); }
+.admin-bento { display: grid; grid-template-columns: repeat(12,minmax(0,1fr)); gap: 16px; }
+.admin-bento-metrics, .admin-bento-panels { display: contents; }
+.admin-bento-metrics > div, .admin-bento-panels > section, .admin-bento > section { min-width: 0; grid-column: 1 / -1; margin: 0; border-radius: 12px; }
+.admin-content-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; align-items: start; }
+.affiliate-bento { display: grid; grid-template-columns: minmax(0,1fr); gap: 16px; }
+.affiliate-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.affiliate-tools { display: contents; }
+.affiliate-commissions { align-self: start; }
+.affiliate-link { overflow: hidden; }
+.affiliate-bento > p { margin-top: 4px; }
+.affiliate-metrics > div { min-width: 0; }
+
+@media (min-width: 640px) {
+  .course-modules-bento, .landing-modules-bento { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .course-module-tile:last-child, .landing-modules-bento > :last-child { grid-column: 1 / -1; }
+  .security-bento { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .security-bento > button:first-child { grid-column: 1 / -1; min-height: 110px; }
+  .admin-bento-metrics > div { grid-column: span 6; }
+  .admin-content-bento { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (min-width: 900px) {
+  .practice-bento { grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); }
+  .practice-bento > :first-child { grid-row: span 2; justify-content: center; padding: 36px; background: radial-gradient(ellipse at 90% 90%,#a78bfa18,transparent 65%),#14121d; }
+  .practice-bento > :first-child h3 { max-width: 20ch; font-size: 32px; line-height: 1.15; }
+  .practice-bento > :first-child > p { max-width: 46ch; font-size: 14px; }
+  .practice-bento > :first-child .practice-card-action { margin-top: 32px; }
+  .pricing-bento { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1.16fr); }
+  .landing-modules-bento { grid-template-columns: repeat(6,minmax(0,1fr)); }
+  .landing-modules-bento > * { grid-column: span 2; }
+  .landing-modules-bento > :is(:nth-child(1),:nth-child(7)) { grid-column: span 4; }
+  .landing-modules-bento > :nth-last-child(-n+2) { grid-column: span 3; }
+  .landing-modules-bento > :is(:nth-child(1),:nth-child(7)) .module-card { background: radial-gradient(ellipse at 90% 100%,#a78bfa15,transparent 70%); }
+  .landing-modules-bento > :is(:nth-child(1),:nth-child(7)) h3 { font-size: 32px; max-width: 26ch; }
+  .affiliate-bento { grid-template-columns: repeat(12,minmax(0,1fr)); }
+  .affiliate-intro, .affiliate-metrics, .affiliate-bento > p { grid-column: 1 / -1; }
+  .affiliate-link, .affiliate-activity { grid-column: 1 / 9; }
+  .affiliate-commissions { grid-column: 9 / -1; grid-row: 3 / 5; height: 100%; }
+}
+@media (min-width: 1180px) {
+  .study-bento { grid-template-columns: repeat(12,minmax(0,1fr)); }
+  .study-hero { grid-column: span 8; min-height: 365px; }
+  .study-welcome { grid-column: span 4; min-height: 365px; }
+  .study-metrics { grid-column: span 8; }
+  .study-review { grid-column: span 4; }
+  .study-hero-copy { width: 72%; }
+  .study-hero-art { opacity: .6; left: 50%; }
+  .study-hero-art span { background: linear-gradient(90deg,#18151f 0%,rgba(20,17,29,.4) 62%),linear-gradient(0deg,#10101788,transparent); }
+  .course-modules-bento { grid-template-columns: repeat(6,minmax(0,1fr)); }
+  .course-module-tile { grid-column: span 2; }
+  .course-module-tile:is(:nth-child(1),:nth-child(7)) { grid-column: span 4; }
+  .course-module-tile:nth-last-child(-n+2) { grid-column: span 3; }
+  .course-module-tile:is(:nth-child(1),:nth-child(7)) .bento-module-content { grid-template-columns: minmax(0,.85fr) minmax(0,1fr); grid-template-rows: 1fr; }
+  .course-module-tile:is(:nth-child(1),:nth-child(7)) .bento-module-copy { padding: 28px; justify-content: center; }
+  .course-module-tile:is(:nth-child(1),:nth-child(7)) h3 { font-size: 28px; }
+  .admin-bento-metrics > div { grid-column: span 3; }
+  .admin-bento-panels > section:first-child { grid-column: span 8; }
+  .admin-bento-panels > section:last-child { grid-column: span 4; }
+}
+@media (max-width: 639px) {
+  .study-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .study-metrics > :last-child { grid-column: 1 / -1; }
+  .study-metrics > :last-child > p:first-of-type { margin-top: 12px; }
+  .bento-metric { padding: 18px; }
+  .affiliate-metrics { grid-template-columns: minmax(0,1fr); }
+  .study-welcome { padding: 20px; }
+  .study-hero-copy h2 { max-width: 26ch; }
+}

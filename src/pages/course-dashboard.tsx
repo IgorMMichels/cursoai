@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { AudioNarration } from '@/components/audio-narration'
-import { audioTracks } from '@/lib/audio-tracks'
+import { welcomeNarration } from '@/lib/audio-tracks'
+import { welcomeScript } from '@/lib/narration-script'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, modules } from '@/lib/course'
 
@@ -45,45 +46,46 @@ export function CourseDashboard() {
       <div className="flex items-center gap-2 rounded-full border border-white/[.08] bg-white/[.025] px-3 py-2 text-xs text-[#98aa9f]"><Sparkles size={14} className="text-[#e4bc76]" />Trilha educativa · demonstração</div>
     </section>
 
-    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(270px,.72fr)]">
-      <div className="relative isolate overflow-hidden rounded-xl border border-[#a78bfa]/15 bg-[linear-gradient(115deg,#191722_0%,#12131b_56%,#101820_100%)] p-6 sm:p-8">
-        <div className="dashboard-hero-image pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] overflow-hidden lg:block"><img src={moduleCovers[next.moduleId] ?? moduleCovers.m1} alt="" className="size-full object-cover opacity-60" /><div className="absolute inset-0 bg-[linear-gradient(90deg,#13121a_0%,rgba(19,18,26,.78)_24%,rgba(19,18,26,.08)_100%)]" /><div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(9,9,13,.62),transparent_64%)]" /></div>
-        <div className="absolute -right-24 -top-32 -z-10 size-80 rounded-full bg-[#a78bfa]/[.08] blur-[100px]" />
-        <div className="flex flex-wrap items-center gap-2"><span className="rounded-full border border-[#a78bfa]/15 bg-[#a78bfa]/[.07] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#b49cff]">continuar de onde parou</span><span className="text-[11px] text-[#7d9085]">{next.moduleTitle}</span></div>
-        <h2 className="mt-5 max-w-2xl font-display text-2xl font-medium tracking-[-.04em] text-[#eef5f0] sm:text-3xl">{next.title}</h2>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#9aaca2]">Uma aula curta, uma ideia por vez. Ao final, você aplica o conceito em um cenário prático.</p>
-        <div className="mt-6 flex flex-wrap items-center gap-4"><Link to={`/curso/aula/${next.moduleId}/${next.id}`} className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] transition-colors hover:bg-[#c1acff]"><Play size={15} fill="currentColor" />{completedLessons.length ? 'Retomar aula' : 'Começar primeira aula'}</Link><span className="flex items-center gap-1.5 text-xs text-[#93a69b]"><Clock3 size={14} />{next.duration}</span></div>
-        <div className="mt-7 max-w-lg"><div className="mb-2 flex justify-between text-[11px]"><span className="text-[#93a69b]">Progresso da trilha</span><span className="font-semibold text-[#c1acff]">{percent}%</span></div><Progress value={percent} className="h-1.5 bg-white/[.09] [&>div]:bg-[#a78bfa]" /></div>
-      </div>
-
-      <Card className="surface flex flex-col justify-between rounded-xl border-white/[.07] p-4 sm:p-5">
-        <div><div className="flex items-center justify-between"><span className="grid size-9 place-items-center rounded-lg bg-violet-200/[.09] text-violet-200"><AudioLines size={17} /></span><span className="text-[9px] uppercase tracking-[.13em] text-[#92909d]">boas-vindas</span></div><h3 className="mt-4 font-display text-lg font-medium tracking-[-.035em] text-[#eeeaf4]">Comece pelo contexto</h3><p className="mt-1 text-xs leading-relaxed text-[#aaa6b2]">Como seguir a trilha e usar aulas, atividades e quizzes.</p></div>
-        <AudioNarration title="Boas-vindas" transcript={audioTracks['/audio/boas_vindas.mp3']!.transcript} summary={audioTracks['/audio/boas_vindas.mp3']!.summary} />
+    <section className="study-bento" aria-label="Seu próximo passo">
+      <Card className="bento-panel study-hero">
+        <div className="study-hero-art" aria-hidden="true"><img src={moduleCovers[next.moduleId] ?? moduleCovers.m1} alt="" /><span /></div>
+        <div className="study-hero-copy">
+          <div className="flex flex-wrap items-center gap-2"><span className="bento-kicker">Continuar de onde parou</span><span className="text-[11px] text-[#a29bad]">Módulo {nextModule.number}</span></div>
+          <h2>{next.title}</h2>
+          <p>Uma ideia por vez. Entenda o conceito e pratique com um cenário ao final da aula.</p>
+          <div className="mt-6 flex flex-wrap items-center gap-4"><Link to={`/curso/aula/${next.moduleId}/${next.id}`} className="button-motion inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-5 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]"><Play size={15} fill="currentColor" />{completedLessons.length ? 'Retomar aula' : 'Começar primeira aula'}</Link><span className="flex items-center gap-1.5 text-xs text-[#b4adbf]"><Clock3 size={14} />{next.duration} de estudo</span></div>
+          <div className="study-hero-progress"><div className="mb-2 flex justify-between text-[11px]"><span>Progresso da trilha</span><span className="font-semibold text-[#d3c4ff]">{percent}%</span></div><Progress value={percent} aria-label="Progresso da trilha" className="h-1.5 bg-white/[.09]" /></div>
+        </div>
       </Card>
+      <Card className="bento-panel study-welcome">
+        <div className="flex items-center justify-between"><span className="bento-icon"><AudioLines size={18} /></span><span className="text-[11px] text-[#a59caf]">Antes de começar</span></div>
+        <div><h3 className="text-xl font-medium tracking-tight text-[#f0eaf8]">Seu ponto de partida.</h3><p className="mt-2 text-xs leading-relaxed text-[#aaa2b5]">Conheça a trilha e veja como usar aulas, atividades e narrações.</p></div>
+        <AudioNarration compact title="Boas-vindas" track={welcomeNarration} transcript={welcomeScript.transcript} summary={welcomeScript.summary} />
+      </Card>
+      <div className="study-metrics">
+        <Metric icon={<BookOpenCheck size={16} />} label="Aulas concluídas" value={`${completedLessons.length} / ${allLessons.length}`} note="Seu avanço na trilha" tone="mint" />
+        <Metric icon={<Check size={16} />} label="Módulos completos" value={`${completedModules} / ${modules.length}`} note="Uma etapa de cada vez" tone="blue" />
+        <Metric icon={<Shield size={16} />} label="Próxima habilidade" value={nextModule.title} note="Aplique na próxima aula" tone="amber" />
+      </div>
+      <QuickReview />
     </section>
-
-    <section className="grid gap-3 sm:grid-cols-3">
-      <Metric icon={<BookOpenCheck size={16} />} label="Aulas concluídas" value={`${completedLessons.length} / ${allLessons.length}`} note="Marque cada aula ao terminar" tone="mint" />
-      <Metric icon={<Check size={16} />} label="Módulos completos" value={`${completedModules} / ${modules.length}`} note="Quiz no fim de cada trilha" tone="blue" />
-      <Metric icon={<Shield size={16} />} label="Próxima habilidade" value={nextModule.title} note="Seu aprendizado não promete retorno" tone="amber" />
-    </section>
-
-    <QuickReview />
 
     <section id="modulos" className="scroll-mt-24">
       <div className="mb-5 flex items-end justify-between gap-4"><div><p className="eyebrow">a jornada completa</p><h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#eeeaf4]">Nove módulos. Uma base melhor.</h2></div><span className="hidden text-xs text-[#92909d] sm:block">{allLessons.length} aulas · quizzes com explicação</span></div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="course-modules-bento">
         {modules.map((module, index) => {
           const done = module.lessons.filter((lesson) => completedLessons.includes(lesson.id)).length
           const modulePercent = Math.round((done / module.lessons.length) * 100)
           const active = index === activeModuleIndex
-          return <Link key={module.id} to={`/curso/aula/${module.id}/${module.lessons.find((lesson) => !completedLessons.includes(lesson.id))?.id ?? module.lessons[0].id}`} className="group focus-ring rounded-xl">
-            <Card className={`surface h-full overflow-hidden rounded-xl border-white/[.07] p-5 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-violet-200/25 group-hover:shadow-[0_18px_50px_rgba(111,85,210,.12)] ${active ? 'bg-[#171521]/90' : ''}`}>
-              <CardContent className="flex h-full flex-col p-0">
-                <div className="module-cover relative -mx-5 -mt-5 mb-4 h-[118px] overflow-hidden"><img src={moduleCovers[module.id] ?? moduleCovers.m1} alt="" loading="lazy" className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" /><div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(17,17,25,.95),rgba(17,17,25,.06)_85%)]" /><span className="absolute left-4 top-3 rounded-md border border-white/15 bg-black/35 px-2 py-1 font-mono text-[9px] text-white/80 backdrop-blur">MÓDULO {module.number}</span><span className="absolute bottom-3 left-4 grid size-8 place-items-center rounded-lg border border-white/15 bg-black/30 text-sm text-violet-100 backdrop-blur">{moduleIcons[module.icon] ?? module.number}</span></div>
-                <div className="flex items-start justify-between"><span className={`grid size-11 place-items-center rounded-lg border text-base ${module.color === 'blue' ? 'border-[#98abff]/15 bg-[#98abff]/[.07] text-[#aab8ff]' : module.color === 'amber' ? 'border-[#e4bc76]/15 bg-[#e4bc76]/[.07] text-[#e9c984]' : module.color === 'lilac' ? 'border-[#c0a4ff]/15 bg-[#c0a4ff]/[.07] text-[#c7b3ff]' : 'border-[#a78bfa]/15 bg-[#a78bfa]/[.07] text-[#b49cff]'}`}>{moduleIcons[module.icon] ?? module.number}</span><span className="font-display text-[11px] tracking-[.12em] text-[#60736a]">{module.number}</span></div>
-                <h3 className="mt-5 font-display text-[17px] font-medium tracking-[-.03em] text-[#e3ebe5]">{module.title}</h3><p className="mt-2 min-h-10 text-xs leading-relaxed text-[#899b91]">{module.subtitle}</p>
-                <div className="mt-auto pt-5"><div className="mb-2 flex items-center justify-between text-[10px]"><span className="text-[#73867b]">{done}/{module.lessons.length} aulas</span><span className="text-[#92a49a]">{module.duration}</span></div><Progress value={modulePercent} className="h-1 bg-white/[.07] [&>div]:bg-[#a78bfa]" /><div className="mt-4 flex items-center justify-between text-[11px]"><span className={done === module.lessons.length ? 'text-[#c1acff]' : 'text-[#82958a]'}>{done === module.lessons.length ? 'Concluído' : active ? 'Próximo na trilha' : 'Disponível'}</span><ChevronRight size={15} className="text-[#71847a] transition-transform group-hover:translate-x-1 group-hover:text-[#a78bfa]" /></div></div>
+          return <Link key={module.id} to={`/curso/aula/${module.id}/${module.lessons.find((lesson) => !completedLessons.includes(lesson.id))?.id ?? module.lessons[0].id}`} className={`course-module-tile group focus-ring ${active ? 'is-current' : ''}`}>
+            <Card className="bento-panel bento-module-card">
+              <CardContent className="bento-module-content">
+                <div className="bento-module-cover"><img src={moduleCovers[module.id] ?? moduleCovers.m1} alt="" loading="lazy" /><span className="bento-module-number">Módulo {module.number}</span><span className="bento-module-symbol">{moduleIcons[module.icon] ?? module.number}</span></div>
+                <div className="bento-module-copy">
+                  <span className={`text-[10px] font-medium ${active ? 'text-[#c6b4ff]' : 'text-[#9f96ae]'}`}>{done === module.lessons.length ? 'Concluído' : active ? 'Próximo na trilha' : module.lessons.length + ' aulas disponíveis'}</span>
+                  <h3>{module.title}</h3><p>{module.subtitle}</p>
+                  <div className="bento-module-footer"><div className="mb-2 flex items-center justify-between text-[10px] text-[#afa6bc]"><span>{done}/{module.lessons.length} aulas</span><span>{module.duration}</span></div><Progress value={modulePercent} aria-label={`Progresso: ${module.title}`} className="h-1 bg-white/[.07]" /><div className="mt-4 flex items-center justify-between text-[11px] text-[#cbbbf1]"><span>{done === module.lessons.length ? 'Revisar módulo' : 'Abrir módulo'}</span><ChevronRight size={15} className="transition-transform group-hover:translate-x-1" /></div></div>
+                </div>
               </CardContent>
             </Card>
           </Link>
@@ -97,7 +99,7 @@ export function CourseDashboard() {
 
 function Metric({ icon, label, value, note, tone }: { icon: ReactNode; label: string; value: string; note: string; tone: 'mint' | 'blue' | 'amber' }) {
   const colors = { mint: 'text-[#a78bfa] bg-[#a78bfa]/[.08]', blue: 'text-[#a6b4ff] bg-[#98abff]/[.08]', amber: 'text-[#e4bc76] bg-[#e4bc76]/[.08]' }
-  return <div className="rounded-xl border border-white/[.07] bg-[#12121a] p-4"><div className="flex items-center gap-2.5"><span className={`grid size-8 place-items-center rounded-lg ${colors[tone]}`}>{icon}</span><span className="text-xs text-[#8fa197]">{label}</span></div><p className="mt-3 truncate font-display text-lg font-medium tracking-[-.04em] text-[#e4ede6]">{value}</p><p className="mt-1 text-[10px] text-[#718479]">{note}</p></div>
+  return <div className="bento-panel bento-metric"><div className="flex items-center gap-2.5"><span className={`grid size-8 place-items-center rounded-lg ${colors[tone]}`}>{icon}</span><span className="text-xs text-[#8fa197]">{label}</span></div><p className="mt-3 font-display text-lg font-medium tracking-[-.04em] text-[#e4ede6]">{value}</p><p className="mt-1 text-[10px] text-[#718479]">{note}</p></div>
 }
 
 function getReviewSchedule(): Record<string, number> {
@@ -118,7 +120,9 @@ function QuickReview() {
     setIndex(nextDue >= 0 ? nextDue : (index + 1) % reviewCards.length)
     setRevealed(false)
   }
-  return <section className="grid gap-4 rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:grid-cols-[1fr_.85fr] sm:items-center sm:p-6"><div><p className="eyebrow">revisão rápida · 2 min</p><h2 className="mt-2 font-display text-lg font-medium tracking-[-.035em] text-[#e4ede6]">Puxe uma ideia da memória.</h2><p className="mt-1 max-w-md text-xs leading-relaxed text-[#82958a]">Tente responder antes de revelar. Reveja o cartão amanhã ou em alguns dias.</p></div><div className="rounded-xl border border-[#98abff]/15 bg-[#98abff]/[.035] p-4"><p className="text-[9px] font-semibold uppercase tracking-[.14em] text-[#9daeff]">pergunta</p><p className="mt-2 text-sm font-medium leading-relaxed text-[#dfe6f1]">{current.prompt}</p>{revealed ? <><p className="mt-3 border-t border-white/[.08] pt-3 text-xs leading-relaxed text-[#aab7c8]">{current.answer}</p><div className="mt-4 flex gap-2"><button type="button" onClick={() => rate(1)} className="rounded-full border border-white/[.1] px-3 py-2 text-[10px] text-[#9caeba] hover:bg-white/[.04]">Vou rever amanhã</button><button type="button" onClick={() => rate(3)} className="rounded-full bg-[#a78bfa] px-3 py-2 text-[10px] font-semibold text-[#09090d] hover:bg-[#c1acff]">Lembrei · rever em 3 dias</button></div></> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-medium text-[#b2c0fd] hover:text-white">Revelar resposta <ArrowRight size={12} /></button>}</div></section>
+  return <section className="bento-panel study-review">
+    <div className="flex items-center justify-between gap-3"><h3 className="text-xs font-semibold text-[#c6b4ff]">Revisão rápida</h3><span className="text-[10px] text-[#968ca6]">2 minutos</span></div>
+    <p className="mt-3 text-sm font-medium leading-relaxed text-[#eee8f6]">{current.prompt}</p>
+    {revealed ? <><p className="mt-3 text-xs leading-relaxed text-[#b8afc5]">{current.answer}</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => rate(1)} className="rounded-xl border border-white/10 px-3 py-2 text-[10px] text-[#c4bace]">Rever amanhã</button><button type="button" onClick={() => rate(3)} className="rounded-xl bg-[#b49cff] px-3 py-2 text-[10px] font-semibold text-[#100c19]">Lembrei · 3 dias</button></div></> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 inline-flex items-center gap-2 text-xs text-[#c6b4ff]">Revelar resposta <ArrowRight size={13} /></button>}
+  </section>
 }
-
-

@@ -16,7 +16,7 @@ export function SiteHeader() {
           {links.map((item) => <a key={item.label} href={item.href} className="dock-link rounded-full px-3.5 py-2 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{item.label}</a>)}
         </nav>
         <div className="hidden items-center gap-3 sm:flex">
-          <Link to="/login" className="button-motion dock-login px-2 py-2 text-xs text-[#b1abbc] transition-colors hover:text-white">Entrar</Link>
+          <Link to="/login" className="dock-login inline-flex px-2 py-2 text-xs text-[#b1abbc] hover:text-white">Entrar</Link>
           <Link to={landing ? '/login' : '/landing#planos'} className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">{landing ? 'Começar agora' : 'Ver os planos'}<ArrowUpRight size={15} /></Link>
         </div>
         <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white sm:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>

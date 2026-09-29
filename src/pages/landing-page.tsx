@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { GlowCard } from '@/components/ui/spotlight-card'
+import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
 import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, LockKeyhole, Plus, Shield, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
@@ -91,7 +92,7 @@ export function LandingPage() {
 
       <section id="jornada" className="scroll-mt-24 border-y border-white/[.055] bg-[#0f1017] py-20 sm:py-24">
         <div className="page-shell"><div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">a jornada</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Do vocabulário básico a um processo próprio.</h2></div><p className="max-w-sm text-sm leading-relaxed text-[#8da096]">Cada etapa prepara a próxima. Avance em ordem ou volte ao assunto que precisa de mais tempo.</p></div>
-          <div className="module-grid relative mt-11 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{topics.map((topic) => <GlowCard key={topic.number} glowColor={topicGlow[topic.color as keyof typeof topicGlow]} customSize className="module-glow-card"><Link to="/login" className={`module-card module-${topic.color} group`}><span className="module-card-index">MÓDULO {topic.number}</span><span className="module-card-rule" /><h3>{topic.title}</h3><p>{topic.text}</p><span className="module-card-link">Explorar conteúdo <ArrowRight size={13} /></span></Link></GlowCard>)}</div>
+          <div className="module-grid landing-modules-bento mt-11">{topics.map((topic) => <GlowCard key={topic.number} glowColor={topicGlow[topic.color as keyof typeof topicGlow]} customSize className="module-glow-card"><Link to="/login" className={`module-card module-${topic.color} group`}><span className="module-card-index">MÓDULO {topic.number}</span><span className="module-card-rule" /><h3>{topic.title}</h3><p>{topic.text}</p><span className="module-card-link">Explorar conteúdo <ArrowRight size={13} /></span></Link></GlowCard>)}</div>
           <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/[.07] bg-[#12131b] p-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-lg bg-violet-200/[.08] text-violet-200"><LockKeyhole size={16} /></div><p className="text-xs leading-relaxed text-[#aaa6b2]">No fim, você monta seu próprio plano de estudo e segurança. O próximo passo pode ser não investir.</p></div><a href="#planos" className="flex shrink-0 items-center gap-1 text-xs font-medium text-violet-200 hover:text-white">Ver os planos <ArrowRight size={14} /></a></div>
         </div>
       </section>
@@ -102,7 +103,7 @@ export function LandingPage() {
             <div><p className="eyebrow">estudo aplicado</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Aprenda testando, não apostando.</h2></div>
             <p className="max-w-md text-sm leading-relaxed text-[#8da096]">Exercícios com cenários fictícios ajudam a transformar conceitos em decisões mais cuidadosas. Nenhum exige comprar cripto.</p>
           </div>
-          <div className="mt-10 grid gap-3 md:grid-cols-3">
+          <div className="practice-bento mt-10">
             <PracticeCard icon={<BookOpen size={18} />} number="LAB 01" title="Investigue uma tese" copy="Compare um projeto fictício por utilidade, oferta, liquidez e evidências." tone="mint" />
             <PracticeCard icon={<Activity size={18} />} number="LAB 02" title="Simule uma queda" copy="Veja como oscilações hipotéticas alteram um saldo definido por você." tone="blue" />
             <PracticeCard icon={<Shield size={18} />} number="LAB 03" title="Revise sua proteção" copy="Confira acesso, permissões, cópias de segurança e resposta a incidentes." tone="amber" />
@@ -115,10 +116,10 @@ export function LandingPage() {
       <section id="planos" className="scroll-mt-24 border-y border-white/[.06] bg-[#0f1017] py-20 sm:py-24">
         <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">escolha seu tempo de estudo</p><h2 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h2><p className="body-lg mt-4 text-[15px]">Sem cobrança real nesta demonstração. Escolha um plano para conhecer o fluxo.</p></div>
           <div className="mt-8 flex justify-center"><div className="inline-flex rounded-xl border border-white/[.08] bg-[#14151d] p-1" role="group" aria-label="Moeda de pagamento">{(['BRL', 'SOL'] as const).map((item) => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)} className={`focus-ring rounded-xl px-5 py-2 text-xs font-semibold transition-colors ${currency === item ? 'bg-[#b49cff] text-[#100c19] hover:bg-[#c6b4ff]' : 'text-[#b1abbc] hover:bg-white/[.05] hover:text-white'}`}>{item === 'BRL' ? 'Reais · BRL' : 'Solana · SOL'}</button>)}</div></div>
-          <div className="mx-auto mt-8 grid max-w-5xl gap-4 lg:grid-cols-3">
+          <div className="pricing-bento mx-auto mt-8">
             {(['month', 'quarter', 'lifetime'] as const).map((id) => {
               const plan = plans[id]
-              return <div key={id} className={`interactive-card pricing-card relative flex flex-col rounded-xl border p-6 ${plan.featured ? 'border-[#a78bfa]/35 bg-[linear-gradient(155deg,rgba(167,139,250,.105),rgba(17,28,23,.96)_48%)] shadow-[0_22px_70px_rgba(0,0,0,.22)] lg:-mt-2 lg:mb-2' : 'border-white/[.08] bg-[#14151d]'}`}>
+              return <div key={id} className={`interactive-card pricing-card relative flex flex-col rounded-xl border p-6 ${plan.featured ? 'border-[#a78bfa]/35 bg-[linear-gradient(155deg,rgba(167,139,250,.105),rgba(20,17,30,.96)_48%)] shadow-[0_22px_70px_rgba(0,0,0,.22)] ' : 'border-white/[.08] bg-[#14151d]'}`}>
                 {plan.featured && <span className="mb-3 inline-flex w-fit rounded-xl bg-[#a78bfa] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.12em] text-[#09090d]">melhor valor</span>}
                 <div className="flex items-start justify-between gap-2"><div><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e8f0ea]">{plan.name}</p><p className="mt-1 text-xs text-[#82958a]">{plan.term}</p></div>{plan.featured && <Sparkles size={17} className="mt-1 text-[#a78bfa]" />}</div>
                 <div className="mt-6"><p className="font-display text-[34px] font-medium tracking-[-.065em] text-[#f0f5f1]">{plan.prices[currency]}<span className="ml-2 font-sans text-xs font-normal tracking-normal text-[#778b80]">{currency === 'BRL' ? 'à vista' : 'pagamento em SOL'}</span></p><p className="mt-1 text-[11px] font-medium text-[#bca9e8]">ou {currency === 'SOL' ? plan.prices.BRL : plan.prices.SOL}</p></div>
@@ -150,10 +151,11 @@ export function LandingPage() {
 }
 
 function HeroVisual() {
+  const entryActive = usePlatformEntryActive()
   return <div className="animate-enter-delay relative mx-auto w-full max-w-[570px] lg:ml-auto">
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
-        <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>
+        {!entryActive && <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
         <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-[9px] font-semibold uppercase tracking-[.16em] text-white/75 backdrop-blur-md">
           <span className="size-1.5 animate-pulse rounded-full bg-violet-200 shadow-[0_0_14px_#bca8ff]" /> Bitcoin · visualização ASCII
         </div>
