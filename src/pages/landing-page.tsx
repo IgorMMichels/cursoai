@@ -104,9 +104,9 @@ export function LandingPage() {
             <p className="max-w-md text-sm leading-relaxed text-[#8da096]">Exercícios com cenários fictícios ajudam a transformar conceitos em decisões mais cuidadosas. Nenhum exige comprar cripto.</p>
           </div>
           <div className="practice-bento mt-10">
-            <PracticeCard icon={<BookOpen size={18} />} number="LAB 01" title="Investigue uma tese" copy="Compare um projeto fictício por utilidade, oferta, liquidez e evidências." tone="mint" />
-            <PracticeCard icon={<Activity size={18} />} number="LAB 02" title="Simule uma queda" copy="Veja como oscilações hipotéticas alteram um saldo definido por você." tone="blue" />
-            <PracticeCard icon={<Shield size={18} />} number="LAB 03" title="Revise sua proteção" copy="Confira acesso, permissões, cópias de segurança e resposta a incidentes." tone="amber" />
+            <PracticeCard to="/curso/aula/m3/m3l1" icon={<BookOpen size={18} />} number="LAB 01" title="Investigue uma tese" copy="Compare um projeto fictício por utilidade, oferta, liquidez e evidências." tone="mint" />
+            <PracticeCard to="/curso/aula/m4/m4l1" icon={<Activity size={18} />} number="LAB 02" title="Simule uma queda" copy="Veja como oscilações hipotéticas alteram um saldo definido por você." tone="blue" />
+            <PracticeCard to="/curso/seguranca" icon={<Shield size={18} />} number="LAB 03" title="Revise sua proteção" copy="Confira acesso, permissões, cópias de segurança e resposta a incidentes." tone="amber" />
           </div>
         </div>
       </section>
@@ -176,9 +176,9 @@ function AsciiHeroLoading() {
   </div>
 }
 
-function PracticeCard({ icon, number, title, copy, tone }: { icon: ReactNode; number: string; title: string; copy: string; tone: 'mint' | 'blue' | 'amber' }) {
+function PracticeCard({ to, icon, number, title, copy, tone }: { to: string; icon: ReactNode; number: string; title: string; copy: string; tone: 'mint' | 'blue' | 'amber' }) {
   const style = { mint: 'border-[#a78bfa]/15 bg-[#a78bfa]/[.08] text-[#a78bfa]', blue: 'border-[#98abff]/15 bg-[#98abff]/[.08] text-[#aab8ff]', amber: 'border-[#e4bc76]/15 bg-[#e4bc76]/[.08] text-[#e4bc76]' }
-  return <Link to="/login" className="practice-card interactive-card min-h-[235px] rounded-xl border border-white/[.07] bg-[#12121a] p-6"><div className="flex items-center justify-between"><span className={`practice-card-icon grid size-10 place-items-center rounded-xl border ${style[tone]}`}>{icon}</span><span className="font-display text-[10px] font-semibold tracking-[.14em] text-[#68786f]">{number}</span></div><h3 className="mt-7 font-display text-lg font-medium tracking-[-.035em] text-[#e1eae3]">{title}</h3><p className="mt-2 text-xs leading-relaxed text-[#87998f]">{copy}</p><span className="practice-card-action mt-auto flex items-center gap-2 pt-5 text-[10px] font-semibold text-[#b49cff]">Acessar atividade <ArrowUpRight size={13} /></span></Link>
+  return <Link to={to} className="practice-card interactive-card min-h-[235px] rounded-xl border border-white/[.07] bg-[#12121a] p-6"><div className="flex items-center justify-between"><span className={`practice-card-icon grid size-10 place-items-center rounded-xl border ${style[tone]}`}>{icon}</span><span className="font-display text-[10px] font-semibold tracking-[.14em] text-[#68786f]">{number}</span></div><h3 className="mt-7 font-display text-lg font-medium tracking-[-.035em] text-[#e1eae3]">{title}</h3><p className="mt-2 text-xs leading-relaxed text-[#87998f]">{copy}</p><span className="practice-card-action mt-auto flex items-center gap-2 pt-5 text-[10px] font-semibold text-[#b49cff]">Acessar atividade <ArrowUpRight size={13} /></span></Link>
 }
 
 
