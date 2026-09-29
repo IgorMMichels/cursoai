@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ArrowUpRight, Orbit, ChevronUp, Menu, X } from 'lucide-react'
+import { ArrowUpRight, ChevronUp, Menu, X } from 'lucide-react'
 import { Brand } from '@/components/brand'
 
 export function SiteHeader() {
@@ -32,9 +32,8 @@ export function SiteFooter() {
   return <footer className="site-footer">
     <div className="site-footer-frame page-shell">
       <section className="footer-invite" aria-labelledby="footer-invite-title">
-        <div className="footer-orbit" aria-hidden="true"><span /><span /><i><Orbit size={16} /></i></div>
         <div className="footer-invite-content">
-          <p className="eyebrow">seu próximo passo começa pelo conhecimento</p>
+          <p className="eyebrow">criptoativos, com método e contexto</p>
           <h2 id="footer-invite-title">Aprenda a decidir com mais critério.</h2>
           <p className="footer-invite-copy">Fundamentos, segurança, DeFi e futuros para entender o mercado cripto e seus riscos.</p>
           <div className="footer-actions">
@@ -43,11 +42,6 @@ export function SiteFooter() {
           </div>
         </div>
       </section>
-
-      <div className="footer-wordmark" aria-label="Cripto do Zero">
-        <span className="footer-wordline">CRIPTO</span>
-        <span className="footer-wordline footer-wordline-accent">DO ZERO<span className="footer-wordmark-dot">.</span></span>
-      </div>
 
       <div className="footer-details">
         <div className="footer-brand-lockup"><Brand compact /><span>Cripto do Zero</span></div>
