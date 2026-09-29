@@ -109,7 +109,7 @@ function ThrottledAsciiRenderer({
   fgColor,
   bgColor,
   invert,
-  maxFps = 14,
+  maxFps = 24,
 }: {
   resolution: number
   characters: string
