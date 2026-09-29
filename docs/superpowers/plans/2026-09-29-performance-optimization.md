@@ -67,7 +67,7 @@
 - [x] Commit lesson narration/transcript changes separately from visual layout/ASCII loader changes.
 - [x] Commit performance work separately after Tasks 1–2.
 - [x] Inspect staged diff for generated secrets, unrelated edits, or deleted user assets.
-- [ ] Push commits to configured `origin` branch `main` and report commit IDs and push result.
+- [x] Push commits to configured `origin` branch `main` and report commit IDs and push result.
 
 Review fix: route loader now uses guarded session-storage helpers for read and write, so restricted storage cannot strand the loader.
 
