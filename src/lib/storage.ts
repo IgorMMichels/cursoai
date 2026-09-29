@@ -5,6 +5,9 @@ export type DemoSession = {
   id: string
   name: string
   email: string
+  bio?: string
+  location?: string
+  avatarUrl?: string
   role: UserRole
   plan: PlanId | 'demo'
   planStartedAt: string
@@ -17,6 +20,7 @@ export type MockEvent = { id: string; type: 'click' | 'signup' | 'sale'; at: str
 export type MockOrder = { id: string; at: string; userId: string; plan: PlanId; currency: Currency; refCode?: string; status: 'approved-demo'; commission: number }
 export type MockPayout = { id: string; at: string; code: string; currency: Currency; amount: number; status: 'requested-demo' }
 export type QuizProfile = { name: string; description: string; nextStep: string }
+export type StudentReview = { id: string; userId: string; name: string; rating: number; text: string; createdAt: string; isSample?: boolean }
 
 const keys = {
   session: 'cripto-mentoria:session',
@@ -28,8 +32,15 @@ const keys = {
   pending: 'cripto-mentoria:pending-order',
   quizzes: 'cripto-mentoria:quiz-results',
   certificate: 'cripto-mentoria:certificate',
-  payouts: 'cripto-mentoria:payout-requests'
+  payouts: 'cripto-mentoria:payout-requests',
+  reviews: 'cripto-mentoria:reviews'
 } as const
+
+const sampleReviews: StudentReview[] = [
+  { id: 'sample-review-1', userId: 'sample', name: 'Exemplo 01', rating: 5, text: 'Exemplo demonstrativo: separar ativo, rede e carteira ajuda a fazer perguntas melhores antes de qualquer decisão.', createdAt: '2026-01-10T12:00:00.000Z', isSample: true },
+  { id: 'sample-review-2', userId: 'sample', name: 'Exemplo 02', rating: 5, text: 'Exemplo demonstrativo: o cenário hipotético deixa mais claro como uma queda pode afetar um valor em reais.', createdAt: '2026-01-11T12:00:00.000Z', isSample: true },
+  { id: 'sample-review-3', userId: 'sample', name: 'Exemplo 03', rating: 4, text: 'Exemplo demonstrativo: entender margem e exposição antes de estudar futuros organiza a leitura do risco.', createdAt: '2026-01-12T12:00:00.000Z', isSample: true }
+]
 
 const volatileStorage = new Map<string, string>()
 
@@ -82,6 +93,15 @@ export const rememberReferral = (code: string) => setStoredValue(keys.referral, 
 export const getMockEvents = () => readJson<MockEvent[]>(keys.events, [])
 export const getMockOrders = () => readJson<MockOrder[]>(keys.orders, [])
 export const getMockPayouts = () => readJson<MockPayout[]>(keys.payouts, [])
+export const getReviews = () => readJson<StudentReview[]>(keys.reviews, sampleReviews)
+export function addReview(input: Omit<StudentReview, 'id' | 'createdAt' | 'isSample'>) {
+  const review: StudentReview = { ...input, id: makeId(), createdAt: new Date().toISOString() }
+  writeJson(keys.reviews, [...getReviews(), review])
+  return review
+}
+export function removeReview(id: string) {
+  writeJson(keys.reviews, getReviews().filter((review) => review.id !== id))
+}
 
 export function requestMockPayout(code: string, currency: Currency, amount: number) {
   writeJson(keys.payouts, [...getMockPayouts(), { id: makeId(), at: new Date().toISOString(), code, currency, amount, status: 'requested-demo' }])

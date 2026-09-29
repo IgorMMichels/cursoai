@@ -18,6 +18,7 @@ playwright-report/
 test-results/
 playwright/.cache/
 *-after-loader.png
+supabase/.temp/
 
 # Editor directories and files
 .vscode/*
