@@ -8,6 +8,7 @@ import { welcomeNarration } from '@/lib/audio-tracks'
 import { welcomeScript } from '@/lib/narration-script'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, modules } from '@/lib/course'
+import { getStoredValue, setStoredValue } from '@/lib/storage'
 
 const moduleIcons: Record<string, string> = { Blocks: '▦', ArrowLeftRight: '↔', Bitcoin: '₿', ScanSearch: '⌕', Scale: '⚖', ShieldCheck: '⌑', Orbit: '◉', ChartNoAxesCombined: '↗', Compass: '⌖' }
 const moduleCovers: Record<string, string> = {
@@ -103,7 +104,7 @@ function Metric({ icon, label, value, note, tone }: { icon: ReactNode; label: st
 }
 
 function getReviewSchedule(): Record<string, number> {
-  try { return JSON.parse(localStorage.getItem('cripto-mentoria:review-schedule') ?? '{}') as Record<string, number> } catch { return {} }
+  try { return JSON.parse(getStoredValue('cripto-mentoria:review-schedule') ?? '{}') as Record<string, number> } catch { return {} }
 }
 
 function QuickReview() {
@@ -114,7 +115,7 @@ function QuickReview() {
   const current = reviewCards[index]
   const rate = (days: number) => {
     const updated = { ...schedule, [current.id]: Date.now() + days * 24 * 60 * 60 * 1000 }
-    localStorage.setItem('cripto-mentoria:review-schedule', JSON.stringify(updated))
+    setStoredValue('cripto-mentoria:review-schedule', JSON.stringify(updated))
     setSchedule(updated)
     const nextDue = reviewCards.findIndex((card, cardIndex) => cardIndex !== index && (!updated[card.id] || updated[card.id] <= Date.now()))
     setIndex(nextDue >= 0 ? nextDue : (index + 1) % reviewCards.length)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ArrowLeft, Check, LockKeyhole, RotateCcw, Shield, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getStoredValue, removeStoredValue, setStoredValue } from '@/lib/storage'
 
 const items = [
   { id: 'auth', label: 'Ative 2FA com aplicativo autenticador ou chave física.', note: 'Evite depender só de SMS quando houver alternativa.' },
@@ -13,12 +14,12 @@ const items = [
 ]
 
 const key = 'cripto-mentoria:security-checklist'
-const load = () => { try { return JSON.parse(localStorage.getItem(key) ?? '[]') as string[] } catch { return [] } }
+const load = () => { try { return JSON.parse(getStoredValue(key) ?? '[]') as string[] } catch { return [] } }
 
 export function SecurityPage() {
   const [checked, setChecked] = useState<string[]>(load)
-  const toggle = (id: string) => setChecked((current) => { const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; localStorage.setItem(key, JSON.stringify(next)); return next })
-  const reset = () => { setChecked([]); localStorage.removeItem(key) }
+  const toggle = (id: string) => setChecked((current) => { const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id]; setStoredValue(key, JSON.stringify(next)); return next })
+  const reset = () => { setChecked([]); removeStoredValue(key) }
   return <div className="security-page mx-auto max-w-[1100px]">
     <Link to="/curso" className="mb-7 inline-flex items-center gap-2 text-xs text-[#8da096] hover:text-white"><ArrowLeft size={14} />Voltar à visão geral</Link>
     <div className="mb-8 flex items-start gap-4"><span className="grid size-12 shrink-0 place-items-center rounded-2xl border border-[#a78bfa]/15 bg-[#a78bfa]/[.08] text-[#a78bfa]"><ShieldCheck size={22} /></span><div><p className="eyebrow">ferramenta prática</p><h1 className="mt-2 font-display text-3xl font-medium tracking-[-.05em] text-[#eaf2ec]">Sua rotina de segurança.</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#8fa197]">Marque cada controle que você já revisou. Este checklist fica salvo somente neste navegador de demonstração.</p></div></div>

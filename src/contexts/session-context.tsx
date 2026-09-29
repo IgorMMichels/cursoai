@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { plans, type PlanId } from '@/lib/offers'
-import { formatExpiry, getCompletedLessons, getPendingOrder, getReferralCode, getSession, saveCompletedLesson, setSession, type DemoSession, type UserRole, trackDemoSale, trackDemoSignup } from '@/lib/storage'
+import { clearPendingOrder, formatExpiry, getCompletedLessons, getPendingOrder, getReferralCode, getSession, saveCompletedLesson, setSession, type DemoSession, type UserRole, trackDemoSale, trackDemoSignup } from '@/lib/storage'
 
 type SessionContextValue = {
   user: DemoSession | null
@@ -41,7 +41,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           ? pending.plan === 'month' ? 0.4 : pending.plan === 'quarter' ? 0.7 : 0.9
           : pending.plan === 'month' ? 299 : pending.plan === 'quarter' ? 549 : 699
         trackDemoSale({ code: referralCode, userId: id, plan: pending.plan, currency: pending.currency, amount })
-        localStorage.removeItem('cripto-mentoria:pending-order')
+        clearPendingOrder()
       }
     }
     setUser(session)

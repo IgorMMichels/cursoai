@@ -31,9 +31,29 @@ const keys = {
   payouts: 'cripto-mentoria:payout-requests'
 } as const
 
+const volatileStorage = new Map<string, string>()
+
+export function getStoredValue(key: string) {
+  if (volatileStorage.has(key)) return volatileStorage.get(key) ?? null
+  try { return window.localStorage.getItem(key) }
+  catch { return null }
+}
+
+export function setStoredValue(key: string, value: string) {
+  volatileStorage.set(key, value)
+  try { window.localStorage.setItem(key, value) }
+  catch { /* Keep the current session usable when browser storage is unavailable. */ }
+}
+
+export function removeStoredValue(key: string) {
+  volatileStorage.delete(key)
+  try { window.localStorage.removeItem(key) }
+  catch { /* In-memory state can still be cleared when browser storage is unavailable. */ }
+}
+
 function readJson<T>(key: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem(key)
+    const raw = getStoredValue(key)
     return raw ? (JSON.parse(raw) as T) : fallback
   } catch {
     return fallback
@@ -41,11 +61,11 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 function writeJson<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value))
+  setStoredValue(key, JSON.stringify(value))
 }
 
 export const getSession = () => readJson<DemoSession | null>(keys.session, null)
-export const setSession = (value: DemoSession | null) => value ? writeJson(keys.session, value) : localStorage.removeItem(keys.session)
+export const setSession = (value: DemoSession | null) => value ? writeJson(keys.session, value) : removeStoredValue(keys.session)
 export const getCompletedLessons = () => readJson<string[]>(keys.progress, [])
 export const saveCompletedLesson = (lessonId: string) => writeJson(keys.progress, [...new Set([...getCompletedLessons(), lessonId])])
 export const getQuizResults = () => readJson<Record<string, { score: number; passed: boolean; at: string }>>(keys.quizzes, {})
@@ -54,11 +74,11 @@ export const getCertificate = () => readJson<{ name: string; issuedAt: string } 
 export const saveCertificate = (name: string) => writeJson(keys.certificate, { name, issuedAt: new Date().toISOString() })
 export const getQuizProfile = () => readJson<QuizProfile | null>(keys.quiz, null)
 export const saveQuizProfile = (value: QuizProfile) => writeJson(keys.quiz, value)
-export const clearPendingOrder = () => localStorage.removeItem(keys.pending)
+export const clearPendingOrder = () => removeStoredValue(keys.pending)
 export const setPendingOrder = (value: { plan: PlanId; currency: Currency }) => writeJson(keys.pending, value)
 export const getPendingOrder = () => readJson<{ plan: PlanId; currency: Currency } | null>(keys.pending, null)
-export const getReferralCode = () => localStorage.getItem(keys.referral) || undefined
-export const rememberReferral = (code: string) => localStorage.setItem(keys.referral, code.toUpperCase())
+export const getReferralCode = () => getStoredValue(keys.referral) || undefined
+export const rememberReferral = (code: string) => setStoredValue(keys.referral, code.toUpperCase())
 export const getMockEvents = () => readJson<MockEvent[]>(keys.events, [])
 export const getMockOrders = () => readJson<MockOrder[]>(keys.orders, [])
 export const getMockPayouts = () => readJson<MockPayout[]>(keys.payouts, [])
@@ -81,6 +101,7 @@ export function trackReferralClick(code: string) {
 export function trackDemoSignup(code: string | undefined, userId: string) {
   if (!code) return
   const events = getMockEvents()
+  if (events.some((event) => event.type === 'signup' && event.code === code && event.userId === userId)) return
   events.push({ id: makeId(), type: 'signup', at: new Date().toISOString(), code, userId })
   writeJson(keys.events, events)
 }
