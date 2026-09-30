@@ -17,8 +17,8 @@ export function CourseLayout() {
     { to: '/curso/seguranca', label: 'Central de segurança', icon: ShieldCheck },
   ]
 
-  return <div className="min-h-screen bg-[#09090d] lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
-    <aside className="hidden border-r border-white/[.07] bg-[#0d0e14] lg:fixed lg:inset-y-0 lg:flex lg:w-[252px] lg:flex-col">
+  return <div className="min-h-screen bg-[#09090d] lg:grid lg:h-dvh lg:min-h-0 lg:grid-cols-[252px_minmax(0,1fr)] lg:overflow-hidden">
+    <aside className="hidden border-r border-white/[.07] bg-[#0d0e14] lg:fixed lg:inset-y-0 lg:flex lg:h-dvh lg:w-[252px] lg:flex-col lg:overflow-y-auto lg:overscroll-y-contain">
       <div className="px-6 pb-7 pt-6"><Brand /></div>
       <div className="px-4"><p className="px-3 pb-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#687b70]">Aprender</p><nav className="space-y-1" aria-label="Área do aluno">
         {links.map(({ to, label, icon: Icon, end }) => <NavLink key={label} to={to} end={end} className={({ isActive }) => `group flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] transition-colors ${isActive ? 'bg-[#a78bfa]/[.1] text-[#e6dcff]' : 'text-[#8ea197] hover:bg-white/[.04] hover:text-white'}`}><Icon size={17} strokeWidth={1.7} />{label}</NavLink>)}
@@ -29,7 +29,7 @@ export function CourseLayout() {
       </div>
     </aside>
 
-    <div className="min-w-0 lg:col-start-2">
+    <div className="min-w-0 lg:col-start-2 lg:h-dvh lg:overflow-y-auto lg:overscroll-y-contain">
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-white/[.07] bg-[#09090d]/85 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
         <div className="lg:hidden"><Brand compact /></div>
         <div className="hidden items-center gap-2 text-xs text-[#7f9287] lg:flex"><span>Seu espaço de estudo</span><ChevronRight size={13} /><span className="text-[#c6d4cb]">{modules.length} módulos</span></div>
