@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowRight, AudioLines, BookOpenCheck, Check, ChevronRight, Clock3, Play, Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,7 +9,7 @@ import { welcomeScript } from '@/lib/narration-script'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, modules } from '@/lib/course'
 import { moduleCovers } from '@/lib/course-media'
-import { getStoredValue, setStoredValue } from '@/lib/storage'
+import { loadReviewSchedule, saveReviewSchedule, type ReviewSchedule } from '@/lib/learning-service'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 
 const moduleIcons: Record<string, string> = { Blocks: '▦', ArrowLeftRight: '↔', Bitcoin: '₿', ScanSearch: '⌕', Scale: '⚖', ShieldCheck: '⌑', Orbit: '◉', ChartNoAxesCombined: '↗', Compass: '⌖' }
@@ -59,7 +59,7 @@ export function CourseDashboard() {
         <Metric icon={<Check size={16} />} label="Módulos completos" value={`${completedModules} / ${modules.length}`} note="Uma etapa de cada vez" tone="blue" />
         <Metric icon={<Shield size={16} />} label="Próxima habilidade" value={nextModule.title} note="Aplique na próxima aula" tone="amber" />
       </div>
-      <QuickReview />
+      {user && <QuickReview key={user.id} userId={user.id} />}
     </section>
 
     <section id="modulos" className="scroll-mt-24">
@@ -94,27 +94,62 @@ function Metric({ icon, label, value, note, tone }: { icon: ReactNode; label: st
   return <div className="bento-panel bento-metric"><div className="flex items-center gap-2.5"><span className={`grid size-8 place-items-center rounded-lg ${colors[tone]}`}>{icon}</span><span className="text-xs text-[#8fa197]">{label}</span></div><p className="mt-3 font-display text-lg font-medium tracking-[-.04em] text-[#e4ede6]">{value}</p><p className="mt-1 text-[10px] text-[#718479]">{note}</p></div>
 }
 
-function getReviewSchedule(): Record<string, number> {
-  try { return JSON.parse(getStoredValue('cripto-mentoria:review-schedule') ?? '{}') as Record<string, number> } catch { return {} }
-}
-
-function QuickReview() {
-  const [schedule, setSchedule] = useState<Record<string, number>>(getReviewSchedule)
-  const initialIndex = Math.max(0, reviewCards.findIndex((card) => !schedule[card.id] || schedule[card.id] <= Date.now()))
-  const [index, setIndex] = useState(initialIndex)
+function QuickReview({ userId }: { userId: string }) {
+  const [schedule, setSchedule] = useState<ReviewSchedule>({})
+  const [index, setIndex] = useState(0)
   const [revealed, setRevealed] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [retry, setRetry] = useState(0)
   const current = reviewCards[index]
-  const rate = (days: number) => {
-    const updated = { ...schedule, [current.id]: Date.now() + days * 24 * 60 * 60 * 1000 }
-    setStoredValue('cripto-mentoria:review-schedule', JSON.stringify(updated))
-    setSchedule(updated)
-    const nextDue = reviewCards.findIndex((card, cardIndex) => cardIndex !== index && (!updated[card.id] || updated[card.id] <= Date.now()))
-    setIndex(nextDue >= 0 ? nextDue : (index + 1) % reviewCards.length)
-    setRevealed(false)
+
+  useEffect(() => {
+    let active = true
+    loadReviewSchedule(userId)
+      .then((items) => {
+        if (!active) return
+        setSchedule(items)
+        const dueIndex = reviewCards.findIndex((card) => !items[card.id] || items[card.id] <= Date.now())
+        setIndex(Math.max(0, dueIndex))
+      })
+      .catch((cause: unknown) => { if (active) setLoadError(cause instanceof Error ? cause.message : 'Não foi possível carregar sua revisão.') })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [retry, userId])
+
+  const rate = async (days: 1 | 3) => {
+    if (saving) return
+    const dueAt = Date.now() + days * 24 * 60 * 60 * 1000
+    setSaving(true)
+    setActionError('')
+    setNotice('')
+    try {
+      await saveReviewSchedule(userId, current.id, days, dueAt)
+      const updated = { ...schedule, [current.id]: dueAt }
+      setSchedule(updated)
+      const now = Date.now()
+      const nextDue = reviewCards.findIndex((card, cardIndex) => cardIndex !== index && (!updated[card.id] || updated[card.id] <= now))
+      setIndex(nextDue >= 0 ? nextDue : (index + 1) % reviewCards.length)
+      setRevealed(false)
+      setNotice('Sua próxima revisão foi salva na conta.')
+    } catch (cause) {
+      setActionError(cause instanceof Error ? cause.message : 'Não foi possível salvar sua revisão. Tente novamente.')
+    } finally {
+      setSaving(false)
+    }
   }
+
+  if (loading) return <section className="bento-panel study-review" aria-label="Revisão rápida"><h3 className="text-xs font-semibold text-[#c6b4ff]">Revisão rápida</h3><p className="mt-3 text-xs text-[#968ca6]" role="status">Carregando sua agenda de revisão…</p></section>
+  if (loadError) return <section className="bento-panel study-review" aria-label="Revisão rápida"><h3 className="text-xs font-semibold text-[#c6b4ff]">Revisão rápida</h3><p className="mt-3 text-xs text-rose-300" role="alert">{loadError}</p><button type="button" onClick={() => { setLoadError(''); setLoading(true); setRetry((value) => value + 1) }} className="mt-3 text-xs text-[#c6b4ff]">Tentar novamente</button></section>
+
   return <section className="bento-panel study-review">
     <div className="flex items-center justify-between gap-3"><h3 className="text-xs font-semibold text-[#c6b4ff]">Revisão rápida</h3><span className="text-[10px] text-[#968ca6]">2 minutos</span></div>
     <p className="mt-3 text-sm font-medium leading-relaxed text-[#eee8f6]">{current.prompt}</p>
-    {revealed ? <><p className="mt-3 text-xs leading-relaxed text-[#b8afc5]">{current.answer}</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => rate(1)} className="rounded-xl border border-white/10 px-3 py-2 text-[10px] text-[#c4bace]">Rever amanhã</button><button type="button" onClick={() => rate(3)} className="rounded-xl bg-[#b49cff] px-3 py-2 text-[10px] font-semibold text-[#100c19]">Lembrei · 3 dias</button></div></> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 inline-flex items-center gap-2 text-xs text-[#c6b4ff]">Revelar resposta <ArrowRight size={13} /></button>}
+    {revealed ? <><p className="mt-3 text-xs leading-relaxed text-[#b8afc5]">{current.answer}</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" disabled={saving} onClick={() => void rate(1)} className="rounded-xl border border-white/10 px-3 py-2 text-[10px] text-[#c4bace] disabled:opacity-50">{saving ? 'Salvando…' : 'Rever amanhã'}</button><button type="button" disabled={saving} onClick={() => void rate(3)} className="rounded-xl bg-[#b49cff] px-3 py-2 text-[10px] font-semibold text-[#100c19] disabled:opacity-50">{saving ? 'Salvando…' : 'Lembrei · 3 dias'}</button></div></> : <button type="button" onClick={() => setRevealed(true)} className="mt-4 inline-flex items-center gap-2 text-xs text-[#c6b4ff]">Revelar resposta <ArrowRight size={13} /></button>}
+    {actionError && <p className="mt-3 text-xs text-rose-300" role="alert">{actionError}</p>}
+    {notice && <p className="mt-3 text-[10px] text-[#9bcdb7]" role="status">{notice}</p>}
   </section>
 }

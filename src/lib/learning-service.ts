@@ -29,6 +29,28 @@ export async function verifyLessonExercise(lessonId: string, answerIndex: number
   return data as boolean
 }
 
+export type ReviewSchedule = Record<string, number>
+
+export async function loadReviewSchedule(userId: string): Promise<ReviewSchedule> {
+  const { data, error } = await client()
+    .from('learning_review_schedule')
+    .select('card_id, due_at')
+    .eq('user_id', userId)
+  if (error) throw error
+  return Object.fromEntries((data ?? []).map((row) => [row.card_id, Date.parse(row.due_at)]))
+}
+
+export async function saveReviewSchedule(userId: string, cardId: string, intervalDays: 1 | 3, dueAt: number) {
+  const { error } = await client().from('learning_review_schedule').upsert({
+    user_id: userId,
+    card_id: cardId,
+    interval_days: intervalDays,
+    due_at: new Date(dueAt).toISOString(),
+    updated_at: new Date().toISOString(),
+  }, { onConflict: 'user_id,card_id' })
+  if (error) throw error
+}
+
 export type QuizAttempt = {
   moduleId: string
   score: number

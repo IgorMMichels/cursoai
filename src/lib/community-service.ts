@@ -32,10 +32,10 @@ export async function loadAdminReviews() {
 }
 
 export async function submitReview(rating: number, body: string) {
-  const { data: auth, error: authError } = await client().auth.getUser()
-  if (authError) throw authError
-  if (!auth.user) throw new Error('Entre na sua conta para enviar uma avaliação.')
-  const { error } = await client().from('student_reviews').upsert({ user_id: auth.user.id, rating, body: body.trim() }, { onConflict: 'user_id' })
+  const { error } = await client().rpc('submit_student_review', {
+    p_rating: rating,
+    p_body: body.trim(),
+  })
   if (error) throw error
 }
 
