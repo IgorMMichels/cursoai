@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { AsciiEffect } from 'three-stdlib'
 import { CanvasTexture, SRGBColorSpace, type Group, type WebGLRenderer } from 'three'
@@ -10,7 +10,7 @@ interface ModelProps {
   position: [number, number, number]
 }
 
-function BitcoinCoin({ scale, rotation, position, reduced, speed }: ModelProps & { reduced: boolean; speed: number }) {
+function BitcoinCoin({ scale, rotation, position, speed }: ModelProps & { speed: number }) {
   const coin = useRef<Group>(null)
   const symbolTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
@@ -33,12 +33,11 @@ function BitcoinCoin({ scale, rotation, position, reduced, speed }: ModelProps &
 
   useEffect(() => () => symbolTexture.dispose(), [symbolTexture])
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     if (!coin.current) return
-    if (reduced) return
     coin.current.rotation.x = rotation[0] + Math.sin(state.clock.elapsedTime * 0.55) * 0.035
-    coin.current.rotation.y = rotation[1] + Math.sin(state.clock.elapsedTime * 0.7) * 0.09
-    coin.current.rotation.z += delta * speed
+    coin.current.rotation.y = rotation[1] + state.clock.elapsedTime * speed
+    coin.current.rotation.z = rotation[2] + Math.sin(state.clock.elapsedTime * 0.7) * 0.045
     coin.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 1.15) * 0.045
   })
 
@@ -51,7 +50,15 @@ function BitcoinCoin({ scale, rotation, position, reduced, speed }: ModelProps &
       <circleGeometry args={[0.735, 96]} />
       <meshStandardMaterial color="#8e622a" metalness={0.68} roughness={0.35} />
     </mesh>
+    <mesh position={[0, 0, -0.069]} rotation={[0, Math.PI, 0]}>
+      <circleGeometry args={[0.735, 96]} />
+      <meshStandardMaterial color="#8e622a" metalness={0.68} roughness={0.35} />
+    </mesh>
     <mesh position={[0, 0, 0.073]}>
+      <torusGeometry args={[0.685, 0.018, 12, 96]} />
+      <meshStandardMaterial color="#f1c56e" metalness={0.84} roughness={0.22} />
+    </mesh>
+    <mesh position={[0, 0, -0.073]} rotation={[0, Math.PI, 0]}>
       <torusGeometry args={[0.685, 0.018, 12, 96]} />
       <meshStandardMaterial color="#f1c56e" metalness={0.84} roughness={0.22} />
     </mesh>
@@ -59,7 +66,15 @@ function BitcoinCoin({ scale, rotation, position, reduced, speed }: ModelProps &
       <torusGeometry args={[0.59, 0.008, 8, 96]} />
       <meshStandardMaterial color="#d9ad5c" metalness={0.76} roughness={0.28} />
     </mesh>
+    <mesh position={[0, 0, -0.076]} rotation={[0, Math.PI, 0]}>
+      <torusGeometry args={[0.59, 0.008, 8, 96]} />
+      <meshStandardMaterial color="#d9ad5c" metalness={0.76} roughness={0.28} />
+    </mesh>
     <mesh position={[0, 0, 0.08]}>
+      <planeGeometry args={[1.13, 1.13]} />
+      <meshBasicMaterial map={symbolTexture} transparent depthWrite={false} />
+    </mesh>
+    <mesh position={[0, 0, -0.08]} rotation={[0, Math.PI, 0]}>
       <planeGeometry args={[1.13, 1.13]} />
       <meshBasicMaterial map={symbolTexture} transparent depthWrite={false} />
     </mesh>
@@ -103,34 +118,77 @@ function attachAsciiEffect(effect: AsciiEffect, gl: WebGLRenderer, fgColor: stri
   }
 }
 
-function ThrottledAsciiRenderer({
+function DemandFrameTicker({ fps = 24 }: { fps?: number }) {
+  const invalidate = useThree((state) => state.invalidate)
+  const gl = useThree((state) => state.gl)
+
+  useEffect(() => {
+    let timer: number | undefined
+    let stopped = false
+    let inView = true
+
+    const stop = () => {
+      if (timer !== undefined) window.clearTimeout(timer)
+      timer = undefined
+    }
+
+    const tick = () => {
+      stop()
+      if (stopped || document.hidden || !inView) return
+      invalidate()
+      timer = window.setTimeout(tick, 1000 / fps)
+    }
+
+    const observer = typeof IntersectionObserver === 'undefined'
+      ? undefined
+      : new IntersectionObserver(([entry]) => {
+          inView = entry.isIntersecting
+          if (inView) tick()
+          else stop()
+        })
+
+    observer?.observe(gl.domElement)
+
+    const onVisibilityChange = () => {
+      if (document.hidden) stop()
+      else tick()
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    tick()
+
+    return () => {
+      stopped = true
+      stop()
+      observer?.disconnect()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [fps, gl, invalidate])
+
+  return null
+}
+
+function AsciiRenderer({
   resolution,
   characters,
   fgColor,
   bgColor,
   invert,
-  maxFps = 24,
 }: {
   resolution: number
   characters: string
   fgColor: string
   bgColor: string
   invert: boolean
-  maxFps?: number
 }) {
   const { size, gl, scene, camera } = useThree()
   const effect = useMemo(() => new AsciiEffect(gl, characters, { invert, color: false, resolution }), [characters, gl, invert, resolution])
-  const frameInterval = 1 / maxFps
-  const elapsed = useRef(frameInterval)
 
   useLayoutEffect(() => attachAsciiEffect(effect, gl, fgColor, bgColor), [bgColor, effect, fgColor, gl])
 
   useEffect(() => effect.setSize(size.width, size.height), [effect, size.height, size.width])
 
-  useFrame((_, delta) => {
-    elapsed.current += delta
-    if (elapsed.current < frameInterval) return
-    elapsed.current %= frameInterval
+  useFrame(() => {
     effect.render(scene, camera)
   }, 1)
 
@@ -165,7 +223,6 @@ export default function AsciiModelViewer({
   showLoadingOverlay = true,
 }: AsciiModelViewerProps) {
   const finalScale = baseScale * userScale
-  const reduceMotion = useReducedMotion()
   const [canvasReady, setCanvasReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState(0)
@@ -183,6 +240,7 @@ export default function AsciiModelViewer({
 
   return <div className={`ascii-viewer ${className}`}>
     <Canvas
+      frameloop="demand"
       camera={{ position: [0, 0, 3.25], fov: 43 }}
       dpr={[1, 1.25]}
       gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
@@ -193,8 +251,9 @@ export default function AsciiModelViewer({
       <directionalLight position={[3, 4, 5]} intensity={3.2} color="#fff0cf" />
       <pointLight position={[-3, -2, 3]} intensity={2.6} color="#a98aff" />
       <pointLight position={[2, 1, -3]} intensity={2} color="#68dff0" />
-      <BitcoinCoin scale={finalScale} rotation={[0, 0, 0]} position={position} reduced={!!reduceMotion} speed={autoRotateSpeed} />
-      <ThrottledAsciiRenderer
+      <DemandFrameTicker fps={24} />
+      <BitcoinCoin scale={finalScale} rotation={[0, 0, 0]} position={position} speed={autoRotateSpeed} />
+      <AsciiRenderer
         resolution={resolution}
         characters={characters}
         fgColor={fgColor}
