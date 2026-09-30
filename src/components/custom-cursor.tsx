@@ -24,11 +24,9 @@ export function CustomCursor() {
 
   useEffect(() => {
     if (!enabled) {
-      document.documentElement.classList.remove('has-custom-cursor')
       return
     }
 
-    document.documentElement.classList.add('has-custom-cursor')
     const move = (event: PointerEvent) => {
       pointerX.set(event.clientX)
       pointerY.set(event.clientY)
@@ -49,7 +47,6 @@ export function CustomCursor() {
     window.addEventListener('pointerup', up, { passive: true })
     document.addEventListener('pointerleave', leave)
     return () => {
-      document.documentElement.classList.remove('has-custom-cursor')
       window.removeEventListener('pointermove', move)
       document.removeEventListener('pointerover', over)
       window.removeEventListener('pointerdown', down)
