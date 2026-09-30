@@ -1,5 +1,3 @@
-import type { Lesson } from './course'
-
 export type AudioWord = { start: number; end: number; charStart: number; charEnd: number }
 export type NarrationTrack = {
   src: string
@@ -9,9 +7,6 @@ export type NarrationTrack = {
   duration: number
   voice: string
 }
-
-export const lessonTranscript = (lesson: Pick<Lesson, 'title' | 'content' | 'takeaway'>) =>
-  [lesson.title + '.', ...lesson.content, 'Para guardar: ' + lesson.takeaway].join('\n\n')
 
 export const welcomeScript = {
   id: 'welcome',

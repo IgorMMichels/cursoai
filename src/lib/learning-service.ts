@@ -1,8 +1,32 @@
 import { supabase } from '@/lib/supabase'
+import type { NarrationTrack } from '@/lib/narration-script'
 
 function client() {
   if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
   return supabase
+}
+
+export type ProtectedLessonContent = {
+  paragraphs: string[]
+  takeaway: string
+  sources: { label: string; url: string }[]
+  exercise: { title: string; prompt: string; options: string[]; note: string }
+  narration: NarrationTrack
+}
+
+export async function loadLessonContent(lessonId: string): Promise<ProtectedLessonContent> {
+  const { data, error } = await client().from('lesson_content').select('content').eq('lesson_id', lessonId).single()
+  if (error) throw error
+  return data.content as ProtectedLessonContent
+}
+
+export async function verifyLessonExercise(lessonId: string, answerIndex: number) {
+  const { data, error } = await client().rpc('verify_lesson_exercise', {
+    p_lesson_id: lessonId,
+    p_answer_index: answerIndex,
+  })
+  if (error) throw error
+  return data as boolean
 }
 
 export type QuizAttempt = {
