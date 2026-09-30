@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 const avatarBucket = 'profile-avatars'
 
 export type ProfileFields = {
+  username: string
   displayName: string
   bio: string
   location: string
@@ -28,13 +29,14 @@ export async function getCloudProfile(userId: string): Promise<ProfileFields | n
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('display_name, bio, location, avatar_path')
+    .select('username, display_name, bio, location, avatar_path')
     .eq('id', userId)
     .maybeSingle()
   if (error) throw error
   if (!data) return null
 
   return {
+    username: data.username,
     displayName: data.display_name,
     bio: data.bio,
     location: data.location,
@@ -58,7 +60,7 @@ export async function saveCloudProfile(
 
   const { data: current, error: currentError } = await supabase
     .from('profiles')
-    .select('avatar_path')
+    .select('username, avatar_path')
     .eq('id', userId)
     .maybeSingle()
   if (currentError) throw currentError
@@ -88,7 +90,7 @@ export async function saveCloudProfile(
       .from('profiles')
       .update({ display_name: input.displayName, bio: input.bio, location: input.location, avatar_path: avatarPath })
       .eq('id', userId)
-      .select('display_name, bio, location, avatar_path')
+      .select('username, display_name, bio, location, avatar_path')
       .single()
     if (error) throw error
     profileSaved = true
@@ -100,6 +102,7 @@ export async function saveCloudProfile(
     return {
       synced: true,
       profile: {
+        username: data.username,
         displayName: data.display_name,
         bio: data.bio,
         location: data.location,

@@ -1,6 +1,8 @@
 import type { Currency } from '@/lib/offers'
 import { supabase } from '@/lib/supabase'
 
+export const isValidAffiliateHandle = (handle: string) => /^[a-z][a-z0-9_-]{2,23}$/.test(handle)
+
 export type AffiliateEvent = { id: string; type: 'click' | 'signup' | 'sale'; at: string; code: string; detail?: string; value?: number; currency?: Currency }
 export type AffiliateOrder = { id: string; at: string; plan: string; currency: Currency; amount: number; status: string; code?: string }
 export type Commission = { id: string; amount: number; currency: Currency; status: string; createdAt: string }
@@ -9,6 +11,12 @@ export type Payout = { id: string; amount: number; currency: Currency; status: s
 function client() {
   if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
   return supabase
+}
+
+export async function isAffiliateHandleAvailable(handle: string) {
+  const { data, error } = await client().rpc('is_affiliate_username_available', { p_username: handle })
+  if (error) throw error
+  return data === true
 }
 
 export async function recordReferralClick(code: string, visitorId: string, sourcePath: string) {

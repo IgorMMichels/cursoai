@@ -4,42 +4,32 @@ import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, LockKeyhole, Plus, Shield, Sparkles } from 'lucide-react'
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { WalletGuideSection } from '@/components/wallet-guides'
+import { CourseOutline } from '@/components/course-outline'
+import { allLessons, modules } from '@/lib/course'
+import '@/styles/landing.css'
 
 const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
 
-const topics = [
-  { title: 'Entenda o terreno', text: 'Blockchain, ativos e autocustódia.', number: '01', color: 'mint' },
-  { title: 'Faça o básico bem feito', text: 'Exchanges, ordens e transferências.', number: '02', color: 'blue' },
-  { title: 'Compre Bitcoin com clareza', text: 'Spot, ETF, P2P, taxas e custódia.', number: '03', color: 'lilac' },
-  { title: 'Leia além do ticker', text: 'Teses, oferta, liquidez e evidências.', number: '04', color: 'blue' },
-  { title: 'Defina o risco antes da entrada', text: 'Orçamento, cenários e estratégia.', number: '05', color: 'amber' },
-  { title: 'Proteja o acesso', text: 'Golpes, permissões e resposta.', number: '06', color: 'mint' },
-  { title: 'Explore sem confundir retorno e segurança', text: 'DeFi, staking e registros fiscais.', number: '07', color: 'blue' },
-  { title: 'Entenda futuros e alavancagem', text: 'Long, short, margem e leitura de padrões.', number: '08', color: 'amber' },
-  { title: 'Transforme estudo em processo', text: 'Rotina, critérios e próximos passos.', number: '09', color: 'lilac' },
-]
-
-const topicGlow = { mint: 'green', blue: 'blue', lilac: 'purple', amber: 'orange' } as const
 const heroContentReveal: Variants = {
-  hidden: { opacity: 0, y: 38, scale: 0.97, rotateX: 3 },
-  visible: { opacity: 1, y: 0, scale: 1, rotateX: 0, transition: { type: 'spring', stiffness: 82, damping: 17, delay: 0.12, staggerChildren: 0.1 } },
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut', delay: 0.08, staggerChildren: 0.08 } },
 }
 const heroItemReveal: Variants = {
-  hidden: { opacity: 0, y: 17 },
-  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 150, damping: 18 } },
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 }
 const sectionReveal: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.06 } },
 }
 const cardReveal: Variants = {
-  hidden: { opacity: 0, y: 34, scale: 0.94, rotateX: -7 },
-  visible: { opacity: 1, y: 0, scale: 1, rotateX: 0, transition: { type: 'spring', stiffness: 125, damping: 17, mass: 0.8 } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } },
 }
 const methodSteps = [
   { number: '01', title: 'Entenda a tese', detail: 'Que problema existe e que evidência sustenta a ideia?' },
@@ -61,13 +51,13 @@ export function LandingPage() {
         <div className="hero-grid absolute inset-0 -z-10 opacity-75" />
         <div className="absolute -left-40 top-20 -z-10 size-[450px] rounded-full bg-[#a78bfa]/[.055] blur-[120px]" />
         <div className="page-shell grid min-h-[650px] items-center gap-10 pb-16 pt-14 lg:grid-cols-[1.08fr_.92fr] lg:pb-20 lg:pt-20">
-          <motion.div className="relative z-10" variants={heroContentReveal} initial="hidden" animate="visible" style={{ transformPerspective: 1100 }}>
-            <motion.p variants={heroItemReveal} className="eyebrow mb-6">formação em criptoativos · Cripto do Zero</motion.p>
-            <motion.h1 variants={heroItemReveal} className="display-xl max-w-[740px] text-[#edf4ef]">Cripto do zero. Entenda o mercado. Invista com critério.</motion.h1>
+          <motion.div className="relative z-10" variants={heroContentReveal} initial="hidden" animate="visible">
+            <motion.p variants={heroItemReveal} className="mb-6 text-sm text-[#a3a5ae]">Cripto do Zero · Curso online</motion.p>
+            <motion.h1 variants={heroItemReveal} className="landing-hero-title text-[#edf4ef]">Entenda cripto.<span>Decida com critério.</span></motion.h1>
             <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[590px]">De Bitcoin e Ethereum a carteiras, DeFi e futuros: aprenda a comprar, analisar projetos e dimensionar riscos com aulas narradas e exercícios interativos. Sem promessa de lucro.</motion.p>
             <motion.div variants={heroItemReveal} className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/login" className="button-motion focus-ring inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-6 text-sm font-semibold text-[#100c19] shadow-[0_0_36px_rgba(152,120,255,.2)] transition-all hover:-translate-y-0.5 hover:bg-[#c6b4ff]">Começar minha trilha <ArrowUpRight size={16} /></Link>
-              <a href="#jornada" className="button-motion inline-flex h-12 items-center gap-2 rounded-full border border-white/[.1] px-5 text-sm text-[#c1cdc5] transition-colors hover:border-white/20 hover:bg-white/[.03]">Conhecer a trilha <ArrowDown size={15} /></a>
+              <Link to="/login" className="button-motion focus-ring inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white">Criar minha conta <ArrowUpRight size={16} /></Link>
+              <a href="#jornada" className="button-motion inline-flex h-12 items-center gap-2 rounded-xl border border-white/[.15] px-5 text-sm text-[#c1c2cb] transition-colors hover:border-white/30 hover:bg-white/[.03]">Ver conteúdo do curso <ArrowDown size={15} /></a>
             </motion.div>
             <motion.div variants={heroItemReveal} className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-[11px] text-[#8ca096]"><span className="flex items-center gap-2"><AudioLines size={14} className="text-[#a78bfa]" />áudios incluídos</span><span className="flex items-center gap-2"><BookOpen size={14} className="text-[#98abff]" />quizzes explicados</span><span className="flex items-center gap-2"><Shield size={14} className="text-[#e4bc76]" />foco em segurança</span></motion.div>
           </motion.div>
@@ -114,8 +104,8 @@ export function LandingPage() {
             <p className="max-w-md text-sm leading-relaxed text-[#92959e]">Bitcoin é ponto de partida. A trilha também cobre Ethereum, custódia, DeFi e futuros, com atenção ao risco de cada tema.</p>
           </div>
 
-          <motion.div className="landing-overview-bento mt-10" variants={sectionReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.12 }} style={{ perspective: 1200 }}>
-            <motion.article variants={cardReveal} whileHover={{ y: -8, scale: 1.025, rotateX: -2, rotateY: 1.5 }} whileTap={{ scale: 0.985 }} className="market-bento-card market-bento-assets">
+          <motion.div className="landing-overview-bento mt-10" variants={sectionReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.12 }}>
+            <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-assets">
               <div className="market-bento-topline"><span>ESCOPO DO CURSO</span><BookOpen size={15} /></div>
               <div className="market-asset-orbit" aria-label="Bitcoin, Ethereum, DeFi e futuros">
                 <span className="market-asset-chip market-asset-btc">₿ <small>BITCOIN</small></span>
@@ -127,13 +117,13 @@ export function LandingPage() {
               <div className="market-bento-copy"><h3>Cripto além de um ativo.</h3><p>Entenda redes, custódia, protocolos e formas diferentes de exposição.</p></div>
             </motion.article>
 
-            <motion.article variants={cardReveal} whileHover={{ y: -8, scale: 1.025, rotateX: -2, rotateY: 1.5 }} whileTap={{ scale: 0.985 }} className="market-bento-card market-bento-security">
+            <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-security">
               <div className="market-bento-topline"><span>SEGURANÇA</span><KeyRound size={15} /></div>
               <div className="market-security-orbit"><i /><i /><span><FingerprintPattern size={36} strokeWidth={1.35} /></span></div>
               <div className="market-bento-copy"><h3>Proteção começa nas chaves.</h3><p>Autocustódia, permissões e golpes explicados com passos práticos.</p></div>
             </motion.article>
 
-            <motion.article variants={cardReveal} whileHover={{ y: -8, scale: 1.025, rotateX: -2, rotateY: 1.5 }} whileTap={{ scale: 0.985 }} className="market-bento-card market-bento-scenarios">
+            <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-scenarios">
               <div className="market-bento-topline"><span>CENÁRIO DIDÁTICO</span><Activity size={15} /></div>
               <svg className="market-scenario-chart" viewBox="0 0 300 92" role="img" aria-labelledby="landing-scenario-title landing-scenario-desc">
                 <title id="landing-scenario-title">Ilustração de oscilações de mercado</title><desc id="landing-scenario-desc">Traçado esquemático sem dados de preço ou previsão de desempenho.</desc>
@@ -144,7 +134,7 @@ export function LandingPage() {
               <div className="market-bento-copy"><h3>Movimento não é sinal.</h3><p>Compare cenários e exposição. O gráfico é didático, não uma cotação.</p></div>
             </motion.article>
 
-            <motion.article variants={cardReveal} whileHover={{ y: -8, scale: 1.025, rotateX: -2, rotateY: 1.5 }} whileTap={{ scale: 0.985 }} className="market-bento-card market-bento-markets">
+            <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-markets">
               <div className="market-bento-topline"><span>FORMAS DE EXPOSIÇÃO</span><ArrowRight size={15} /></div>
               <div className="market-exposure-compare">
                 <div><span>SPOT</span><strong>Ativo</strong><small>Compra · rede · custódia</small></div>
@@ -153,7 +143,7 @@ export function LandingPage() {
               <p className="market-exposure-note"><Shield size={14} /> Margem pode ampliar perdas quando o mercado anda contra a posição.</p>
             </motion.article>
 
-            <motion.article variants={cardReveal} whileHover={{ y: -8, scale: 1.025, rotateX: -2, rotateY: 1.5 }} whileTap={{ scale: 0.985 }} className="market-bento-card market-bento-questions">
+            <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-questions">
               <div className="market-bento-topline"><span>PROCESSO DE ANÁLISE</span><FingerprintPattern size={15} /></div>
               <h3>Antes do ticker, três perguntas.</h3>
               <ul className="market-review-list">
@@ -166,10 +156,20 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section id="jornada" className="scroll-mt-24 border-y border-white/[.055] bg-[#0f1017] py-20 sm:py-24">
-        <div className="page-shell"><div className="flex flex-col justify-between gap-4 md:flex-row md:items-end"><div><p className="eyebrow">a jornada</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Do vocabulário básico a um processo próprio.</h2></div><p className="max-w-sm text-sm leading-relaxed text-[#8da096]">Cada etapa prepara a próxima. Avance em ordem ou volte ao assunto que precisa de mais tempo.</p></div>
-          <motion.div className="module-grid landing-modules-bento mt-11" variants={sectionReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.08 }} style={{ perspective: 1200 }}>{topics.map((topic) => <motion.div key={topic.number} variants={cardReveal} className="h-full" whileHover={{ y: -5, scale: 1.012 }}><GlowCard glowColor={topicGlow[topic.color as keyof typeof topicGlow]} customSize className="module-glow-card"><Link to="/login" className={`module-card module-${topic.color} group`}><span className="module-card-index">MÓDULO {topic.number}</span><span className="module-card-rule" /><h3>{topic.title}</h3><p>{topic.text}</p><span className="module-card-link">Explorar conteúdo <ArrowRight size={13} /></span></Link></GlowCard></motion.div>)}</motion.div>
-          <div className="mt-5 flex flex-col gap-3 rounded-xl border border-white/[.07] bg-[#12131b] p-5 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-lg bg-violet-200/[.08] text-violet-200"><LockKeyhole size={16} /></div><p className="text-xs leading-relaxed text-[#aaa6b2]">No fim, você monta seu próprio plano de estudo e segurança. O próximo passo pode ser não investir.</p></div><a href="#planos" className="flex shrink-0 items-center gap-1 text-xs font-medium text-violet-200 hover:text-white">Ver os planos <ArrowRight size={14} /></a></div>
+      <section id="jornada" className="landing-curriculum scroll-mt-24" aria-labelledby="curriculum-title">
+        <div className="page-shell curriculum-layout">
+          <div className="curriculum-intro">
+            <p className="eyebrow">O que você vai aprender</p>
+            <h2 id="curriculum-title">Da primeira pergunta ao seu próprio processo.</h2>
+            <p>Veja as aulas de cada módulo. Comece pelos fundamentos e avance no seu ritmo.</p>
+            <dl className="curriculum-facts">
+              <div><dt>módulos</dt><dd>{modules.length}</dd></div>
+              <div><dt>aulas narradas</dt><dd>{allLessons.length}</dd></div>
+            </dl>
+            <p className="curriculum-note">Ao final, você organiza um plano de estudo e segurança. Nenhuma atividade exige comprar cripto.</p>
+            <a href="#planos" className="curriculum-action">Comparar planos <ArrowRight size={16} /></a>
+          </div>
+          <CourseOutline />
         </div>
       </section>
 
@@ -181,9 +181,9 @@ export function LandingPage() {
             <p className="max-w-md text-sm leading-relaxed text-[#8da096]">Exercícios com cenários fictícios ajudam a transformar conceitos em decisões mais cuidadosas. Nenhum exige comprar cripto.</p>
           </div>
           <div className="practice-bento mt-10">
-            <PracticeCard to="/curso/aula/m3/m3l1" icon={<BookOpen size={18} />} number="LAB 01" title="Investigue uma tese" copy="Compare um projeto fictício por utilidade, oferta, liquidez e evidências." tone="mint" />
-            <PracticeCard to="/curso/aula/m4/m4l1" icon={<Activity size={18} />} number="LAB 02" title="Simule uma queda" copy="Veja como oscilações hipotéticas alteram um saldo definido por você." tone="blue" />
-            <PracticeCard to="/curso/seguranca" icon={<Shield size={18} />} number="LAB 03" title="Revise sua proteção" copy="Confira acesso, permissões, cópias de segurança e resposta a incidentes." tone="amber" />
+            <PracticeCard to="/curso/aula/m3/m3l1" icon={<BookOpen size={18} />} number="ANÁLISE" title="Investigue uma tese" copy="Compare um projeto fictício por utilidade, oferta, liquidez e evidências." tone="mint" />
+            <PracticeCard to="/curso/aula/m4/m4l1" icon={<Activity size={18} />} number="RISCO" title="Simule uma queda" copy="Veja como oscilações hipotéticas alteram um saldo definido por você." tone="blue" />
+            <PracticeCard to="/curso/seguranca" icon={<Shield size={18} />} number="SEGURANÇA" title="Revise sua proteção" copy="Confira acesso, permissões, cópias de segurança e resposta a incidentes." tone="amber" />
           </div>
         </div>
       </section>
@@ -201,7 +201,7 @@ export function LandingPage() {
               const plan = plans[id]
               return <div key={id} className={`interactive-card pricing-card relative flex flex-col rounded-xl border p-6 ${plan.featured ? 'border-[#a78bfa]/35 bg-[linear-gradient(155deg,rgba(167,139,250,.105),rgba(20,17,30,.96)_48%)] shadow-[0_22px_70px_rgba(0,0,0,.22)] ' : 'border-white/[.08] bg-[#14151d]'}`}>
                 {plan.featured && <span className="mb-3 inline-flex w-fit rounded-xl bg-[#a78bfa] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.12em] text-[#09090d]">melhor valor</span>}
-                <div className="flex items-start justify-between gap-2"><div><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e8f0ea]">{plan.name}</p><p className="mt-1 text-xs text-[#82958a]">{plan.term}</p></div>{plan.featured && <Sparkles size={17} className="mt-1 text-[#a78bfa]" />}</div>
+                <div className="flex items-start justify-between gap-2"><div><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e8f0ea]">{plan.name}</p><p className="mt-1 text-xs text-[#82958a]">{plan.term}</p></div></div>
                 <div className="mt-6"><p className="font-display text-[34px] font-medium tracking-[-.065em] text-[#f0f5f1]">{plan.prices[currency]}<span className="ml-2 font-sans text-xs font-normal tracking-normal text-[#778b80]">{currency === 'BRL' ? 'à vista' : 'pagamento em SOL'}</span></p><p className="mt-1 text-[11px] font-medium text-[#bca9e8]">ou {currency === 'SOL' ? plan.prices.BRL : plan.prices.SOL}</p></div>
                 <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#93a69b]">{plan.description}</p>
                 <div className="my-5 h-px bg-white/[.08]" />
@@ -232,7 +232,7 @@ export function LandingPage() {
 
 function HeroVisual() {
   const entryActive = usePlatformEntryActive()
-  return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 46, scale: 0.9, rotateY: -9 }} animate={{ opacity: 1, y: 0, scale: 1, rotateY: 0 }} transition={{ type: 'spring', stiffness: 68, damping: 15, delay: 0.25 }} style={{ transformPerspective: 1200 }}>
+  return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
         {!entryActive && <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
@@ -251,7 +251,7 @@ function HeroVisual() {
 function AsciiHeroLoading() {
   return <div className="ascii-loader" role="status" aria-live="polite">
     <div className="ascii-loader-mark"><span>₿</span><i /><i /><i /></div>
-    <p>INICIANDO NÚCLEO 3D</p>
+    <p>CARREGANDO VISUALIZAÇÃO</p>
     <div className="ascii-loader-track"><span /></div>
   </div>
 }

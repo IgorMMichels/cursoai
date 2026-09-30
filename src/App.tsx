@@ -1,10 +1,9 @@
 import { lazy, Suspense, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { SessionProvider } from '@/contexts/session-context'
 import { RequireCourseAccess, RequireRole } from '@/components/guards'
 import { ReferralTracker, PlatformEntryAnimation } from '@/components/app-utilities'
-import { CustomCursor } from '@/components/custom-cursor'
 import { PlatformEntryContext, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
 
 const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => ({ default: module.LandingPage })))
@@ -21,12 +20,16 @@ const AffiliateEnrollmentPage = lazy(() => import('@/pages/affiliate-enrollment-
 const NotFoundPage = lazy(() => import('@/pages/not-found-page').then((module) => ({ default: module.NotFoundPage })))
 const CourseLayout = lazy(() => import('@/components/course-layout').then((module) => ({ default: module.CourseLayout })))
 
+function AffiliateReferralRedirect() {
+  const { affiliateId = '' } = useParams()
+  return <Navigate to={`/landing?ref=${encodeURIComponent(affiliateId.toLowerCase())}`} replace />
+}
+
 function AppRoutes() {
   const location = useLocation()
   const [entryVisible, setEntryVisible] = useState(false)
   const entryActive = shouldShowPlatformEntry(location.pathname) || entryVisible
   return <PlatformEntryContext.Provider value={entryActive}>
-    <CustomCursor />
     <ReferralTracker />
     <PlatformEntryAnimation onVisibilityChange={setEntryVisible} />
     <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><div key={location.pathname} className="route-enter"><Routes location={location}>
@@ -34,6 +37,7 @@ function AppRoutes() {
       <Route path="/quiz" element={<Navigate to="/landing" replace />} />
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/:affiliateId" element={<AffiliateReferralRedirect />} />
       <Route element={<RequireRole role="student" />}>
         <Route path="/afiliar" element={<AffiliateEnrollmentPage />} />
         <Route path="/acesso" element={<CourseLayout />}><Route index element={<CourseAccessPage />} /></Route>
@@ -55,6 +59,6 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <MotionConfig reducedMotion="never"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
+  return <MotionConfig reducedMotion="user"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
 }
 

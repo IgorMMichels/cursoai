@@ -7,7 +7,7 @@ export function RequireRole({ role }: { role: UserRole }) {
   const location = useLocation()
   if (loading) return <div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]" role="status">Verificando sua sessão…</div>
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
-  if (user.role !== role) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'affiliate' ? '/afiliado' : '/curso'} replace />
+  if (!(user.roles ?? [user.role]).includes(role)) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'affiliate' ? '/afiliado' : '/curso'} replace />
   return <Outlet />
 }
 

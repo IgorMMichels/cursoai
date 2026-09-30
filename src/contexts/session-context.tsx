@@ -8,12 +8,14 @@ import { getReferralCode, type UserRole } from '@/lib/storage'
 
 export type AppSession = {
   id: string
+  username: string
   name: string
   email: string
   bio: string
   location: string
   avatarUrl?: string
   role: UserRole
+  roles: UserRole[]
   plan: PlanId | null
   planStartedAt: string
   expiresAt?: string
@@ -27,7 +29,7 @@ type SessionContextValue = {
   authError: string | null
   completedLessons: string[]
   signInWithPassword: (email: string, password: string) => Promise<AppSession>
-  signUpWithPassword: (name: string, email: string, password: string) => Promise<boolean>
+  signUpWithPassword: (name: string, username: string, email: string, password: string) => Promise<AppSession | null>
   joinAffiliateProgram: () => Promise<string>
   sendPasswordReset: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -47,6 +49,10 @@ function mapRole(roles: string[]): UserRole {
   if (roles.includes('admin')) return 'admin'
   if (roles.includes('affiliate')) return 'affiliate'
   return 'student'
+}
+
+function mapRoles(roles: string[]): UserRole[] {
+  return roles.filter((role): role is UserRole => role === 'student' || role === 'admin' || role === 'affiliate')
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -71,7 +77,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         ])
         if (rolesResult.error) throw rolesResult.error
         if (subscriptionsResult.error) throw subscriptionsResult.error
-        const role = mapRole((rolesResult.data ?? []).map((entry) => entry.role))
+        const roles = mapRoles((rolesResult.data ?? []).map((entry) => entry.role))
+        if (roles.length === 0) roles.push('student')
+        const role = mapRole(roles)
         const affiliateProfile = role === 'affiliate'
           ? await supabase.from('affiliate_profiles').select('referral_code').eq('user_id', authUser.id).maybeSingle()
           : null
@@ -86,12 +94,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           : null
         const session: AppSession = {
           id: authUser.id,
+          username: profile?.username ?? (typeof authUser.user_metadata?.username === 'string' ? authUser.user_metadata.username : ''),
           name: profile?.displayName?.trim() || (typeof authUser.user_metadata?.name === 'string' ? authUser.user_metadata.name.trim() : '') || authUser.email?.split('@')[0] || 'Aluno',
           email: authUser.email ?? '',
           bio: profile?.bio ?? '',
           location: profile?.location ?? '',
           avatarUrl: profile?.avatarUrl,
           role,
+          roles,
           plan: activePlan,
           planStartedAt: subscription?.starts_at ?? '',
           expiresAt: subscription?.expires_at ?? undefined,
@@ -164,22 +174,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return syncSupabaseUser(data.user)
   }, [syncSupabaseUser])
 
-  const signUpWithPassword = useCallback(async (name: string, email: string, password: string) => {
+  const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string) => {
     if (!supabase) throw new Error('Autenticação indisponível. Configure as variáveis do Supabase.')
     const referralCode = getReferralCode()
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { name: name.trim(), ...(referralCode ? { referral_code: referralCode } : {}) },
+        data: { name: name.trim(), username, ...(referralCode ? { referral_code: referralCode } : {}) },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     })
     if (error) throw error
     setAuthError(null)
-    if (!data.session || !data.user) return false
-    await syncSupabaseUser(data.user)
-    return true
+    if (!data.session || !data.user) return null
+    return syncSupabaseUser(data.user)
   }, [syncSupabaseUser])
 
   const joinAffiliateProgram = useCallback(async () => {
