@@ -4,8 +4,8 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { Brand } from '@/components/brand'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
-import type { DemoSession } from '@/lib/storage'
-import { getPendingOrder, rememberReferral } from '@/lib/storage'
+import { rememberReferral } from '@/lib/storage'
+import type { AppSession } from '@/contexts/session-context'
 
 type LoginMode = 'signin' | 'signup' | 'reset' | 'recovery'
 
@@ -19,7 +19,6 @@ export function LoginPage() {
     loading,
     authConfigured,
     authError,
-    signInDemo,
     signInWithPassword,
     signUpWithPassword,
     sendPasswordReset,
@@ -28,11 +27,10 @@ export function LoginPage() {
   const [search] = useSearchParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const pending = getPendingOrder()
   const queryPlan = search.get('plano') as PlanId | null
   const currencyParam = search.get('moeda') as Currency | null
-  const chosenPlan = pending?.plan ?? (queryPlan && queryPlan in plans ? queryPlan : undefined)
-  const chosenCurrency = pending?.currency ?? (currencyParam === 'SOL' || currencyParam === 'BRL' ? currencyParam : 'BRL')
+  const chosenPlan = queryPlan && queryPlan in plans ? queryPlan : undefined
+  const chosenCurrency = currencyParam === 'SOL' || currencyParam === 'BRL' ? currencyParam : 'BRL'
   const referralParam = search.get('ref')?.trim()
   const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : 'signin')
   const [name, setName] = useState('')
@@ -56,7 +54,7 @@ export function LoginPage() {
     navigate(destination, { replace: true })
   }, [user, mode, location.state, navigate])
 
-  const goToSession = (session: DemoSession) => {
+  const goToSession = (session: AppSession) => {
     const requestedPath = location.state?.from
     const destination = requestedPath && session.role === 'student' && typeof requestedPath === 'string'
       ? requestedPath
@@ -89,13 +87,8 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       if (mode === 'signin') {
-        if (!authConfigured) {
-          const session = signInDemo('student', name || undefined)
-          goToSession(session)
-        } else {
-          const session = await signInWithPassword(email, password)
-          goToSession(session)
-        }
+        const session = await signInWithPassword(email, password)
+        goToSession(session)
       } else if (mode === 'signup') {
         const signedIn = await signUpWithPassword(name, email, password)
         if (signedIn) navigate('/acesso', { replace: true })
@@ -121,9 +114,7 @@ export function LoginPage() {
       ? 'Enviaremos um link seguro se houver conta para esse e-mail.'
       : mode === 'recovery'
         ? 'Escolha uma senha nova para proteger sua conta.'
-        : authConfigured
-          ? 'Acesse com seu e-mail e senha. Nenhuma conta externa necessária.'
-          : 'Explore a demonstração local enquanto autenticação por e-mail não está configurada.'
+        : 'Acesse com seu e-mail e senha.'
 
   return <div className="min-h-screen bg-[#09090d] text-[#e6eee9] lg:grid lg:grid-cols-[1fr_.8fr]">
     <section className="relative hidden overflow-hidden border-r border-white/[.06] bg-[#0d0e14] lg:flex lg:flex-col lg:justify-between lg:p-10 xl:p-14">
@@ -137,30 +128,27 @@ export function LoginPage() {
         <Link to="/landing" className="mb-9 hidden items-center gap-2 text-xs text-[#8a9d92] hover:text-white lg:inline-flex"><ArrowLeft size={14} />Voltar para a apresentação</Link>
         <div className="mb-7"><div className="mb-5 grid size-11 place-items-center rounded-lg border border-[#a78bfa]/20 bg-[#a78bfa]/[.08] text-[#a78bfa]"><BadgeCheck size={20} /></div><p className="eyebrow">acesso à plataforma</p><h2 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#e9f1eb]">{title}</h2><p className="mt-2 text-sm leading-relaxed text-[#8fa197]">{description}</p></div>
 
-        {chosenPlan && <div className="mb-6 rounded-xl border border-[#a78bfa]/18 bg-[#a78bfa]/[.055] p-4"><p className="text-[10px] font-semibold uppercase tracking-[.13em] text-[#c1acff]">pedido de demonstração selecionado</p><div className="mt-2 flex items-start justify-between gap-4"><p className="pt-1 font-display text-lg font-medium text-[#e6efe8]">Plano {plans[chosenPlan].name}</p><div className="text-right"><span className="rounded-full border border-[#a78bfa]/20 px-2.5 py-1 text-xs font-medium text-[#d2c4ff]">{plans[chosenPlan].prices[chosenCurrency]}</span><p className="mt-2 text-[10px] font-medium text-[#bca9e8]">ou {chosenCurrency === 'SOL' ? plans[chosenPlan].prices.BRL : plans[chosenPlan].prices.SOL}</p></div></div><p className="mt-1 text-[10px] leading-relaxed text-[#879b90]">Nenhum pagamento será cobrado. O acesso e a comissão serão marcados como demonstração.</p></div>}
+        {chosenPlan && <div className="mb-6 rounded-xl border border-[#e4bc76]/18 bg-[#e4bc76]/[.045] p-4"><p className="text-[10px] font-semibold uppercase tracking-[.13em] text-[#e4bc76]">Plano selecionado</p><div className="mt-2 flex items-start justify-between gap-4"><p className="pt-1 font-display text-lg font-medium text-[#e6efe8]">Plano {plans[chosenPlan].name}</p><div className="text-right"><span className="rounded-full border border-white/[.1] px-2.5 py-1 text-xs font-medium text-[#d2c4ff]">{plans[chosenPlan].prices[chosenCurrency]}</span><p className="mt-2 text-[10px] font-medium text-[#bca9e8]">ou {chosenCurrency === 'SOL' ? plans[chosenPlan].prices.BRL : plans[chosenPlan].prices.SOL}</p></div></div><p className="mt-1 text-[10px] leading-relaxed text-[#b7a77e]">Checkout ainda não está disponível; nenhum pagamento será processado por esta tela.</p></div>}
 
         {authConfigured && mode !== 'recovery' && <div className="mb-5 grid grid-cols-2 rounded-xl border border-white/[.08] bg-[#12121a] p-1 text-xs">
           <button type="button" onClick={() => setFormMode('signin')} className={`rounded-lg px-3 py-2.5 transition-colors ${mode === 'signin' || mode === 'reset' ? 'bg-[#211f2b] text-white' : 'text-[#82968a] hover:text-white'}`}>Entrar</button>
           <button type="button" onClick={() => setFormMode('signup')} className={`rounded-lg px-3 py-2.5 transition-colors ${mode === 'signup' ? 'bg-[#211f2b] text-white' : 'text-[#82968a] hover:text-white'}`}>Criar conta</button>
         </div>}
 
-        {mode === 'recovery' && loading ? <div className="rounded-xl border border-white/[.08] bg-[#12121a] p-4 text-sm text-[#8fa197]" role="status">Validando link de recuperação…</div> : mode === 'recovery' && !user ? <div className="rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]" role="alert">Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.</div> : <form onSubmit={submit} className="space-y-4">
+        {!authConfigured ? <div className="rounded-xl border border-[#e4bc76]/15 bg-[#e4bc76]/[.035] p-4"><p className="text-xs font-medium text-[#e8d4a7]">Conexão Supabase indisponível</p><p className="mt-1.5 text-[10px] leading-relaxed text-[#a39471]">Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY para habilitar login e criação de conta.</p></div> : mode === 'recovery' && loading ? <div className="rounded-xl border border-white/[.08] bg-[#12121a] p-4 text-sm text-[#8fa197]" role="status">Validando link de recuperação…</div> : mode === 'recovery' && !user ? <div className="rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]" role="alert">Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.</div> : <form onSubmit={submit} className="space-y-4">
           {authConfigured && mode === 'signup' && <div><label htmlFor="name" className="mb-2 block text-xs font-medium text-[#b3c1b8]">Seu nome</label><input id="name" name="name" autoComplete="name" required value={name} onChange={(event) => setName(event.target.value)} placeholder="Como devemos chamar você?" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#12121a] px-4 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b] focus:border-[#a78bfa]/40 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>}
           {authConfigured && mode !== 'recovery' && <div><label htmlFor="email" className="mb-2 block text-xs font-medium text-[#b3c1b8]">E-mail</label><input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@exemplo.com" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#12121a] px-4 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b] focus:border-[#a78bfa]/40 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>}
           {authConfigured && mode !== 'reset' && <div><label htmlFor="password" className="mb-2 block text-xs font-medium text-[#b3c1b8]">{mode === 'recovery' ? 'Nova senha' : 'Senha'}</label><div className="relative"><input id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete={mode === 'signup' ? 'new-password' : mode === 'recovery' ? 'new-password' : 'current-password'} minLength={mode === 'signup' || mode === 'recovery' ? 12 : undefined} required value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'signin' ? 'Sua senha' : 'Pelo menos 12 caracteres'} className="h-11 w-full rounded-xl border border-white/[.1] bg-[#12121a] px-4 pr-12 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b] focus:border-[#a78bfa]/40 focus:ring-2 focus:ring-[#a78bfa]/10" /><button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} className="absolute inset-y-0 right-3 grid place-items-center text-[#81948a] hover:text-white">{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></div>{(mode === 'signup' || mode === 'recovery') && <p className="mt-2 text-[10px] text-[#71847a]">Use pelo menos 12 caracteres. Prefira senha única e gerenciador confiável.</p>}</div>}
-
-          {!authConfigured && mode === 'signin' && <div><label htmlFor="demo-name" className="mb-2 block text-xs font-medium text-[#b3c1b8]">Como devemos chamar você?</label><input id="demo-name" name="name" autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nome (opcional)" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#12121a] px-4 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b] focus:border-[#a78bfa]/40 focus:ring-2 focus:ring-[#a78bfa]/10" /><p className="mt-2 text-[10px] leading-relaxed text-[#71847a]">Demonstração local, sem senha e sem proteção de conta. Só acesso de aluno.</p></div>}
 
           {mode === 'signin' && authConfigured && <div className="flex justify-end"><button type="button" onClick={() => setFormMode('reset')} className="text-xs text-[#b49cff] hover:text-white hover:underline">Esqueci minha senha</button></div>}
           {error && <p role="alert" className="rounded-lg border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] px-3 py-2.5 text-xs leading-relaxed text-[#f2a8b2]">{error}</p>}
           {authError && authConfigured && mode === 'signin' && <p role="alert" className="rounded-lg border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] px-3 py-2.5 text-xs leading-relaxed text-[#f2a8b2]">{authError}</p>}
           {message && <p role="status" className="rounded-lg border border-[#98abff]/20 bg-[#98abff]/[.06] px-3 py-2.5 text-xs leading-relaxed text-[#b5c2ff]">{message}</p>}
-          <button type="submit" disabled={isSubmitting || loading} className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-sm font-semibold text-[#100c19] transition-colors hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSubmitting ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link de recuperação' : mode === 'recovery' ? 'Atualizar senha' : authConfigured ? 'Entrar com e-mail' : 'Entrar na demonstração'}<ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" /></button>
+          <button type="submit" disabled={isSubmitting || loading} className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-sm font-semibold text-[#100c19] transition-colors hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSubmitting ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link de recuperação' : mode === 'recovery' ? 'Atualizar senha' : 'Entrar com e-mail'}<ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" /></button>
           {mode === 'reset' && <button type="button" onClick={() => setFormMode('signin')} className="w-full py-1 text-xs text-[#8fa197] hover:text-white">Voltar ao login</button>}
           {mode === 'recovery' && <button type="button" onClick={() => setFormMode('signin')} className="w-full py-1 text-xs text-[#8fa197] hover:text-white">Voltar ao login</button>}
         </form>}
 
-        {!authConfigured && <div className="mt-4 rounded-xl border border-[#e4bc76]/15 bg-[#e4bc76]/[.035] p-4"><p className="text-xs font-medium text-[#e8d4a7]">Login por e-mail ainda não configurado</p><p className="mt-1.5 text-[10px] leading-relaxed text-[#a39471]">Preencha VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY em .env.local e aplique a migração de auth.</p></div>}
         {authConfigured && mode !== 'recovery' && <p className="mt-5 text-center text-[10px] leading-relaxed text-[#71847a]">Ao criar conta, enviaremos confirmação para seu e-mail. Seu código de indicação fica associado ao cadastro.</p>}
         {mode === 'recovery' && !loading && user && <button type="button" onClick={() => navigate(destinationForRole(user.role), { replace: true })} className="mt-3 w-full text-center text-xs text-[#b49cff] hover:text-white">Continuar para sua área</button>}
         <div className="mt-7 flex items-center justify-center gap-4 border-t border-white/[.06] pt-5 text-[10px] text-[#76897e]"><Link to="/landing#jornada" className="hover:text-white">Conhecer a trilha</Link><span className="size-1 rounded-full bg-[#52665a]" /><Link to="/landing#planos" className="hover:text-white">Ver planos</Link></div>

@@ -90,14 +90,8 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
     setIsSaving(true)
     try {
       const result = await updateProfile({ name, bio, location, avatarDataUrl: avatarUrl }, avatarBlob)
-      setNotice(result.synced
-        ? 'Perfil atualizado no Supabase.'
-        : result.error
-          ? `Salvo neste navegador. Supabase não sincronizou: ${result.error}`
-          : authConfigured
-            ? 'Salvo neste navegador. Verifique a sessão do Supabase para sincronizar.'
-            : 'Perfil salvo neste navegador em modo de demonstração.')
-      setAvatarBlob(undefined)
+      setNotice(result.synced ? 'Perfil atualizado no Supabase.' : `Perfil não foi salvo: ${result.error ?? 'Supabase indisponível.'}`)
+      if (result.synced) setAvatarBlob(undefined)
     } finally {
       setIsSaving(false)
     }
@@ -115,7 +109,7 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
       </Avatar>
       {!compact && <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-medium text-[#dae4dd]">{user?.name}</span>
-        <span className="mt-1 block truncate text-[10px] text-[#7f9287]">{planTitle(user?.plan ?? 'demo')} · editar perfil</span>
+        <span className="mt-1 block truncate text-[10px] text-[#7f9287]">{planTitle(user?.plan ?? null)} · editar perfil</span>
       </span>}
       {!compact && <Pencil size={13} className="shrink-0 text-[#77877f] transition group-hover:text-[#cbbaff]" />}
     </button>
@@ -175,7 +169,7 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
         </div>
 
         <footer className="flex items-center justify-between gap-4 border-t border-white/[.07] px-5 py-4 sm:px-7">
-          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{authConfigured ? 'Sincronização da conta ativa' : 'Modo de demonstração'}</span>
+          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{authConfigured ? 'Sincronização com Supabase' : 'Banco indisponível'}</span>
           <div className="ml-auto flex gap-2">
             <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl border border-white/[.1] px-4 text-xs font-medium text-[#aeb8b0] transition hover:bg-white/[.05]">Cancelar</button>
             <button type="submit" disabled={isSaving} className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] transition hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSaving ? <LoaderCircle size={14} className="animate-spin" /> : notice.startsWith('Perfil atualizado') ? <Check size={14} /> : <ImagePlus size={14} />}{isSaving ? 'Salvando…' : 'Salvar perfil'}</button>

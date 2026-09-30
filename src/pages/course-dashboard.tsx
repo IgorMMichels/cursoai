@@ -34,7 +34,7 @@ export function CourseDashboard() {
   return <div className="space-y-9">
     <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div><p className="eyebrow">bom ter você de volta</p><h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#edf4ef] sm:text-4xl">Olá, {user?.name.split(' ')[0]}.</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#90a298]">Seu próximo passo está logo aqui. Estude no seu ritmo e volte às decisões com mais contexto.</p></div>
-      <div className="flex items-center gap-2 rounded-full border border-white/[.08] bg-white/[.025] px-3 py-2 text-xs text-[#98aa9f]"><Sparkles size={14} className="text-[#e4bc76]" />Trilha educativa · demonstração</div>
+      <div className="flex items-center gap-2 rounded-full border border-white/[.08] bg-white/[.025] px-3 py-2 text-xs text-[#98aa9f]"><Sparkles size={14} className="text-[#e4bc76]" />Trilha educativa</div>
     </section>
 
     <section className="study-bento" aria-label="Seu próximo passo">

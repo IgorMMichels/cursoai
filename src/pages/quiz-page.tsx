@@ -5,9 +5,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Brand } from '@/components/brand'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { saveQuizProfile, type QuizProfile } from '@/lib/storage'
+import { useSession } from '@/contexts/session-context'
+import { saveLearningProfile } from '@/lib/learning-service'
 
 type ProfileKey = 'explorador' | 'analista' | 'protetor'
+type QuizProfile = { name: string; description: string; nextStep: string }
 type QuizChoice = { label: string; category: ProfileKey }
 type QuizQuestion = { eyebrow: string; prompt: string; context: string; choices: QuizChoice[] }
 
@@ -44,6 +46,8 @@ export function QuizPage() {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<(ProfileKey | null)[]>(Array(questions.length).fill(null))
   const navigate = useNavigate()
+  const { user } = useSession()
+  const [saveNotice, setSaveNotice] = useState('')
   const result = useMemo(() => {
     if (step < questions.length) return null
     const scores: Record<ProfileKey, number> = { explorador: 0, analista: 0, protetor: 0 }
@@ -59,7 +63,13 @@ export function QuizPage() {
       const scores: Record<ProfileKey, number> = { explorador: 0, analista: 0, protetor: 0 }
       answers.forEach((answer) => { if (answer) scores[answer] += 1 })
       const winner = (Object.entries(scores).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'explorador') as ProfileKey
-      saveQuizProfile(profileInfo[winner])
+      if (user) {
+        void saveLearningProfile(winner, answers.map((answer) => answer ?? 'explorador'))
+          .then(() => setSaveNotice('Seu perfil de aprendizagem foi salvo na conta.'))
+          .catch((error: unknown) => setSaveNotice(error instanceof Error ? `Não foi possível salvar: ${error.message}` : 'Não foi possível salvar seu perfil.'))
+      } else {
+        setSaveNotice('Entre na conta para sincronizar seu perfil de aprendizagem.')
+      }
     }
   }
   const previous = () => setStep((value) => Math.max(0, value - 1))
@@ -78,13 +88,14 @@ export function QuizPage() {
             <div className="mt-6 rounded-2xl border border-white/[.07] bg-black/[.12] p-5"><p className="text-sm leading-relaxed text-[#d0ddd4]">{result.detail}</p><p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-[#88a394]"><Check size={14} className="mt-0.5 shrink-0 text-[#a78bfa]" />{result.nextStep}</p></div>
             <div className="mt-7 flex flex-wrap items-center gap-3"><button type="button" onClick={() => navigate('/landing')} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] transition-colors hover:bg-[#c1acff]">Ver a trilha completa <ArrowRight size={15} /></button><button type="button" onClick={() => { setAnswers(Array(questions.length).fill(null)); setStep(0) }} className="h-11 rounded-full px-4 text-xs text-[#91a49a] hover:text-white">Refazer o quiz</button></div>
             <p className="mt-5 text-[10px] text-[#6f8277]">Este quiz indica uma sequência de estudos, não seu perfil de investidor ou adequação de produtos.</p>
+            {saveNotice && <p className="mt-3 text-[10px] text-[#a7b6ad]" role="status">{saveNotice}</p>}
           </motion.section> : <motion.section key={`question-${step}`} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: .2 }} className="mt-7 rounded-xl border border-white/[.08] bg-[#12121a] p-6 sm:p-9">
             <p className="eyebrow">{questions[step].eyebrow}</p><h2 className="mt-4 max-w-xl font-display text-2xl font-medium leading-[1.18] tracking-[-.045em] text-[#e8f0ea] sm:text-[30px]">{questions[step].prompt}</h2><p className="mt-3 text-xs leading-relaxed text-[#889b90]">{questions[step].context}</p>
             <div className="mt-7 space-y-2.5" role="radiogroup" aria-label={questions[step].prompt}>{questions[step].choices.map((choice, index) => { const selected = answers[step] === choice.category; return <button type="button" role="radio" aria-checked={selected} key={choice.label} onClick={() => select(choice.category)} className={`focus-ring flex w-full items-center gap-3 rounded-xl border px-4 py-4 text-left text-sm transition-colors ${selected ? 'border-[#a78bfa]/40 bg-[#a78bfa]/[.07] text-[#f1edf8]' : 'border-white/[.075] bg-[#171820] text-[#b3c0b8] hover:border-white/[.15] hover:bg-white/[.035]'}`}><span className={`grid size-7 shrink-0 place-items-center rounded-full border text-[10px] ${selected ? 'border-[#a78bfa] bg-[#a78bfa] text-[#0a0910]' : 'border-white/[.16] text-[#71857a]'}`}>{selected ? <Check size={13} /> : String.fromCharCode(65 + index)}</span><span className="leading-relaxed">{choice.label}</span></button> })}</div>
             <div className="mt-8 flex items-center justify-between"><button type="button" onClick={previous} disabled={step === 0} className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-xs text-[#82958a] transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-30"><ArrowLeft size={14} />Anterior</button><Button onClick={next} disabled={!answers[step]} className="h-11 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] hover:bg-[#c1acff] disabled:opacity-40">{step === questions.length - 1 ? 'Ver meu ponto de partida' : 'Continuar'}<ArrowRight size={14} /></Button></div>
           </motion.section>}
         </AnimatePresence>
-        <p className="mt-5 flex items-center justify-center gap-2 text-[10px] text-[#71847a]"><LockKeyhole size={12} />Suas respostas ficam neste navegador nesta demonstração.</p>
+        <p className="mt-5 flex items-center justify-center gap-2 text-[10px] text-[#71847a]"><LockKeyhole size={12} />Este perfil orienta os estudos; não avalia investimentos.</p>
       </div>
     </main>
   </div>

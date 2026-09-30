@@ -17,6 +17,7 @@ const SecurityPage = lazy(() => import('@/pages/security-page').then((module) =>
 const CertificatePage = lazy(() => import('@/pages/certificate-page').then((module) => ({ default: module.CertificatePage })))
 const AdminPage = lazy(() => import('@/pages/admin-page').then((module) => ({ default: module.AdminPage })))
 const AffiliatePage = lazy(() => import('@/pages/affiliate-page').then((module) => ({ default: module.AffiliatePage })))
+const AffiliateEnrollmentPage = lazy(() => import('@/pages/affiliate-enrollment-page').then((module) => ({ default: module.AffiliateEnrollmentPage })))
 const NotFoundPage = lazy(() => import('@/pages/not-found-page').then((module) => ({ default: module.NotFoundPage })))
 const CourseLayout = lazy(() => import('@/components/course-layout').then((module) => ({ default: module.CourseLayout })))
 
@@ -34,6 +35,7 @@ function AppRoutes() {
       <Route path="/landing" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireRole role="student" />}>
+        <Route path="/afiliar" element={<AffiliateEnrollmentPage />} />
         <Route path="/acesso" element={<CourseLayout />}><Route index element={<CourseAccessPage />} /></Route>
         <Route element={<RequireCourseAccess />}>
           <Route path="/curso" element={<CourseLayout />}>
@@ -53,6 +55,6 @@ function AppRoutes() {
 }
 
 export default function App() {
-  return <MotionConfig reducedMotion="user"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
+  return <MotionConfig reducedMotion="never"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
 }
 

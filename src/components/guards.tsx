@@ -19,7 +19,7 @@ export function RequireCourseAccess() {
 
   const startsAt = Date.parse(user.planStartedAt)
   const expiresAt = user.expiresAt ? Date.parse(user.expiresAt) : Number.POSITIVE_INFINITY
-  const hasCurrentPlan = user.plan !== 'demo'
+  const hasCurrentPlan = user.plan !== null
     && Number.isFinite(startsAt)
     && startsAt <= Date.now()
     && expiresAt > Date.now()

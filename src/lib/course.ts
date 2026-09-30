@@ -8,8 +8,6 @@ export type Lesson = {
   exercise: { title: string; prompt: string; options?: string[]; answer?: number; note: string }
 }
 
-export type Question = { question: string; options: string[]; answer: number; explanation: string }
-
 export type CourseModule = {
   id: string
   number: string
@@ -19,7 +17,6 @@ export type CourseModule = {
   color: string
   duration: string
   lessons: Lesson[]
-  quiz: Question[]
 }
 
 export const modules: CourseModule[] = [
@@ -42,11 +39,6 @@ export const modules: CourseModule[] = [
         'Para começar, pratique com valores pequenos, confirme rede e endereço, entenda taxas e mantenha uma cópia de recuperação offline. Segurança depende também de como você usa o dispositivo e de como verifica o destinatário.'
       ], takeaway: 'Controle das chaves traz controle das decisões — e responsabilidade pelos erros.', exercise: { title: 'Regra de custódia', prompt: 'Uma pessoa do “suporte” pede sua frase de recuperação para corrigir um erro. O que fazer?', options: ['Enviar só as primeiras palavras', 'Não compartilhar; encerrar contato e verificar o canal oficial por conta própria', 'Compartilhar se o perfil tiver selo'], answer: 1, note: 'Suporte legítimo não precisa da frase de recuperação. Procure você mesmo o endereço oficial do serviço.' } }
     ],
-    quiz: [
-      { question: 'O que descreve melhor uma blockchain pública?', options: ['Um cadastro compartilhado validado por regras da rede', 'Um aplicativo que guarda moedas no celular', 'Uma promessa de rentabilidade automática'], answer: 0, explanation: 'A blockchain registra operações de acordo com regras verificadas pela rede.' },
-      { question: 'O que uma carteira digital controla?', options: ['O preço de mercado', 'As chaves usadas para autorizar transações', 'A emissão de todos os tokens'], answer: 1, explanation: 'A carteira gerencia chaves. Os ativos são registrados na rede.' },
-      { question: 'Qual é a prática segura com a frase de recuperação?', options: ['Não compartilhá-la e mantê-la protegida offline', 'Enviar ao suporte quando pedirem', 'Salvar uma captura de tela no e-mail'], answer: 0, explanation: 'Quem conhece a frase pode recuperar e controlar a carteira.' }
-    ]
   },
   {
     id: 'm2', number: '02', title: 'Faça o básico bem feito', subtitle: 'Exchanges, ordens e transferências sem pressa.', icon: 'ArrowLeftRight', color: 'blue', duration: '20 min',
@@ -67,11 +59,6 @@ export const modules: CourseModule[] = [
         'Faça um envio pequeno de teste e aguarde a confirmação antes de enviar o restante. Esse cuidado custa uma taxa extra, mas pode revelar um erro de configuração antes que ele fique caro.'
       ], takeaway: 'Confira endereço, rede, tag e destinatário; teste antes de aumentar o valor.', exercise: { title: 'Antes de confirmar', prompt: 'A exchange e a carteira mostram redes diferentes. Qual é o próximo passo?', options: ['Enviar uma pequena parte e torcer', 'Parar e confirmar compatibilidade com as fontes oficiais dos dois serviços', 'Escolher a rede mais barata'], answer: 1, note: 'Taxa baixa não compensa uma rede incompatível. Não envie até entender o caminho completo.' } }
     ],
-    quiz: [
-      { question: 'Uma ordem limitada pode não executar porque:', options: ['O preço não atingiu seu limite ou não havia liquidez suficiente', 'Ela sempre aguarda aprovação do Banco Central', 'Toda ordem limitada expira imediatamente'], answer: 0, explanation: 'O preço pode nunca atingir seu limite; execução depende do mercado e das regras da plataforma.' },
-      { question: 'Antes de enviar cripto para uma carteira, confira:', options: ['Endereço, rede e eventuais tags/memos', 'Apenas o nome da moeda', 'Somente o valor da taxa'], answer: 0, explanation: 'Todos esses campos precisam corresponder ao destino.' },
-      { question: 'O que uma ordem stop garante?', options: ['Preço de saída exato em qualquer condição', 'Que outra ordem seja disparada ao nível configurado, segundo as regras da plataforma', 'Que a posição não tenha prejuízo'], answer: 1, explanation: 'Uma ordem stop pode sofrer slippage e não limita perdas a um valor exato.' }
-    ]
   },
   {
     id: 'm8', number: '03', title: 'Compre Bitcoin com clareza', subtitle: 'Compare caminhos de compra, custos e custódia.', icon: 'Bitcoin', color: 'lilac', duration: '22 min',
@@ -92,11 +79,6 @@ export const modules: CourseModule[] = [
         'Um plano de aportes periódicos pode organizar decisões no tempo, mas não garante lucro, reduz todas as perdas nem torna o preço previsível. Reveja objetivos e limites sem transformar uma rotina em compra automática que você não entende.'
       ], takeaway: 'Comprar é só uma etapa. Registro, acesso e plano de segurança também fazem parte.', sources: [{ label: 'Banco Central: informações e alertas sobre criptoativos', url: 'https://www.bcb.gov.br/estabilidadefinanceira/criptoativos' }], exercise: { title: 'Organize sua trilha de auditoria', prompt: 'Qual registro é mais útil para acompanhar uma compra?', options: ['Data, valor em reais, quantidade, taxa, comprovante e eventual hash', 'Uma captura do preço atual', 'Só o nome do ativo'], answer: 0, note: 'Registros completos ajudam a entender operações e podem ser úteis para obrigações fiscais. Consulte a regra oficial vigente.' } }
     ],
-    quiz: [
-      { question: 'O que diferencia uma compra à vista de uma cota de ETF de Bitcoin?', options: ['A cota é um valor mobiliário com regras próprias; compra à vista envolve o ativo e sua custódia', 'Ambas sempre entregam as mesmas chaves privadas', 'Nenhuma tem taxas ou riscos de intermediário'], answer: 0, explanation: 'Estruturas, direitos, custos, negociação e custódia variam; leia documentos do produto.' },
-      { question: 'Antes de enviar BTC para uma carteira, o que conferir?', options: ['Endereço, rede e compatibilidade; testar com valor pequeno', 'Somente a cotação do dia', 'Apenas o nome exibido no aplicativo'], answer: 0, explanation: 'Endereço ou rede incorretos podem causar perda irreversível.' },
-      { question: 'Aportes periódicos garantem um preço médio melhor?', options: ['Sim, em qualquer cenário', 'Não; organizam datas, mas não garantem lucro ou menor perda', 'Sim, desde que feitos por cartão'], answer: 1, explanation: 'O resultado depende do mercado, custos, período e decisões. Não há garantia.' }
-    ]
   },
   {
     id: 'm3', number: '04', title: 'Leia além do ticker', subtitle: 'Uma rotina de pesquisa antes de formar opinião.', icon: 'ScanSearch', color: 'lilac', duration: '23 min',
@@ -117,11 +99,6 @@ export const modules: CourseModule[] = [
         'Guarde a data das evidências e faça perguntas incômodas: o dado continua crescendo depois de incentivos? A atividade vem de poucos endereços? O preço depende de uma única exchange?' 
       ], takeaway: 'Métrica sem definição e fonte verificável é uma afirmação, não evidência.', exercise: { title: 'Pese a evidência', prompt: 'Um gráfico viral mostra “usuários recordes”. Qual verificação vem primeiro?', options: ['Abrir a fonte, o período e a definição de usuário', 'Repassar o gráfico para não perder a alta', 'Presumir que usuários são pessoas únicas'], answer: 0, note: 'Métricas on-chain podem contar endereços e contratos, não pessoas.' } }
     ],
-    quiz: [
-      { question: 'Uma análise de projeto fica mais forte quando:', options: ['Anota evidências e também o que refutaria a tese', 'Ignora informações que contradizem a expectativa', 'Repete a opinião de influenciadores'], answer: 0, explanation: 'Critérios de revisão reduzem viés de confirmação.' },
-      { question: '“Oferta máxima” responde sozinha à pergunta sobre diluição?', options: ['Sim; tokens ainda bloqueados não afetam o futuro', 'Não; cronograma e distribuição também importam', 'Sim; basta dividir o preço por dois'], answer: 1, explanation: 'Emissões futuras, desbloqueios e concentração alteram incentivos e oferta disponível.' },
-      { question: 'Um dashboard mostra endereços ativos. Isso prova quantas pessoas usam o produto?', options: ['Sim, cada endereço pertence a uma pessoa', 'Não; endereços e pessoas são unidades diferentes', 'Sim, se o gráfico for colorido'], answer: 1, explanation: 'Uma pessoa pode ter vários endereços, e um endereço pode representar automação ou contrato.' }
-    ]
   },
   {
     id: 'm4', number: '05', title: 'Defina o risco antes da entrada', subtitle: 'Orçamento, cenários e uma estratégia que caiba na sua vida.', icon: 'Scale', color: 'amber', duration: '22 min',
@@ -142,11 +119,6 @@ export const modules: CourseModule[] = [
         'Defina uma rotina de revisão: frequência, dados que acompanham a tese e eventos que pedem reavaliação. Evite mudar o plano a cada manchete; atualize quando a evidência importante mudar.'
       ], takeaway: 'Uma rotina pode organizar decisões. Ela não remove risco de mercado.', exercise: { title: 'Escolha o uso adequado', prompt: 'Qual afirmação sobre DCA é correta?', options: ['Garante preço médio baixo e lucro', 'Automatiza compras em datas planejadas, sem garantir resultado', 'Funciona apenas com stablecoins'], answer: 1, note: 'DCA muda a distribuição temporal das compras; não elimina risco nem substitui análise.' } }
     ],
-    quiz: [
-      { question: 'Capacidade de risco se refere principalmente a:', options: ['Quanto a vida financeira consegue suportar perder ou deixar oscilando', 'Quanto você gostaria de ganhar', 'Quantos gráficos você sabe ler'], answer: 0, explanation: 'Capacidade considera obrigações, horizonte e impacto concreto de perdas.' },
-      { question: 'A simulação de queda exibida no curso:', options: ['Prevê o próximo preço', 'Mostra um cenário hipotético para visualizar impacto', 'Indica quanto investir'], answer: 1, explanation: 'É uma ferramenta educativa, sem previsão ou recomendação individual.' },
-      { question: 'A estratégia DCA:', options: ['Elimina volatilidade', 'Pode organizar aportes, mas não garante retorno', 'Impede perdas se o preço cair'], answer: 1, explanation: 'Aportes periódicos não removem riscos do ativo nem garantem resultado.' }
-    ]
   },
   {
     id: 'm5', number: '06', title: 'Proteja o acesso', subtitle: 'Engenharia social, permissões e resposta a incidentes.', icon: 'ShieldCheck', color: 'mint', duration: '21 min',
@@ -167,11 +139,6 @@ export const modules: CourseModule[] = [
         'Se suspeitar de comprometimento, pare de assinar, não responda ao invasor, acesse a conta por canal oficial e procure ajuda independente. Registre horários e transações; não pague “taxa de resgate” para quem promete recuperar fundos.'
       ], takeaway: 'Segurança eficaz é uma rotina praticada antes do incidente.', exercise: { title: 'Primeira resposta', prompt: 'Você percebe uma transação que não reconhece. O que vem primeiro?', options: ['Interromper novas assinaturas e acessar o serviço pelo canal oficial', 'Clicar no primeiro anúncio de recuperação', 'Mandar a frase-semente ao suporte'], answer: 0, note: 'Evite novos danos e confirme o canal oficial antes de qualquer ação.' } }
     ],
-    quiz: [
-      { question: 'Um sinal comum de fraude é:', options: ['Promessa de alto retorno garantido com urgência para pagar', 'Documentação pública com riscos explicados', 'Possibilidade clara de recusar uma oferta'], answer: 0, explanation: 'Urgência e promessa de retorno extraordinário merecem desconfiança.' },
-      { question: 'Uma permissão de contrato inteligente pode:', options: ['Autorizar operações conforme o escopo aprovado', 'Garantir que o token nunca caia', 'Reverter qualquer fraude'], answer: 0, explanation: 'Entenda o escopo da autorização e revogue o que não usa.' },
-      { question: 'Se um suporte pedir sua frase de recuperação:', options: ['Compartilhe se o perfil for verificado', 'Não compartilhe; acesse o serviço por um canal confirmado por você', 'Envie em uma mensagem temporária'], answer: 1, explanation: 'A frase é um segredo de acesso. Não a envie a terceiros.' }
-    ]
   },
   {
     id: 'm6', number: '07', title: 'Explore sem confundir rendimento e segurança', subtitle: 'DeFi, staking, liquidez e o contexto tributário brasileiro.', icon: 'Orbit', color: 'blue', duration: '25 min',
@@ -192,11 +159,6 @@ export const modules: CourseModule[] = [
         'As regras brasileiras mudam. Consulte as páginas de criptoativos e a DeCripto da Receita Federal na data da operação; procure um contador para análise do seu caso. Esta aula organiza perguntas e registros, não substitui orientação tributária.'
       ], takeaway: 'Registre cada operação e confirme a regra oficial vigente antes de declarar.', exercise: { title: 'Prepare seus registros', prompt: 'Qual conjunto é mais útil para reconstruir uma operação?', options: ['Data, ativo, quantidade, custo em reais, taxa e comprovante', 'Apenas o preço lembrado no fim do ano', 'Uma captura de tela do saldo atual'], answer: 0, note: 'O histórico detalhado e os comprovantes ajudam a explicar compras, vendas e transferências.' } }
     ],
-    quiz: [
-      { question: 'Uma auditoria de contrato inteligente:', options: ['Ajuda a identificar problemas, mas não elimina todos os riscos', 'Garante que não haverá perdas', 'Substitui a pesquisa sobre liquidez e custódia'], answer: 0, explanation: 'Auditorias têm escopo e data; novas versões e outros componentes também importam.' },
-      { question: 'Uma recompensa de staking ou DeFi deve ser avaliada junto com:', options: ['Origem, custos, bloqueios, riscos técnicos e liquidez', 'Somente o percentual anunciado', 'O número de emojis no aplicativo'], answer: 0, explanation: 'Retorno isolado não mostra perdas possíveis nem sustentabilidade.' },
-      { question: 'Para impostos sobre criptoativos no Brasil, o curso recomenda:', options: ['Usar sempre uma regra antiga da internet', 'Consultar a orientação oficial vigente e um profissional para seu caso', 'Não guardar comprovantes'], answer: 1, explanation: 'Normas podem mudar e o tratamento depende dos fatos e das regras em vigor.' }
-    ]
   },
   {
     id: 'm9', number: '08', title: 'Futuros: long, short e padrões', subtitle: 'Derivativos, margem e leitura de mercado — nível avançado.', icon: 'ChartNoAxesCombined', color: 'amber', duration: '26 min',
@@ -217,11 +179,6 @@ export const modules: CourseModule[] = [
         'Use a simulação para perguntar “quanto posso perder?” antes de perguntar “quanto posso ganhar?”. Futuros são instrumentos complexos e não são necessários para aprender sobre Bitcoin ou concluir esta trilha.'
       ], takeaway: 'Simulação de alavancagem ensina escala de risco; não encontra entrada nem sugere operar.', sources: [{ label: 'B3: especificações atuais do futuro de Bitcoin', url: 'https://www.b3.com.br/pt_br/produtos-e-servicos/negociacao/criptoativos/futuro-de-bitcoin-em-reais.htm' }, { label: 'CFTC: alavancagem pode ampliar perdas e exigir mais margem', url: 'https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/understand_risks_of_virtual_currency.html' }], exercise: { title: 'Leia a escala', prompt: 'Em uma exposição nocional hipotética de R$ 1.000, o preço se move 5% contra uma posição. O que a alavancagem altera primeiro?', options: ['O valor nocional exposto em relação à margem e a perda como proporção dela', 'A direção do movimento de preço', 'A certeza de lucro na operação seguinte'], answer: 0, note: 'Alavancagem não muda a variação do subjacente; muda a relação entre exposição, margem e resultado na conta.' } }
     ],
-    quiz: [
-      { question: 'Uma posição long em futuro normalmente se beneficia quando:', options: ['O preço do contrato sobe, antes de custos e regras específicas', 'O preço do contrato cai', 'A margem inicial desaparece'], answer: 0, explanation: 'Long é a direção comprada. O resultado final ainda depende do contrato, tamanho e custos.' },
-      { question: 'Um nível de suporte no gráfico:', options: ['É uma zona observada no passado, não uma garantia futura', 'Impede o preço de cair', 'É sempre o preço justo do ativo'], answer: 0, explanation: 'Níveis técnicos são interpretações históricas e podem falhar.' },
-      { question: 'O que a margem de um futuro representa?', options: ['Garantia vinculada à exposição; não é o custo total nem a perda máxima', 'O preço integral do Bitcoin', 'Uma proteção que impede liquidação'], answer: 0, explanation: 'Exigências de margem e liquidação dependem das regras do produto; perdas podem exceder o valor inicialmente depositado.' }
-    ]
   },
   {
     id: 'm7', number: '09', title: 'Transforme estudo em processo', subtitle: 'Psicologia, política pessoal e próximos 30 dias.', icon: 'Compass', color: 'lilac', duration: '18 min',
@@ -242,11 +199,6 @@ export const modules: CourseModule[] = [
         'Parabéns por concluir a trilha. Seu certificado registra participação no curso; não atesta rentabilidade, habilitação profissional ou domínio completo do mercado.'
       ], takeaway: 'Estudar com método também significa reconhecer quando não agir.', exercise: { title: 'Escolha seu próximo passo', prompt: 'Qual sequência representa melhor uma continuação responsável?', options: ['Revisar orçamento, segurança e evidências antes de tomar qualquer decisão', 'Comprar o ativo mais comentado no dia', 'Prometer retorno a outras pessoas'], answer: 0, note: 'O curso é educativo. Cada pessoa deve considerar seu contexto e os riscos.' } }
     ],
-    quiz: [
-      { question: 'Um diário de decisões ajuda a:', options: ['Separar processo, evidências e resultado', 'Garantir que todas as escolhas serão lucrativas', 'Descobrir sinais secretos no gráfico'], answer: 0, explanation: 'O diário melhora a revisão e ajuda a perceber vieses.' },
-      { question: 'Um bom plano pessoal começa por:', options: ['Limites, horizonte e critérios de revisão', 'Uma lista de tokens populares', 'Uma meta fixa de lucro mensal'], answer: 0, explanation: 'Objetivos e limites dão contexto para qualquer escolha posterior.' },
-      { question: 'O certificado do curso:', options: ['Comprova lucro futuro', 'Registra conclusão das aulas, sem garantir resultado financeiro', 'Substitui formação profissional'], answer: 1, explanation: 'É um registro de participação e conclusão educativa.' }
-    ]
   }
 ]
 

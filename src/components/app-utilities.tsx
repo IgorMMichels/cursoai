@@ -2,7 +2,8 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Brand } from '@/components/brand'
 import { markPlatformEntrySeen, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
-import { trackReferralClick } from '@/lib/storage'
+import { rememberReferral } from '@/lib/storage'
+import { recordReferralClick } from '@/lib/affiliate-service'
 
 const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
 const trackedReferralClicks = new Set<string>()
@@ -20,7 +21,17 @@ export function ReferralTracker() {
       window.sessionStorage.setItem(key, '1')
     } catch { /* Keep referral tracking available when session storage is blocked. */ }
     trackedReferralClicks.add(key)
-    trackReferralClick(code)
+    rememberReferral(code)
+    let visitorId: string
+    try {
+      const visitorKey = 'cripto-mentoria:affiliate-visitor'
+      const existing = window.sessionStorage.getItem(visitorKey)
+      visitorId = existing && /^[0-9a-f-]{36}$/i.test(existing) ? existing : window.crypto.randomUUID()
+      window.sessionStorage.setItem(visitorKey, visitorId)
+    } catch {
+      visitorId = window.crypto.randomUUID()
+    }
+    void recordReferralClick(code, visitorId, location.pathname).catch(() => {})
   }, [location.pathname, location.search])
   return null
 }
