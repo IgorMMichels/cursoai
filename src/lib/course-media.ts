@@ -1,13 +1,13 @@
 export const moduleCovers: Record<string, string> = {
-  m1: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1000&q=78',
-  m2: 'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?auto=format&fit=crop&w=1000&q=78',
-  m8: 'https://images.unsplash.com/photo-1641266794308-45cef9acb4cb?auto=format&fit=crop&w=1000&q=78',
-  m3: 'https://images.unsplash.com/photo-1742076553114-cfd4f27de46f?auto=format&fit=crop&w=1000&q=78',
-  m4: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&w=1000&q=78',
-  m5: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1000&q=78',
-  m6: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1000&q=78',
-  m9: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1000&q=78',
-  m7: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1000&q=78',
+  m1: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1800&q=88',
+  m2: 'https://images.unsplash.com/photo-1622630998477-20aa696ecb05?auto=format&fit=crop&w=1800&q=88',
+  m8: 'https://images.unsplash.com/photo-1641266794308-45cef9acb4cb?auto=format&fit=crop&w=1800&q=88',
+  m3: 'https://images.unsplash.com/photo-1742076553114-cfd4f27de46f?auto=format&fit=crop&w=1800&q=88',
+  m4: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?auto=format&fit=crop&w=1800&q=88',
+  m5: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?auto=format&fit=crop&w=1800&q=88',
+  m6: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=1800&q=88',
+  m9: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1800&q=88',
+  m7: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1800&q=88',
 }
 
 export const moduleVisualGuides: Record<string, { title: string; caption: string; steps: [string, string, string, string] }> = {
