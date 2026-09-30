@@ -650,7 +650,7 @@ details > summary:hover { color: #fff; transform: translateX(3px); }
 .exchange-brand-icon { width: 43px; height: 43px; border-radius: 13px; }
 .wallet-brand-icon.wallet-tint-coinbase { background-color: #fff; }
 .wallet-brand-icon.wallet-tint-binance { background-color: #fff; }
-.wallet-brand-icon.wallet-tint-okx { background-color: #fff; }
+.wallet-brand-icon.wallet-tint-okx { background-color: #08080b; }
 .exchange-compatible,.exchange-incompatible { display: inline-flex; min-height: 23px; align-items: center; padding: 0 8px; border: 1px solid rgba(111,226,164,.2); border-radius: 999px; background: rgba(70,190,120,.07); color: #92dbac; font-size: 8px; font-weight: 650; white-space: nowrap; }
 .exchange-incompatible { border-color: rgba(255,93,100,.22); background: rgba(255,68,68,.08); color: #ff9a9e; }
 .exchange-choice-name { margin-top: 17px; color: #e9eee9; font-size: 14px; font-weight: 650; letter-spacing: -.02em; }

@@ -46,7 +46,7 @@ type ExchangeGuide = {
 
 const exchanges: ExchangeGuide[] = [
   {
-    id: 'binance', name: 'Binance', description: 'Compra em BRL · PIX pode aparecer', tint: 'binance', iconPath: '/exchange-icons/binance.ico',
+    id: 'binance', name: 'Binance', description: 'Compra em BRL · PIX pode aparecer', tint: 'binance', iconPath: '/exchange-icons/binance.png',
     officialUrl: 'https://www.binance.com/', referralEnv: 'VITE_REFERRAL_BINANCE_URL', sourceUrl: 'https://www.binance.com/pt-BR/support/faq/detail/b90065c7a7d44d0bb8b2ac7dc2cb0391', sourceLabel: 'Ajuda oficial · compra via Pix', secondarySourceUrl: 'https://www.binance.com/pt-BR/support/faq/detail/115003670492', secondarySourceLabel: 'Ajuda oficial · saques e redes', supportsTron: true, status: 'TRC-20 disponível',
     steps: [
       { title: 'Abra sua conta e proteja-a', text: 'Use apenas o site ou app oficial. Conclua a verificação solicitada e ative autenticação em dois fatores antes de depositar ou comprar.', },
@@ -58,7 +58,7 @@ const exchanges: ExchangeGuide[] = [
     ]
   },
   {
-    id: 'okx', name: 'OKX', description: 'Compra e saque conforme sua conta', tint: 'okx', iconPath: '/exchange-icons/okx.ico',
+    id: 'okx', name: 'OKX', description: 'Compra e saque conforme sua conta', tint: 'okx', iconPath: '/exchange-icons/okx.png',
     officialUrl: 'https://www.okx.com/', referralEnv: 'VITE_REFERRAL_OKX_URL', sourceUrl: 'https://www.okx.com/en-us/help/how-do-i-buy-crypto', sourceLabel: 'Ajuda oficial OKX · compra', secondarySourceUrl: 'https://www.okx.com/en-us/help/how-do-i-make-a-crypto-withdrawal-app', secondarySourceLabel: 'Ajuda oficial OKX · saque', supportsTron: true, status: 'TRC-20 disponível',
     steps: [
       { title: 'Abra sua conta e proteja-a', text: 'Acesse o site ou app oficial. Complete verificação exigida e ative autenticação em dois fatores.', },
@@ -71,7 +71,7 @@ const exchanges: ExchangeGuide[] = [
     ]
   },
   {
-    id: 'coinbase', name: 'Coinbase', description: 'USDT informado como ERC-20', tint: 'coinbase', iconPath: '/exchange-icons/coinbase.ico',
+    id: 'coinbase', name: 'Coinbase', description: 'USDT informado como ERC-20', tint: 'coinbase', iconPath: '/exchange-icons/coinbase.png',
     officialUrl: 'https://www.coinbase.com/', referralEnv: 'VITE_REFERRAL_COINBASE_URL', sourceUrl: 'https://help.coinbase.com/en/coinbase/trading-and-funding/buying-selling-or-converting-crypto/how-do-i-buy-digital-currency', sourceLabel: 'Ajuda oficial · comprar cripto', secondarySourceUrl: 'https://www.coinbase.com/price/tether', secondarySourceLabel: 'Redes de USDT na Coinbase', supportsTron: false, status: 'Não compatível com TRC-20',
     warning: 'A página oficial consultada da Coinbase informa suporte a USDT apenas na rede Ethereum (ERC-20). Este checkout exige TRON (TRC-20). Não saque USDT da Coinbase para um endereço TRON. Disponibilidade pode variar por produto e região; confira sua conta.',
     steps: [
@@ -90,7 +90,7 @@ const exchangeReferrals: Partial<Record<ExchangeId, string>> = {
 
 const wallets: WalletGuide[] = [
   {
-    id: 'tronlink', name: 'TronLink', description: 'Carteira focada em TRON', tint: 'tronlink', iconPath: '/wallet-icons/tronlink.ico',
+    id: 'tronlink', name: 'TronLink', description: 'Carteira focada em TRON', tint: 'tronlink', iconPath: '/wallet-icons/tronlink.png',
     downloadUrl: 'https://www.tronlink.org/dlDetails/', sourceUrl: 'https://support.tronlink.org/hc/en-us/articles/17663848410649-How-to-transfer-receive-assets-in-TronLink-App', sourceLabel: 'Ajuda oficial TronLink', recommended: true, compatible: true,
     steps: [
       { title: 'Baixe o TronLink', text: 'Instale pela App Store, Google Play ou extensão indicada no site oficial. Confira o desenvolvedor antes de instalar. Grátis; iOS, Android e navegador.', },
@@ -102,7 +102,7 @@ const wallets: WalletGuide[] = [
     ]
   },
   {
-    id: 'metamask', name: 'MetaMask', description: 'TRON já aparece nas redes', tint: 'metamask', iconPath: '/wallet-icons/metamask.png',
+    id: 'metamask', name: 'MetaMask', description: 'TRON já aparece nas redes', tint: 'metamask', iconPath: '/wallet-icons/metamask-brand.png',
     downloadUrl: 'https://metamask.io/download/', sourceUrl: 'https://support.metamask.io/configure/networks/tron', sourceLabel: 'Ajuda oficial MetaMask', compatible: true,
     warning: 'MetaMask já inclui TRON entre as redes disponíveis. Não use tutoriais antigos de RPC manual. Ao sacar, escolha USDT na rede TRON (TRC-20); redes diferentes não são intercambiáveis.',
     steps: [
@@ -115,7 +115,7 @@ const wallets: WalletGuide[] = [
     ]
   },
   {
-    id: 'trust', name: 'Trust Wallet', description: 'App mobile multirrede', tint: 'trust', iconPath: '/wallet-icons/trustwallet.ico',
+    id: 'trust', name: 'Trust Wallet', description: 'App mobile multirrede', tint: 'trust', iconPath: '/wallet-icons/trustwallet-brand.png',
     downloadUrl: 'https://trustwallet.com/download', sourceUrl: 'https://trustwallet.com/blog/company/smarter-tron-transfers', sourceLabel: 'Tutorial oficial Trust Wallet · TRON', compatible: true,
     steps: [
       { title: 'Baixe o Trust Wallet', text: 'Instale pela loja oficial ou pelo site Trust Wallet. Confira nome do desenvolvedor e domínio antes de abrir ou importar uma carteira.', },
@@ -127,7 +127,7 @@ const wallets: WalletGuide[] = [
     ]
   },
   {
-    id: 'phantom', name: 'Phantom', description: 'Não suporta rede TRON', tint: 'phantom', iconPath: '/wallet-icons/phantom.png',
+    id: 'phantom', name: 'Phantom', description: 'Não suporta rede TRON', tint: 'phantom', iconPath: '/wallet-icons/phantom-brand.png',
     downloadUrl: 'https://phantom.com/download', sourceUrl: 'https://help.phantom.com/articles/41372840389651', sourceLabel: 'Redes suportadas pela Phantom', compatible: false,
     warning: 'A documentação oficial atual da Phantom não lista TRON entre as redes suportadas. Não use esta carteira para enviar USDT TRC-20 e não tente adicionar RPC ou token manualmente.',
     steps: [
@@ -137,7 +137,7 @@ const wallets: WalletGuide[] = [
     ]
   },
   {
-    id: 'exodus', name: 'Exodus', description: 'Use Mobile ou Desktop', tint: 'exodus', iconPath: '/wallet-icons/exodus.svg',
+    id: 'exodus', name: 'Exodus', description: 'Use Mobile ou Desktop', tint: 'exodus', iconPath: '/wallet-icons/exodus-brand.png',
     downloadUrl: 'https://www.exodus.com/download', sourceUrl: 'https://www.exodus.com/support/en/articles/8598681-tron-and-tron-token-faqs-learn-more-about-trx-and-trc20-tokens', sourceLabel: 'Ajuda oficial Exodus', compatible: true,
     warning: 'Use Exodus Mobile ou Desktop: Exodus Web3 Wallet não suporta TRON. USDT na rede TRON exige recursos de rede; a carteira pode cobrar taxa em TRX.',
     steps: [
