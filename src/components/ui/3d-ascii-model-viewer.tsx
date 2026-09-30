@@ -107,6 +107,8 @@ function AsciiFallback({ onReady }: { onReady?: () => void }) {
 function attachAsciiEffect(effect: AsciiEffect, gl: WebGLRenderer, fgColor: string, bgColor: string) {
   effect.domElement.style.position = 'absolute'
   effect.domElement.style.inset = '0'
+  effect.domElement.style.width = '100%'
+  effect.domElement.style.height = '100%'
   effect.domElement.style.pointerEvents = 'none'
   effect.domElement.style.color = fgColor
   effect.domElement.style.backgroundColor = bgColor
@@ -116,6 +118,12 @@ function attachAsciiEffect(effect: AsciiEffect, gl: WebGLRenderer, fgColor: stri
     gl.domElement.style.opacity = '1'
     effect.domElement.remove()
   }
+}
+
+function centerAsciiGrid(effect: AsciiEffect) {
+  // AsciiEffect renders one fixed-width character row per canvas row. Center
+  // each row so font metrics cannot leave the coin a few pixels off-center.
+  effect.domElement.querySelector('table')?.style.setProperty('text-align', 'center', 'important')
 }
 
 function DemandFrameTicker({ fps = 24 }: { fps?: number }) {
@@ -186,7 +194,10 @@ function AsciiRenderer({
 
   useLayoutEffect(() => attachAsciiEffect(effect, gl, fgColor, bgColor), [bgColor, effect, fgColor, gl])
 
-  useEffect(() => effect.setSize(size.width, size.height), [effect, size.height, size.width])
+  useLayoutEffect(() => {
+    effect.setSize(size.width, size.height)
+    centerAsciiGrid(effect)
+  }, [effect, size.height, size.width])
 
   useFrame(() => {
     effect.render(scene, camera)
