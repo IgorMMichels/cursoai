@@ -3,24 +3,26 @@ import { ArrowUpRight, MessageSquareQuote, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { GlowCard } from '@/components/ui/spotlight-card'
+import { AmbientShader } from '@/components/ui/ambient-shader'
 import { useSession } from '@/contexts/session-context'
 import { loadPublishedReviews, submitReview, type StudentReview } from '@/lib/community-service'
 
 function ReviewCard({ review, index }: { review: StudentReview; index: number }) {
-  return <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .45, delay: index * .06 }} viewport={{ once: true, amount: .2 }}>
+  const initials = review.name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || '?'
+  return <motion.div className="review-card-shell" initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .45, delay: Math.min(index * .045, .2) }} viewport={{ once: true, amount: .2 }}>
     <GlowCard className="review-entry-glow" glowColor="purple" customSize>
       <article className="review-card h-full">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-[#e9c577]" aria-label={`${review.rating} de 5 estrelas`}>
-            {Array.from({ length: 5 }, (_, star) => <Star key={star} size={13} fill={star < review.rating ? 'currentColor' : 'none'} />)}
+        <header className="review-card-author">
+          <span className="review-avatar" aria-hidden="true">{initials}</span>
+          <div className="review-author-copy"><strong>{review.name}</strong><span>Aluno</span></div>
+          <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</time>
+        </header>
+        <blockquote>
+          <div className="review-rating" aria-label={`${review.rating} de 5 estrelas`}>
+            {Array.from({ length: 5 }, (_, star) => <Star key={star} size={12} fill={star < review.rating ? 'currentColor' : 'none'} />)}
           </div>
-          <span className="rounded-md border border-white/[.09] px-2 py-1 text-[9px] text-[#a7a0b1]">Avaliação publicada</span>
-        </div>
-        <blockquote className="mt-4 font-display text-[15px] leading-relaxed tracking-[-.02em] text-[#e8e5ed]">“{review.text}”</blockquote>
-        <footer className="mt-5 flex items-center justify-between gap-3 border-t border-white/[.07] pt-4">
-          <span className="text-xs font-medium text-[#d8d2e0]">{review.name}</span>
-          <time className="text-[10px] text-[#85808e]" dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString('pt-BR')}</time>
-        </footer>
+          <p>“{review.text}”</p>
+        </blockquote>
       </article>
     </GlowCard>
   </motion.div>
@@ -60,44 +62,46 @@ export function ReviewsSection() {
     } finally { setSubmitting(false) }
   }
 
-  return <section id="avaliacoes" className="review-section scroll-mt-24 border-y border-white/[.055] bg-[#0c0c12] py-20 sm:py-24">
-    <div className="page-shell">
-      <div className="mb-9 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-        <div className="max-w-2xl">
-          <p className="eyebrow">avaliações</p>
-          <h2 className="display-lg mt-4 text-[#eaf2ec]">Uma boa aula deixa perguntas melhores.</h2>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#9792a0]">Leia avaliações publicadas e compartilhe o que ajudou no seu estudo.</p>
-        </div>
-        <div className="flex max-w-sm items-start gap-3 rounded-xl border border-[#e4bc76]/15 bg-[#e4bc76]/[.035] p-4 text-[11px] leading-relaxed text-[#b6a985]"><MessageSquareQuote size={15} className="mt-0.5 shrink-0 text-[#e4bc76]" />Só avaliações enviadas por alunos e aprovadas pela equipe aparecem aqui.</div>
-      </div>
+  return <section id="avaliacoes" className="review-section scroll-mt-24 py-20 sm:py-24">
+    <AmbientShader />
+    <div className="page-shell review-community-shell">
+      <div className="review-community-layout">
+        <div className="review-community-left">
+          <header className="review-community-intro">
+            <p className="eyebrow review-community-kicker">comunidade</p>
+            <h2>O que os alunos estão dizendo.</h2>
+            <p>Relatos de quem está estudando criptoativos com contexto, prática e atenção aos riscos.</p>
+          </header>
 
-      <div className="review-grid" aria-label="Avaliações publicadas">
-        {loading ? <p role="status" className="rounded-xl border border-dashed border-white/[.1] p-6 text-xs text-[#938d9d]">Carregando avaliações…</p> : reviews.length ? reviews.map((review, index) => <ReviewCard key={review.id} review={review} index={index} />) : <p className="rounded-xl border border-dashed border-white/[.1] p-6 text-xs text-[#938d9d]">Ainda não há avaliações publicadas.</p>}
-      </div>
-
-      <div className="review-submit-layout mt-8">
-        <div className="rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b49cff]">sua experiência</p>
-          <h3 className="mt-2 font-display text-xl font-medium tracking-[-.04em] text-[#e7e3ed]">O que ficou mais claro?</h3>
-          <p className="mt-2 max-w-lg text-xs leading-relaxed text-[#938d9d]">Conte sobre uma ideia ou exercício específico. Não inclua dados pessoais, saldo ou informações de carteira.</p>
+          <div className="review-compose-panel">
+            <div className="review-compose-heading">
+              <span className="review-compose-icon"><MessageSquareQuote size={17} /></span>
+              <div><h3>Compartilhe sua experiência</h3><p>O que ficou mais claro no seu estudo?</p></div>
+            </div>
+            <p className="review-compose-guidance">Conte sobre uma ideia ou exercício específico. Não inclua saldo, dados pessoais ou informações de carteira.</p>
           {canReview ? <form className="mt-5 space-y-4" onSubmit={(event) => void submit(event)}>
             <div className="grid gap-2 sm:max-w-[220px]">
-              <label htmlFor="review-rating" className="text-[10px] text-[#a9a2b2]">Nota</label>
-              <select id="review-rating" value={rating} onChange={(event) => setRating(event.target.value)} className="h-10 rounded-xl border border-white/[.1] bg-[#0d0d13] px-3 text-xs text-[#e6e1ec] focus:border-[#b49cff]/50 focus:outline-none"><option value="5">5 — Excelente</option><option value="4">4 — Muito boa</option><option value="3">3 — Boa</option><option value="2">2 — Pode melhorar</option><option value="1">1 — Ruim</option></select>
+              <label htmlFor="review-rating" className="text-[10px] text-[#a9a3b2]">Nota</label>
+              <select id="review-rating" value={rating} onChange={(event) => setRating(event.target.value)} className="review-input h-10 rounded-xl border px-3 text-xs focus:outline-none"><option value="5">5 — Excelente</option><option value="4">4 — Muito boa</option><option value="3">3 — Boa</option><option value="2">2 — Pode melhorar</option><option value="1">1 — Ruim</option></select>
             </div>
             <div className="grid gap-2">
-              <label htmlFor="review-text" className="text-[10px] text-[#a9a2b2]">Comentário</label>
-              <textarea id="review-text" required minLength={20} maxLength={400} value={text} onChange={(event) => setText(event.target.value)} placeholder="Descreva o que você aprendeu…" className="min-h-24 resize-y rounded-xl border border-white/[.1] bg-[#0d0d13] px-3 py-3 text-xs leading-relaxed text-[#e6e1ec] placeholder:text-[#676372] focus:border-[#b49cff]/50 focus:outline-none" />
-              <div className="flex justify-between text-[9px] text-[#746f7d]"><span>Mínimo de 20 caracteres.</span><span>{text.length}/400</span></div>
+              <label htmlFor="review-text" className="text-[10px] text-[#a9a3b2]">Comentário</label>
+              <textarea id="review-text" required minLength={20} maxLength={400} value={text} onChange={(event) => setText(event.target.value)} placeholder="Descreva o que você aprendeu…" className="review-input min-h-28 resize-y rounded-xl border px-3 py-3 text-xs leading-relaxed focus:outline-none" />
+              <div className="flex justify-between text-[9px] text-[#8290a8]"><span>Mínimo de 20 caracteres.</span><span>{text.length}/400</span></div>
             </div>
-            <div className="flex flex-wrap items-center gap-3"><button type="submit" disabled={text.trim().length < 20 || submitting} className="button-motion inline-flex h-10 items-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] disabled:cursor-not-allowed disabled:opacity-45">{submitting ? 'Enviando…' : 'Enviar avaliação'} <ArrowUpRight size={14} /></button>{notice && <p role="status" className="text-[10px] text-[#9bcdb7]">{notice}</p>}</div>
+            <div className="flex flex-wrap items-center gap-3"><button type="submit" disabled={text.trim().length < 20 || submitting} className="button-motion inline-flex h-10 items-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] disabled:cursor-not-allowed disabled:opacity-45">{submitting ? 'Enviando…' : 'Publicar avaliação'} <ArrowUpRight size={14} /></button>{notice && <p role="status" className="text-[10px] text-[#9bcdb7]">{notice}</p>}</div>
             {error && <p role="alert" className="text-xs text-[#f2a8b2]">{error}</p>}
-          </form> : <div className="mt-5 flex flex-wrap items-center gap-3">{user ? <p className="text-xs text-[#827c8a]">A avaliação fica disponível após ativar acesso ao curso.</p> : <Link to="/login" className="button-motion inline-flex h-10 items-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19]">Entre como aluno para avaliar <ArrowUpRight size={14} /></Link>}</div>}
+          </form> : <div className="mt-5 flex flex-wrap items-center gap-3">{user ? <p className="text-xs text-[#a19ca9]">A avaliação fica disponível após ativar acesso ao curso.</p> : <Link to="/login" className="button-motion inline-flex h-10 items-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19]">Entre como aluno para avaliar <ArrowUpRight size={14} /></Link>}</div>}
+            <p className="review-compose-footnote">Avaliações passam por revisão antes de aparecerem publicamente.</p>
+          </div>
         </div>
-        <div className="review-note-panel rounded-xl border border-[#b49cff]/15 bg-[radial-gradient(ellipse_at_85%_0%,rgba(167,139,250,.12),transparent_55%),#111017] p-5 sm:p-6">
-          <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b49cff]">critério da comunidade</p>
-          <p className="mt-4 font-display text-lg leading-snug tracking-[-.03em] text-[#e6e1ec]">Comentários úteis falam do conteúdo, não prometem resultado financeiro.</p>
-          <p className="mt-3 text-xs leading-relaxed text-[#938d9b]">A equipe pode aprovar, rejeitar ou remover avaliações pelo painel administrativo.</p>
+
+        <div className="review-community-feed">
+          <div className="review-feed-heading"><h3>Avaliações publicadas</h3><span>{loading ? '…' : reviews.length}</span></div>
+          <div className="review-grid" aria-label="Avaliações publicadas">
+            {loading ? <p role="status" className="review-empty-state">Carregando avaliações…</p> : reviews.length ? reviews.map((review, index) => <ReviewCard key={review.id} review={review} index={index} />) : <p className="review-empty-state">Ainda não há avaliações publicadas.</p>}
+          </div>
+          {error && !canReview && <p role="alert" className="mt-4 text-xs text-[#f2a8b2]">{error}</p>}
         </div>
       </div>
     </div>

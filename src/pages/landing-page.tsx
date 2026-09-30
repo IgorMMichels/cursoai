@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
+import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
 import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, LockKeyhole, Plus, Shield, Sparkles } from 'lucide-react'
@@ -173,6 +174,7 @@ export function LandingPage() {
       </section>
 
       <section className="practice-section py-20 sm:py-24">
+        <AmbientShader className="practice-shader" />
         <div className="page-shell">
           <div className="practice-section-heading">
             <div><p className="eyebrow">estudo aplicado</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">Aprenda testando, não apostando.</h2></div>

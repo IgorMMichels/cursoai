@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ArrowRight, AudioLines, BookOpenCheck, Check, ChevronRight, Clock3, Play, Shield, Sparkles } from 'lucide-react'
+import { ArrowRight, AudioLines, BookOpenCheck, Check, ChevronRight, Clock3, Play, Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -10,6 +10,7 @@ import { useSession } from '@/contexts/session-context'
 import { allLessons, modules } from '@/lib/course'
 import { moduleCovers } from '@/lib/course-media'
 import { getStoredValue, setStoredValue } from '@/lib/storage'
+import { AmbientShader } from '@/components/ui/ambient-shader'
 
 const moduleIcons: Record<string, string> = { Blocks: '▦', ArrowLeftRight: '↔', Bitcoin: '₿', ScanSearch: '⌕', Scale: '⚖', ShieldCheck: '⌑', Orbit: '◉', ChartNoAxesCombined: '↗', Compass: '⌖' }
 const reviewCards = [
@@ -34,11 +35,11 @@ export function CourseDashboard() {
   return <div className="space-y-9">
     <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div><p className="eyebrow">bom ter você de volta</p><h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#edf4ef] sm:text-4xl">Olá, {user?.name.split(' ')[0]}.</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#90a298]">Seu próximo passo está logo aqui. Estude no seu ritmo e volte às decisões com mais contexto.</p></div>
-      <div className="flex items-center gap-2 rounded-full border border-white/[.08] bg-white/[.025] px-3 py-2 text-xs text-[#98aa9f]"><Sparkles size={14} className="text-[#e4bc76]" />Trilha educativa</div>
     </section>
 
     <section className="study-bento" aria-label="Seu próximo passo">
       <Card className="bento-panel study-hero">
+        <AmbientShader className="study-hero-shader" />
         <div className="study-hero-art" aria-hidden="true"><img src={moduleCovers[next.moduleId] ?? moduleCovers.m1} alt="" /><span /></div>
         <div className="study-hero-copy">
           <div className="flex flex-wrap items-center gap-2"><span className="bento-kicker">Continuar de onde parou</span><span className="text-[11px] text-[#a29bad]">Módulo {nextModule.number}</span></div>
