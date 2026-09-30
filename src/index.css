@@ -730,6 +730,8 @@ details > summary:hover { color: #fff; transform: translateX(3px); }
 
 .wallet-step-card { grid-template-columns: 34px minmax(0,1fr); }
 .wallet-step-card.has-screenshot { grid-template-columns: 34px minmax(200px,.8fr) minmax(0,1.2fr); }
+.wallet-step-card.has-panels { grid-template-columns: 34px minmax(0,1fr); }
+.wallet-step-card.has-panels > .wallet-step-copy { grid-column: 2; grid-row: 1; }
 .guide-screenshot { min-width: 0; max-width: 100%; margin: 0; overflow: hidden; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; background: #f3f4f2; }
 .guide-screenshot img { display: block; width: 100%; max-height: 240px; object-fit: contain; }
 .guide-screenshot figcaption { display: flex; align-items: center; gap: 3px; padding: 7px 9px; color: #87918a; font-size: 9px; line-height: 1.4; }
@@ -742,18 +744,20 @@ details > summary:hover { color: #fff; transform: translateX(3px); }
 .guide-screenshot[data-layout="phone-video"] { width: 190px; height: 284px; background: #050505; }
 .guide-screenshot[data-layout="phone-video"] img { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: center; }
 .guide-screenshot[data-layout="phone-video"] figcaption { background: #f3f4f2; }
-.guide-screenshot[data-layout="panels"] { grid-column: 2 / 4; width: 100%; }
+.guide-screenshot[data-layout="panels"] { grid-column: 2; grid-row: 2; width: 100%; }
 .guide-screenshot[data-layout="panels"] img { max-height: 330px; object-fit: contain; }
 
 @media (max-width: 900px) {
   .wallet-step-card { grid-template-columns: 32px minmax(0,1fr); }
   .wallet-step-card.has-screenshot { grid-template-columns: 32px minmax(170px,.8fr) minmax(0,1.2fr); }
+  .wallet-step-card.has-panels { grid-template-columns: 32px minmax(0,1fr); }
   .guide-screenshot[data-layout="landscape"] { width: min(100%,320px); }
 }
 @media (max-width: 640px) {
   .wallet-step-card.has-screenshot { grid-template-columns: 27px minmax(0,1fr); }
   .wallet-step-card.has-screenshot > .guide-screenshot:not([data-layout="panels"]) { grid-column: 2; grid-row: 2; }
   .wallet-step-card.has-screenshot > .wallet-step-copy { grid-column: 2; grid-row: 1; }
+  .wallet-step-card.has-panels { grid-template-columns: 27px minmax(0,1fr); }
   .guide-screenshot[data-layout="landscape"] { width: min(100%,390px); }
   .guide-screenshot[data-layout="portrait"] { width: min(100%,260px); min-height: 220px; }
   .guide-screenshot[data-layout="portrait"] img { height: 250px; }
