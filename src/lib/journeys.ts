@@ -27,20 +27,13 @@ function missingJourneySchema(error: { code?: string; message?: string } | null)
   ))
 }
 
-function localCatalog(legacyAvailable = true): Journey[] {
-  const upcoming = localJourneys.map((journey) => ({
+function localCatalog(): Journey[] {
+  return localJourneys.map((journey) => ({
     ...journey,
     level: journey.level as JourneyLevel,
     coverUrl: journey.coverUrl ?? undefined,
     catalogOnly: true,
   }))
-  return [...upcoming, {
-    id: 'cripto-do-zero', ordinal: 4, title: 'Cripto do Zero',
-    shortDesc: 'Aprenda fundamentos, segurança e decisões conscientes em cripto.',
-    longDesc: 'Sua trilha original de fundamentos de criptoativos, carteiras, segurança, análise e gestão de risco.',
-    icon: 'BookOpen', color: 'lilac', level: 'iniciante', published: true,
-    modules: legacyModules, catalogOnly: !legacyAvailable,
-  }]
 }
 
 export function journeyLessons(journey: Journey) {
@@ -66,7 +59,7 @@ export function nextLesson(journey: Journey, completedLessons: string[]) {
 
 export async function loadJourneys(includeUnpublished = false): Promise<Journey[]> {
   if (!supabase) {
-    if (!includeUnpublished) return localCatalog(false)
+    if (!includeUnpublished) return localCatalog()
     throw new Error('Serviço indisponível no momento.')
   }
   const journeyQuery = supabase.from('journeys').select('id,ordinal,title,short_desc,long_desc,icon,color,level,cover_url,published').order('ordinal')
@@ -81,7 +74,7 @@ export async function loadJourneys(includeUnpublished = false): Promise<Journey[
   if (lessonResult.error) throw lessonResult.error
   const rows = (journeyResult.data ?? []).filter((row) => includeUnpublished || row.published)
   if (!includeUnpublished && rows.length === 0) return localCatalog()
-  return rows.map((row) => ({
+  return rows.filter((row) => row.id !== 'cripto-do-zero').map((row) => ({
     id: row.id,
     ordinal: row.ordinal,
     title: row.title,
