@@ -58,3 +58,20 @@
 
 /* Anchor offset for sticky header (h-16 + pt-3). No visual change. */
 section[id] { scroll-margin-top: 88px; }
+
+.comparison-section { position: relative; isolation: isolate; overflow: hidden; background: radial-gradient(ellipse at 50% 48%, rgba(87,93,160,.12), transparent 62%), #0a0b12; }
+.comparison-section::before { position: absolute; z-index: -1; top: 10%; left: 50%; width: 1px; height: 90%; content: ''; background: linear-gradient(transparent, rgba(154,166,255,.35), transparent); transform: rotate(9deg); }
+.comparison-grid { position: relative; display: grid; grid-template-columns: minmax(0,1fr) 48px minmax(0,1fr); align-items: center; max-width: 900px; margin-inline: auto; }
+.comparison-card { min-height: 320px; padding: clamp(24px,4vw,40px); border: 1px solid rgba(255,255,255,.09); border-radius: 18px; background: rgba(17,20,34,.82); backdrop-filter: blur(12px); }
+.comparison-card-muted { color: #a2a7b8; }
+.comparison-card-featured { border-color: rgba(142,157,255,.24); background: linear-gradient(145deg,rgba(20,27,52,.94),rgba(12,15,28,.94)); box-shadow: 0 20px 70px rgba(0,0,0,.2); }
+.comparison-label { margin: 0 0 24px; color: #b5b9d0; font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+.comparison-card-featured .comparison-label { color: #9fafff; }
+.comparison-card ul { display: grid; gap: 17px; margin: 0; padding: 0; list-style: none; }
+.comparison-card li { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.55; }
+.comparison-icon { display: grid; width: 20px; height: 20px; flex: 0 0 20px; place-items: center; margin-top: 1px; border: 1px solid; border-radius: 50%; }
+.comparison-icon-no { border-color: rgba(155,165,190,.2); color: #778098; }
+.comparison-icon-yes { border-color: rgba(135,160,255,.3); background: rgba(84,112,213,.1); color: #9fb3ff; }
+.comparison-vs { z-index: 1; display: grid; width: 38px; height: 38px; place-items: center; justify-self: center; border: 1px solid rgba(255,255,255,.11); border-radius: 50%; background: #0d1020; color: #9199b1; font-size: 10px; text-transform: uppercase; }
+.comparison-note { margin: 20px auto 0; color: #73798c; font-size: 11px; text-align: center; }
+@media (max-width: 640px) { .comparison-section::before { display: none; } .comparison-grid { grid-template-columns: minmax(0,1fr); gap: 12px; margin-top: 32px; } .comparison-card { min-height: 0; padding: 24px; } .comparison-card ul { gap: 13px; } .comparison-vs { margin-block: -2px; } }

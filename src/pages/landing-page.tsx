@@ -4,7 +4,7 @@ import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield } from 'lucide-react'
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield, X } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
@@ -145,6 +145,29 @@ export function LandingPage() {
               <p className="learning-map-note">Visualização da ordem de estudo. Não é gráfico de preço ou projeção de desempenho.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="comparison-section py-20 sm:py-28" aria-labelledby="comparison-title">
+        <div className="page-shell">
+          <p className="eyebrow text-center">o mercado recompensa contexto, não barulho</p>
+          <h2 id="comparison-title" className="display-lg mx-auto mt-4 max-w-3xl text-center text-[#eaf2ec]">Aprenda com critério.<br /><span className="text-[#aeb0b9]">Decida no seu tempo.</span></h2>
+          <div className="comparison-grid mt-12">
+            <article className="comparison-card comparison-card-muted">
+              <p className="comparison-label">o caminho comum</p>
+              <ul>
+                {['FOMO sem entender o ativo', 'Dicas soltas e promessas de retorno', 'Ruído de feed sem contexto', 'Risco ignorado até dar errado', 'Decisões sem um plano próprio'].map((item) => <li key={item}><span className="comparison-icon comparison-icon-no"><X size={12} /></span>{item}</li>)}
+              </ul>
+            </article>
+            <div className="comparison-vs" aria-hidden="true">vs</div>
+            <article className="comparison-card comparison-card-featured">
+              <p className="comparison-label">no cripto do zero</p>
+              <ul>
+                {['Fundamentos antes de agir', 'Contexto para avaliar projetos', 'Aulas organizadas do básico ao avançado', 'Segurança e riscos em cada etapa', 'Um processo que você pode adaptar'].map((item) => <li key={item}><span className="comparison-icon comparison-icon-yes"><Check size={12} /></span>{item}</li>)}
+              </ul>
+            </article>
+          </div>
+          <p className="comparison-note">Conteúdo educacional. Não é recomendação de investimento nem promessa de resultado.</p>
         </div>
       </section>
 
