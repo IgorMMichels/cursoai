@@ -1,13 +1,15 @@
-export type Lesson = { id: string; title: string; duration: string }
+export type Lesson = { id: string; title: string; duration: string; published?: boolean; ordinal?: number }
 
 export type CourseModule = {
   id: string
   number: string
+  ordinal?: number
   title: string
   subtitle: string
   icon: string
   color: string
   duration: string
+  published?: boolean
   lessons: Lesson[]
 }
 

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Um ciclo de estudo e revisão</title><desc id="desc">Ciclo de processo para registrar decisões e aprender com elas.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#b9a5ff" stop-opacity=".17"/><stop offset="1" stop-color="#b9a5ff" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Um ciclo de estudo e revisão</text>
+
+<g filter="url(#shadow)">
+<path d="M452 157a125 125 0 0 1 107 61" fill="none" stroke="#8b7cc4" stroke-width="3" stroke-dasharray="5 8"/><path d="M559 218l1-14 13 8" fill="none" stroke="#b9a5ff" stroke-width="2"/>
+<path d="M565 267a125 125 0 0 1-53 119" fill="none" stroke="#8b7cc4" stroke-width="3" stroke-dasharray="5 8"/><path d="M512 385l15-2-6 14" fill="none" stroke="#b9a5ff" stroke-width="2"/>
+<path d="M475 394a125 125 0 0 1-142-46" fill="none" stroke="#8b7cc4" stroke-width="3" stroke-dasharray="5 8"/><path d="M333 348l-1 15-13-8" fill="none" stroke="#b9a5ff" stroke-width="2"/>
+<path d="M321 298a125 125 0 0 1 57-132" fill="none" stroke="#8b7cc4" stroke-width="3" stroke-dasharray="5 8"/><path d="M378 166l-15 2 6-14" fill="none" stroke="#b9a5ff" stroke-width="2"/>
+<rect x="356" y="126" width="192" height="70" rx="17" class="card2"/><circle cx="384" cy="161" r="17" fill="#b9a5ff" fill-opacity=".15"/><text x="378" y="166" class="tiny violet">01</text><text x="412" y="157" class="label">Plano</text><text x="412" y="177" class="tiny">regras escritas</text>
+<rect x="540" y="230" width="206" height="70" rx="17" class="card2"/><circle cx="568" cy="265" r="17" fill="#8ec5ff" fill-opacity=".15"/><text x="562" y="270" class="tiny blue">02</text><text x="596" y="261" class="label">Esperar</text><text x="596" y="281" class="tiny">condições definidas</text>
+<rect x="454" y="348" width="206" height="70" rx="17" class="card2"/><circle cx="482" cy="383" r="17" fill="#91e5c0" fill-opacity=".15"/><text x="476" y="388" class="tiny mint">03</text><text x="510" y="379" class="label">Executar</text><text x="510" y="399" class="tiny">seguir limites</text>
+<rect x="205" y="348" width="206" height="70" rx="17" class="card2"/><circle cx="233" cy="383" r="17" fill="#efc17d" fill-opacity=".15"/><text x="227" y="388" class="tiny amber">04</text><text x="261" y="379" class="label">Registrar</text><text x="261" y="399" class="tiny">processo e contexto</text>
+<rect x="168" y="230" width="206" height="70" rx="17" class="card2"/><circle cx="196" cy="265" r="17" fill="#f39b9b" fill-opacity=".15"/><text x="190" y="270" class="tiny rose">05</text><text x="224" y="261" class="label">Revisar</text><text x="224" y="281" class="tiny">ajustar o processo</text>
+<circle cx="457" cy="274" r="74" fill="#171821" stroke="#2d3040"/><path d="M431 273h51m-14-14 14 14-14 14" fill="none" stroke="#b9a5ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="393" y="323" class="tiny">ciclo contínuo</text>
+</g>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

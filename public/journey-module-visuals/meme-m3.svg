@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">O caminho de um swap</title><desc id="desc">Representação educacional de uma cotação e execução em DEX.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#91e5c0" stop-opacity=".17"/><stop offset="1" stop-color="#91e5c0" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">O caminho de um swap</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="145" width="180" height="190" rx="18" class="card"/><circle cx="95" cy="205" r="27" fill="#b9a5ff" fill-opacity=".15" stroke="#b9a5ff" stroke-opacity=".6"/><path d="M84 205h22m-8-8 8 8-8 8" fill="none" stroke="#b9a5ff" stroke-width="2"/><text x="66" y="263" class="label">Carteira</text><text x="66" y="288" class="small">prepara pedido</text><text x="66" y="310" class="small">e assinatura</text>
+<rect x="267" y="145" width="180" height="190" rx="18" class="card"/><path d="M312 205h92" stroke="#91e5c0" stroke-width="5" stroke-linecap="round"/><path d="M332 187v36m46-36v36" stroke="#91e5c0" stroke-width="2"/><text x="291" y="263" class="label">Cotação</text><text x="291" y="288" class="small">rota, impacto</text><text x="291" y="310" class="small">e custos estimados</text>
+<rect x="492" y="145" width="180" height="190" rx="18" class="card"/><circle cx="582" cy="204" r="34" fill="#8ec5ff" fill-opacity=".1" stroke="#8ec5ff" stroke-width="2"/><circle cx="569" cy="204" r="12" fill="#91e5c0"/><circle cx="595" cy="204" r="12" fill="#8ec5ff"/><text x="516" y="263" class="label">Pool DEX</text><text x="516" y="288" class="small">troca entre reservas</text><text x="516" y="310" class="small">pela regra do pool</text>
+<rect x="717" y="145" width="161" height="190" rx="18" class="card"/><circle cx="770" cy="204" r="21" fill="#91e5c0" fill-opacity=".12" stroke="#91e5c0"/><path d="m760 204 7 7 14-16" fill="none" stroke="#91e5c0" stroke-width="2.5"/><text x="741" y="263" class="label">Confirmação</text><text x="741" y="288" class="small">rede processa</text><text x="741" y="310" class="small">ou pedido falha</text>
+</g>
+<path d="M224 240H261m188 0h37m188 0h37" stroke="#91e5c0" stroke-width="2" stroke-dasharray="5 6"/>
+<text x="42" y="384" class="small">Tolerância de preço não altera a liquidez do pool; confirme rede, destino e detalhes da assinatura.</text>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

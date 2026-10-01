@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Controles numa ordem de futuros</title><desc id="desc">Sequência fictícia para estudar tipos de ordem e limites.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#8ec5ff" stop-opacity=".17"/><stop offset="1" stop-color="#8ec5ff" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Controles numa ordem de futuros</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="143" width="188" height="224" rx="18" class="card"/><text x="68" y="179" class="kicker">01 · ANTES</text><circle cx="136" cy="235" r="31" fill="#b9a5ff" fill-opacity=".14"/><path d="M121 235h30m-8-8 8 8-8 8" fill="none" stroke="#b9a5ff" stroke-width="2"/><text x="68" y="294" class="label">Definir limite</text><text x="68" y="321" class="small">tamanho e risco</text><text x="68" y="343" class="small">antes da ordem</text>
+<rect x="258" y="143" width="188" height="224" rx="18" class="card"/><text x="284" y="179" class="kicker">02 · EXECUÇÃO</text><rect x="294" y="215" width="116" height="50" rx="10" fill="#8ec5ff" fill-opacity=".09" stroke="#8ec5ff" stroke-opacity=".45"/><path d="M309 249l17-17 14 10 25-18 24 11" fill="none" stroke="#8ec5ff" stroke-width="2"/><text x="284" y="294" class="label">Ordem enviada</text><text x="284" y="321" class="small">limite: controla preço</text><text x="284" y="343" class="small">mercado: busca execução</text>
+<rect x="474" y="143" width="188" height="224" rx="18" class="card"/><text x="500" y="179" class="kicker">03 · PROTEÇÃO</text><path d="M510 236h115" stroke="#525767" stroke-width="3"/><path d="M510 218h115" stroke="#f39b9b" stroke-width="2" stroke-dasharray="5 5"/><circle cx="567" cy="236" r="10" fill="#8ec5ff"/><text x="500" y="294" class="label">Stop configurado</text><text x="500" y="321" class="small">gatilho pode diferir</text><text x="500" y="343" class="small">do preço de execução</text>
+<rect x="690" y="143" width="188" height="224" rx="18" class="card"/><text x="716" y="179" class="kicker">04 · SAÍDA</text><rect x="724" y="214" width="120" height="53" rx="11" fill="#91e5c0" fill-opacity=".08" stroke="#91e5c0" stroke-opacity=".4"/><text x="746" y="237" class="label mint">reduce-only</text><text x="745" y="255" class="tiny">somente reduzir</text><text x="716" y="294" class="label">Fechar ou rever</text><text x="716" y="321" class="small">registre execução</text><text x="716" y="343" class="small">e diferença de preço</text>
+</g>
+<path d="M231 254h23m194 0h23m194 0h23" stroke="#8ec5ff" stroke-width="2" stroke-dasharray="5 6"/>
+<text x="42" y="411" class="small">Preço de marca, gatilho, liquidez e regras da plataforma podem afetar a ordem; consulte documentação do contrato.</text>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

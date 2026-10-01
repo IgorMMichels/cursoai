@@ -90,7 +90,7 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
     setIsSaving(true)
     try {
       const result = await updateProfile({ name, bio, location, avatarDataUrl: avatarUrl }, avatarBlob)
-      setNotice(result.synced ? 'Perfil atualizado no Supabase.' : `Perfil não foi salvo: ${result.error ?? 'Supabase indisponível.'}`)
+      setNotice(result.synced ? 'Perfil atualizado.' : `Perfil não foi salvo: ${result.error ?? 'Tente novamente.'}`)
       if (result.synced) setAvatarBlob(undefined)
     } finally {
       setIsSaving(false)
@@ -101,11 +101,11 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
 
   return <>
     <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label="Editar perfil" className={compact
-      ? 'grid size-9 place-items-center rounded-full border border-white/[.08] bg-[#14151c] text-[#d2c4ff] transition hover:border-[#b49cff]/35 hover:bg-[#211f2b]'
+      ? 'grid size-9 place-items-center rounded-xl border border-white/[.08] bg-[#14151c] text-[#d2c4ff] transition hover:border-[#b49cff]/35 hover:bg-[#211f2b]'
       : 'group flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/[.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]'}>
-      <Avatar className={compact ? 'size-8 border border-white/10 bg-[#1c2c25]' : 'size-9 border border-[#a78bfa]/25 bg-[#a78bfa]/[.09]'}>
-        <AvatarImage src={user?.avatarUrl} alt="" />
-        <AvatarFallback className="bg-[#211f2b] font-display text-xs font-semibold text-[#cbbaff]">{initials}</AvatarFallback>
+      <Avatar className={compact ? 'size-8 rounded-[10px] border border-white/10 bg-[#1c2c25] after:rounded-[10px]' : 'size-9 border border-[#a78bfa]/25 bg-[#a78bfa]/[.09]'}>
+        <AvatarImage src={user?.avatarUrl} alt="" className={compact ? 'rounded-[10px]' : undefined} />
+        <AvatarFallback className={`bg-[#211f2b] font-display text-xs font-semibold text-[#cbbaff] ${compact ? 'rounded-[10px]' : ''}`}>{initials}</AvatarFallback>
       </Avatar>
       {!compact && <span className="min-w-0 flex-1">
         <span className="block truncate text-xs font-medium text-[#dae4dd]">{user?.name}</span>
@@ -169,7 +169,7 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
         </div>
 
         <footer className="flex items-center justify-between gap-4 border-t border-white/[.07] px-5 py-4 sm:px-7">
-          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{authConfigured ? 'Sincronização com Supabase' : 'Banco indisponível'}</span>
+          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{authConfigured ? 'Perfil salvo na conta' : 'Login indisponível'}</span>
           <div className="ml-auto flex gap-2">
             <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl border border-white/[.1] px-4 text-xs font-medium text-[#aeb8b0] transition hover:bg-white/[.05]">Cancelar</button>
             <button type="submit" disabled={isSaving} className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] transition hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSaving ? <LoaderCircle size={14} className="animate-spin" /> : notice.startsWith('Perfil atualizado') ? <Check size={14} /> : <ImagePlus size={14} />}{isSaving ? 'Salvando…' : 'Salvar perfil'}</button>

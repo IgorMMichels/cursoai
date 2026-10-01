@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight, ExternalLink, HelpCircle, LockKeyhole, ShieldAlert, X } from 'lucide-react'
+import { ArrowRight, ExternalLink, ShieldAlert, X } from 'lucide-react'
 
 type WalletId = 'tronlink' | 'metamask' | 'trust' | 'phantom' | 'exodus'
 type GuideScreenshot = {
@@ -98,7 +98,7 @@ const wallets: WalletGuide[] = [
       { title: 'Confirme a frase', text: 'O app pede para confirmar palavras na ordem. Faça isso em local privado. A frase dá controle total sobre os fundos.', },
       { title: 'Obtenha USDT na rede TRON', text: 'Se usar uma exchange, compre USDT e confira se ela permite saque por TRON (TRC-20). Opções e taxas variam por país e plataforma.', },
       { title: 'Envie para o checkout', text: 'No TronLink, abra Transferir, selecione USDT (TRC-20), cole o endereço exibido pelo checkout e confira endereço, rede e valor antes de assinar. Mantenha TRX para taxas de rede.', screenshot: { src: '/wallet-tutorials/tronlink-home-send.png', alt: 'Tela real do TronLink com botão Send e lista de ativos TRON', sourceUrl: 'https://support.tronlink.org/hc/en-us/articles/17663848410649-How-to-transfer-receive-assets-in-TronLink-App', sourceLabel: 'Tutorial oficial TronLink', layout: 'portrait' } },
-      { title: 'Aguarde confirmação', text: 'Confira o status no app e no explorador oficial da rede. O tempo varia. Acesso só é liberado após confirmação pelo checkout, que ainda está indisponível.', },
+      { title: 'Aguarde confirmação', text: 'Confira o status no app e no explorador oficial da rede. O tempo varia.', },
     ]
   },
   {
@@ -154,8 +154,7 @@ const wallets: WalletGuide[] = [
 export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing' | 'access' }) {
   const [selectedWallet, setSelectedWallet] = useState<WalletGuide | null>(null)
   const [selectedExchange, setSelectedExchange] = useState<ExchangeGuide | null>(null)
-  const [showPayment, setShowPayment] = useState(false)
-  const closeModal = useCallback(() => { setSelectedWallet(null); setShowPayment(false) }, [])
+  const closeModal = useCallback(() => setSelectedWallet(null), [])
   const isAccessPage = variant === 'access'
 
   return <>
@@ -170,7 +169,7 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
         </div>
 
         <div className="wallet-cards-grid" aria-label="Escolha sua carteira">
-          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null); setShowPayment(false) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog" aria-label={'Abrir guia de pagamento com ' + wallet.name}>
+          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog" aria-label={'Abrir guia de pagamento com ' + wallet.name}>
             <span className="wallet-choice-top"><WalletIcon wallet={wallet} />{wallet.recommended && <span className="wallet-recommended">Recomendada</span>}{!wallet.compatible && <span className="wallet-unsupported">Sem TRON</span>}</span>
             <span className="wallet-choice-name">{wallet.name}</span>
             <span className="wallet-choice-description">{wallet.description}</span>
@@ -181,7 +180,7 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
         <div className="exchange-guide-block">
           <div className="exchange-guide-heading"><div><p className="eyebrow">como comprar · passo 2</p><h3>Compre USDT na exchange.</h3></div><p>Tutoriais educativos; não são recomendação. Disponibilidade e taxas variam. Links de indicação podem gerar comissão.</p></div>
           <div className="exchange-cards-grid" aria-label="Tutoriais de exchanges">
-            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null); setShowPayment(false) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog" aria-label={'Abrir tutorial da ' + exchange.name}>
+            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog" aria-label={'Abrir tutorial da ' + exchange.name}>
               <span className="exchange-card-top"><WalletIcon wallet={exchange} className="exchange-brand-icon" /><span className={exchange.supportsTron ? 'exchange-compatible' : 'exchange-incompatible'}>{exchange.status}</span></span>
               <span className="exchange-choice-name">{exchange.name}</span>
               <span className="exchange-choice-description">{exchange.description}</span>
@@ -190,11 +189,9 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
           </div>
         </div>
 
-        <div className="wallet-network-note"><ShieldAlert size={17} /><p>Antes de qualquer transferência, confira se endereço, ativo e rede correspondem. USDT TRC-20 exige endereço compatível com TRON.</p></div>
-        <div className="wallet-checkout-note"><HelpCircle size={16} /><p>Checkout indisponível: não há endereço validado nem confirmação de transação. Não envie USDT para pagar o curso.</p></div>
       </div>
     </section>
-    {selectedWallet && <WalletModal wallet={selectedWallet} showPayment={showPayment} onClose={closeModal} onContinue={() => setShowPayment(true)} />}
+    {selectedWallet && <WalletModal wallet={selectedWallet} onClose={closeModal} />}
     {selectedExchange && <ExchangeGuideModal exchange={selectedExchange} onClose={() => setSelectedExchange(null)} />}
   </>
 }
@@ -266,26 +263,19 @@ function ExchangeGuideModal({ exchange, onClose }: { exchange: ExchangeGuide; on
   </div>, document.body)
 }
 
-function WalletModal({ wallet, showPayment, onClose, onContinue }: { wallet: WalletGuide; showPayment: boolean; onClose: () => void; onContinue: () => void }) {
-  const { dialogRef, closeButtonRef } = useDialogFocus(onClose, String(showPayment))
+function WalletModal({ wallet, onClose }: { wallet: WalletGuide; onClose: () => void }) {
+  const { dialogRef, closeButtonRef } = useDialogFocus(onClose, wallet.id)
 
   return createPortal(<div className="wallet-guide-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
     <div ref={dialogRef} className="wallet-guide-dialog" role="dialog" aria-modal="true" aria-labelledby="wallet-dialog-title" tabIndex={-1}>
       <div className="wallet-dialog-header">
         <div className="wallet-dialog-heading">
           <WalletIcon wallet={wallet} className="wallet-brand-icon-large" />
-          <div><p className="wallet-dialog-kicker">{showPayment ? 'Próxima etapa' : wallet.compatible ? 'Guia de uso' : 'Compatibilidade da rede'}</p><h2 id="wallet-dialog-title">{showPayment ? 'Pagamento indisponível' : 'Como pagar com ' + wallet.name}</h2></div>
+          <div><p className="wallet-dialog-kicker">{wallet.compatible ? 'Guia de uso' : 'Compatibilidade da rede'}</p><h2 id="wallet-dialog-title">Como pagar com {wallet.name}</h2></div>
         </div>
         <button ref={closeButtonRef} type="button" onClick={onClose} className="wallet-dialog-close" aria-label="Fechar guia"><X size={20} /></button>
       </div>
 
-      {showPayment ? <div className="wallet-payment-unavailable">
-        <span className="wallet-payment-icon"><LockKeyhole size={22} /></span>
-        <p className="wallet-dialog-kicker">Checkout indisponível</p>
-        <h3>Checkout ainda não configurado.</h3>
-        <p>Não há endereço de recebimento nem confirmação automática nesta versão. Não envie USDT. Nenhum pagamento será feito ou acesso liberado por transferência.</p>
-        <button type="button" onClick={onClose} className="wallet-primary-button">Entendi, fechar</button>
-      </div> : <>
         <div className="wallet-dialog-intro"><p>{wallet.compatible ? 'Etapas para preparar e conferir transferência de USDT em TRON. Imagens mostram telas de guias oficiais.' : 'TRON não aparece entre redes suportadas pela Phantom; guia abaixo mostra alternativas seguras.'}</p></div>
         {wallet.warning && <div className="wallet-warning"><ShieldAlert size={18} /><p>{wallet.warning}</p></div>}
         <div className="wallet-step-list">
@@ -297,9 +287,8 @@ function WalletModal({ wallet, showPayment, onClose, onContinue }: { wallet: Wal
         </div>
         <div className="wallet-dialog-footer">
           <a className="wallet-source-link" href={wallet.sourceUrl} target="_blank" rel="noreferrer">{wallet.sourceLabel} <ExternalLink size={12} /></a>
-          {wallet.compatible ? <button type="button" onClick={onContinue} className="wallet-primary-button">Ver status do checkout <ArrowRight size={15} /></button> : <button type="button" onClick={onClose} className="wallet-secondary-button">Escolher outra carteira</button>}
+          <button type="button" onClick={onClose} className={wallet.compatible ? 'wallet-primary-button' : 'wallet-secondary-button'}>{wallet.compatible ? 'Fechar guia' : 'Escolher outra carteira'}</button>
         </div>
-      </>}
     </div>
   </div>, document.body)
 }

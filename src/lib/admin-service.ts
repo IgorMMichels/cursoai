@@ -9,7 +9,7 @@ export type AdminCourseModule = { id: string; ordinal: number; title: string; su
 export type AdminSnapshot = { events: { id: string; type: string; code: string; at: string }[]; orders: AdminOrder[]; payouts: AdminPayout[]; affiliates: AdminAffiliate[]; reviews: StudentReview[]; modules: AdminCourseModule[] }
 
 export async function loadAdminSnapshot(): Promise<AdminSnapshot> {
-  if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
+  if (!supabase) throw new Error('Serviço indisponível no momento.')
   const db = supabase
   const [profiles, affiliateProfiles, events, orders, commissions, payouts, reviews, courseModules, lessons] = await Promise.all([
     db.from('profiles').select('id,display_name'),

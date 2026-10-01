@@ -1,7 +1,27 @@
 import { ArrowRight, Image } from 'lucide-react'
-import { moduleCovers, moduleVisualGuides } from '@/lib/course-media'
+import { journeyModuleVisuals, moduleCovers, moduleVisualGuides } from '@/lib/course-media'
 
 export function LessonVisual({ moduleId }: { moduleId: string }) {
+  const visual = journeyModuleVisuals[moduleId]
+  if (visual) return (
+    <figure className="my-8 overflow-hidden rounded-2xl border border-white/[.08] bg-[#101117]">
+      <div className="relative overflow-x-auto overscroll-x-contain">
+        <img
+          src={`/journey-module-visuals/${moduleId}.svg`}
+          alt={visual.alt}
+          loading="lazy"
+          decoding="async"
+          className="block h-auto min-w-[640px] w-full"
+        />
+      </div>
+      <figcaption className="border-t border-white/[.07] px-4 py-3 sm:px-5">
+        <p className="text-[11px] font-medium text-[#dce6df]">{visual.title}</p>
+        <p className="mt-1 text-[10px] leading-relaxed text-[#87958d]">{visual.description}</p>
+        <p className="mt-2 text-[9px] text-[#777b8c] sm:hidden">Deslize o diagrama para explorar.</p>
+      </figcaption>
+    </figure>
+  )
+
   const guide = moduleVisualGuides[moduleId]
   if (!guide) return null
 

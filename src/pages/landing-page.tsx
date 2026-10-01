@@ -1,19 +1,30 @@
-import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
 import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { WalletGuideSection } from '@/components/wallet-guides'
 import { CourseOutline } from '@/components/course-outline'
 import { allLessons, modules } from '@/lib/course'
+import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
 
 const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
+const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
+
+const journeyModuleCount = localJourneys.reduce((total, journey) => total + journey.modules.length, 0)
+const journeyLessonCount = localJourneys.reduce(
+  (total, journey) => total + journey.modules.reduce((moduleTotal, module) => moduleTotal + module.lessons.length, 0),
+  0,
+)
+const TOTAL_JOURNEYS = localJourneys.length + 1
+const TOTAL_MODULES = journeyModuleCount + modules.length
+const TOTAL_LESSONS = journeyLessonCount + allLessons.length
 
 const heroContentReveal: Variants = {
   hidden: { opacity: 0, y: 18 },
@@ -39,35 +50,77 @@ const methodSteps = [
 
 export function LandingPage() {
   const [currency, setCurrency] = useState<Currency>('SOL')
-  const navigate = useNavigate()
+  const [selectedPlan, setSelectedPlan] = useState<PlanId | null>(null)
+  const location = useLocation()
+  useEffect(() => {
+    if (!location.hash) return
+    const id = location.hash.slice(1)
+    if (!id) return
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(id)
+      if (!target) return
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [location.hash, location.pathname])
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const anchor = (event.target as HTMLElement).closest?.('a[href^="#"]')
+      if (!(anchor instanceof HTMLAnchorElement)) return
+      const href = anchor.getAttribute('href') ?? ''
+      if (!href.startsWith('#') || href.length < 2) return
+      const target = document.getElementById(href.slice(1))
+      if (!target) return
+      event.preventDefault()
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      window.history.pushState(null, '', href)
+    }
+    document.addEventListener('click', onClick)
+    return () => document.removeEventListener('click', onClick)
+  }, [])
   const choosePlan = (plan: PlanId) => {
-    navigate(`/login?plano=${plan}&moeda=${currency}`)
+    setSelectedPlan(plan)
   }
 
-  return <div className="min-h-screen overflow-x-clip bg-[#09090d] text-[#e6eee9]">
+  return <div className="min-h-screen overflow-x-clip bg-[#09090d] pb-10 text-[#e6eee9]">
     <SiteHeader />
-    <main>
+    <main className="w-full max-w-full overflow-x-hidden">
       <section className="relative isolate overflow-hidden border-b border-white/[.04]">
-        <div className="hero-grid absolute inset-0 -z-10 opacity-75" />
-        <div className="absolute -left-40 top-20 -z-10 size-[450px] rounded-full bg-[#a78bfa]/[.055] blur-[120px]" />
-        <div className="page-shell grid min-h-[650px] items-center gap-10 pb-16 pt-14 lg:grid-cols-[1.08fr_.92fr] lg:pb-20 lg:pt-20">
-          <motion.div className="relative z-10" variants={heroContentReveal} initial="hidden" animate="visible">
-            <motion.p variants={heroItemReveal} className="mb-6 text-sm text-[#a3a5ae]">Cripto do Zero · Curso online</motion.p>
-            <motion.h1 variants={heroItemReveal} className="landing-hero-title text-[#edf4ef]">Entenda cripto.<span>Decida com critério.</span></motion.h1>
-            <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[590px]">De Bitcoin e Ethereum a carteiras, DeFi e futuros: aprenda a comprar, analisar projetos e dimensionar riscos com aulas narradas e exercícios interativos. Sem promessa de lucro.</motion.p>
-            <motion.div variants={heroItemReveal} className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/login" className="button-motion focus-ring inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white">Criar minha conta <ArrowUpRight size={16} /></Link>
-              <a href="#jornada" className="button-motion inline-flex h-12 items-center gap-2 rounded-xl border border-white/[.15] px-5 text-sm text-[#c1c2cb] transition-colors hover:border-white/30 hover:bg-white/[.03]">Ver conteúdo do curso <ArrowDown size={15} /></a>
+        <Suspense fallback={null}>
+          <HeroWebGLShader />
+        </Suspense>
+        <div className="hero-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(9,9,13,.18)_0%,rgba(9,9,13,0)_32%,rgba(9,9,13,0)_62%,rgba(9,9,13,.82)_100%),linear-gradient(90deg,rgba(9,9,13,.62)_0%,rgba(9,9,13,.18)_46%,rgba(9,9,13,0)_72%)]" aria-hidden="true" />
+        <div className="page-shell relative z-10 grid min-h-[660px] items-center gap-12 pb-16 pt-14 lg:grid-cols-[1.06fr_.94fr] lg:pb-24 lg:pt-24">
+          <motion.div className="relative" variants={heroContentReveal} initial="hidden" animate="visible">
+            <motion.div variants={heroItemReveal} className="mb-7 flex items-center gap-4">
+              <span className="h-px w-10 shrink-0 bg-[#a78bfa]/70" aria-hidden="true" />
+              <p className="text-[11px] font-semibold uppercase tracking-[.22em] text-[#c6baf0]">{TOTAL_JOURNEYS} jornadas · do zero ao plano de trade</p>
             </motion.div>
-            <motion.div variants={heroItemReveal} className="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-[11px] text-[#8ca096]"><span className="flex items-center gap-2"><AudioLines size={14} className="text-[#a78bfa]" />áudios incluídos</span><span className="flex items-center gap-2"><BookOpen size={14} className="text-[#98abff]" />quizzes explicados</span><span className="flex items-center gap-2"><Shield size={14} className="text-[#e4bc76]" />foco em segurança</span></motion.div>
+            <motion.h1 variants={heroItemReveal} className="landing-hero-title text-[#edf4ef]">Entenda cripto.<span>Decida com critério.</span></motion.h1>
+            <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[580px] text-[15px] leading-[1.8] text-[#b3b0bd] sm:text-base">{TOTAL_LESSONS} aulas narradas com transcrição, exercício em toda aula, quiz explicado por módulo e certificado no Cripto do Zero. De Bitcoin e carteiras a memecoins, DeFi e futuros — com checklist de segurança em cada passo. Sem promessa de lucro.</motion.p>
+            <motion.div variants={heroItemReveal} className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+              <Link to="/login" className="button-motion focus-ring inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white sm:w-auto">Criar minha conta <ArrowUpRight size={16} /></Link>
+              <a href="#jornada" className="button-motion inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[.15] bg-white/[.02] px-5 text-sm text-[#c1c2cb] backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/[.05] sm:w-auto">Ver conteúdo do curso <ArrowDown size={15} /></a>
+            </motion.div>
+            <motion.div variants={heroItemReveal} className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-white/[.07] pt-6 text-[11px] tracking-wide text-[#8ca096]">
+              <span className="flex items-center gap-2"><AudioLines size={14} className="text-[#a78bfa]" />áudios incluídos</span>
+              <span className="hidden h-3 w-px bg-white/10 sm:block" aria-hidden="true" />
+              <span className="flex items-center gap-2"><BookOpen size={14} className="text-[#98abff]" />quizzes explicados</span>
+              <span className="hidden h-3 w-px bg-white/10 sm:block" aria-hidden="true" />
+              <span className="flex items-center gap-2"><Shield size={14} className="text-[#e4bc76]" />foco em segurança</span>
+            </motion.div>
+            <motion.p variants={heroItemReveal} className="mt-4 text-[11px] leading-relaxed text-[#6c7a72]">Comece pelos fundamentos. Nenhuma aula exige comprar cripto.</motion.p>
           </motion.div>
           <HeroVisual />
         </div>
-        <div className="page-shell grid grid-cols-3 border-t border-white/[.07] py-5 text-center sm:text-left">
-          <div className="border-r border-white/[.07] px-2 sm:px-7"><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9]">9</p><p className="mt-1 text-[10px] text-[#74877c] sm:text-xs">módulos progressivos</p></div>
-          <div className="border-r border-white/[.07] px-2 sm:px-7"><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9]">27</p><p className="mt-1 text-[10px] text-[#74877c] sm:text-xs">aulas e exercícios</p></div>
-          <div className="px-2 sm:px-7"><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9]">3</p><p className="mt-1 text-[10px] text-[#74877c] sm:text-xs">atividades guiadas</p></div>
-        </div>
+        <dl className="page-shell relative z-10 grid grid-cols-3 border-t border-white/[.07] bg-[#09090d]/60 py-5 backdrop-blur-sm">
+          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">Jornadas</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{TOTAL_JOURNEYS}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">jornadas · do zero ao avançado</dd></div>
+          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">Aulas narradas</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{TOTAL_LESSONS}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">aulas narradas com exercício</dd></div>
+          <div className="px-2 sm:px-7"><dt className="sr-only">Módulos</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{TOTAL_MODULES}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">módulos com quiz explicado</dd></div>
+        </dl>
       </section>
 
       <section id="metodo" className="learning-method scroll-mt-24 py-20 sm:py-28">
@@ -81,7 +134,7 @@ export function LandingPage() {
               {methodSteps.map((step) => <article key={step.number} className="learning-method-step"><span>{step.number}</span><div><h3>{step.title}</h3><p>{step.detail}</p></div></article>)}
             </div>
             <div className="learning-map">
-              <div className="learning-map-head"><div><span>MAPA DE APRENDIZADO</span><h3>Da base à decisão</h3></div><span className="learning-map-status"><i /> 9 módulos</span></div>
+              <div className="learning-map-head"><div><span>MAPA DE APRENDIZADO</span><h3>Da base à decisão</h3></div><span className="learning-map-status"><i /> {TOTAL_MODULES} módulos · {TOTAL_JOURNEYS} jornadas</span></div>
               <svg className="learning-map-chart" viewBox="0 0 640 220" role="img" aria-labelledby="learning-map-title learning-map-desc">
                 <title id="learning-map-title">Sequência de aprendizado do curso</title><desc id="learning-map-desc">Etapas progressivas: fundamentos, compra, proteção e processo pessoal. Não representa preço nem retorno.</desc>
                 <defs><linearGradient id="learning-line" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#67dff3" /><stop offset="1" stopColor="#b49cff" /></linearGradient><linearGradient id="learning-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#a78bfa" stopOpacity=".18" /><stop offset="1" stopColor="#a78bfa" stopOpacity="0" /></linearGradient></defs>
@@ -107,12 +160,10 @@ export function LandingPage() {
           <motion.div className="landing-overview-bento mt-10" variants={sectionReveal} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.12 }}>
             <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-assets">
               <div className="market-bento-topline"><span>ESCOPO DO CURSO</span><BookOpen size={15} /></div>
-              <div className="market-asset-orbit" aria-label="Bitcoin, Ethereum, DeFi e futuros">
-                <span className="market-asset-chip market-asset-btc">₿ <small>BITCOIN</small></span>
-                <span className="market-asset-chip market-asset-eth">◆ <small>ETHEREUM</small></span>
-                <span className="market-asset-chip market-asset-defi">DEFI</span>
-                <span className="market-asset-chip market-asset-futures">FUTUROS</span>
-                <i /><i /><i />
+              <div className="market-asset-gallery" aria-label="Bitcoin, Ethereum e Solana">
+                <div className="market-asset-item"><span className="market-asset-image"><img src="/coin-icons/btc.svg" alt="" /></span><span>Bitcoin</span></div>
+                <div className="market-asset-item"><span className="market-asset-image"><img src="/coin-icons/eth.svg" alt="" /></span><span>Ethereum</span></div>
+                <div className="market-asset-item"><span className="market-asset-image"><img src="/coin-icons/sol.svg" alt="" /></span><span>Solana</span></div>
               </div>
               <div className="market-bento-copy"><h3>Cripto além de um ativo.</h3><p>Entenda redes, custódia, protocolos e formas diferentes de exposição.</p></div>
             </motion.article>
@@ -194,7 +245,7 @@ export function LandingPage() {
 
       <section id="planos" className="pricing-section scroll-mt-24 border-y border-white/[.06] bg-[#0f1017] py-20 sm:py-24">
         <AmbientShader className="pricing-shader" />
-        <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">escolha seu tempo de estudo</p><h2 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h2><p className="body-lg mt-4 text-[15px]">Checkout ainda indisponível. Escolha um plano para ver valores e criar sua conta; nenhum pagamento será processado.</p></div>
+        <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">escolha seu tempo de estudo</p><h2 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h2><p className="body-lg mt-4 text-[15px]">Escolha o período de acesso que combina com seu ritmo de estudo.</p></div>
           <div className="mt-8 flex justify-center"><div className="inline-flex rounded-xl border border-white/[.08] bg-[#14151d] p-1" role="group" aria-label="Moeda de pagamento">{(['BRL', 'SOL'] as const).map((item) => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)} className={`focus-ring rounded-xl px-5 py-2 text-xs font-semibold transition-colors ${currency === item ? 'bg-[#b49cff] text-[#100c19] hover:bg-[#c6b4ff]' : 'text-[#b1abbc] hover:bg-white/[.05] hover:text-white'}`}>{item === 'BRL' ? 'Reais · BRL' : 'Solana · SOL'}</button>)}</div></div>
           <div className="pricing-bento mx-auto mt-8">
             {(['month', 'quarter', 'lifetime'] as const).map((id) => {
@@ -206,25 +257,24 @@ export function LandingPage() {
                 <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#93a69b]">{plan.description}</p>
                 <div className="my-5 h-px bg-white/[.08]" />
                 <ul className="space-y-3 text-xs text-[#b6c5bc]">{plan.features.map((feature) => <li key={feature} className="flex gap-2.5"><Check size={14} className="mt-0.5 shrink-0 text-[#a78bfa]" />{feature}</li>)}</ul>
-                <button type="button" onClick={() => choosePlan(id)} className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold transition-colors ${plan.featured ? 'bg-[#a78bfa] text-[#09090d] hover:bg-[#c1acff]' : 'border border-white/[.12] text-[#d9e3dc] hover:bg-white/[.04]'}`}>{plan.featured ? 'Escolher acesso vitalício' : `Escolher ${plan.name.toLowerCase()}`}<ArrowUpRight size={14} /></button>
-                <p className="mt-3 text-center text-[10px] text-[#73867b]">Checkout indisponível</p>
+                <button type="button" onClick={() => choosePlan(id)} className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold transition-colors ${plan.featured ? 'bg-[#a78bfa] text-[#09090d] hover:bg-[#c1acff]' : 'border border-white/[.12] text-[#d9e3dc] hover:bg-white/[.04]'}`}>Assinar {plan.name.toLowerCase()}<ArrowUpRight size={14} /></button>
+                {selectedPlan === id && <p role="alert" className="mt-3 rounded-xl border border-[#a78bfa]/25 bg-[#a78bfa]/[.07] px-3 py-2 text-center text-xs text-[#d2c4ff]">Checkout indisponível no momento. Nenhum pagamento foi iniciado.</p>}
               </div>
             })}
           </div>
-          <p className="mx-auto mt-6 max-w-3xl text-center text-[11px] leading-relaxed text-[#708279]">Os valores em SOL não acompanham cotação cambial em tempo real. Nenhum plano pode ser comprado até o checkout ser conectado.</p>
+          <p className="mx-auto mt-6 max-w-3xl text-center text-[11px] leading-relaxed text-[#708279]">Os valores em SOL não acompanham cotação cambial em tempo real.</p>
         </div>
       </section>
 
-      <section className="page-shell grid gap-10 py-20 sm:py-24 lg:grid-cols-[.7fr_1.3fr]">
-        <div><p className="eyebrow">perguntas comuns</p><h2 className="display-lg mt-4 max-w-sm text-[#eaf2ec]">Sem letra miúda.</h2><p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8fa197]">O checkout está indisponível. Os botões não cobram nem conectam uma carteira.</p><Link to="/afiliar" className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#a78bfa]/20 px-4 py-2.5 text-xs text-[#c1acff] hover:bg-[#a78bfa]/[.06]">Quero participar como afiliado <ArrowRight size={14} /></Link></div>
+      <section className="page-shell grid gap-10 pb-8 pt-20 sm:pb-10 sm:pt-24 lg:grid-cols-[.7fr_1.3fr]">
+        <div><p className="eyebrow">perguntas comuns</p><h2 className="display-lg mt-4 max-w-sm text-[#eaf2ec]">Sem letra miúda.</h2><p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8fa197]">Tire suas dúvidas sobre conteúdo, acesso e programa de afiliados.</p><Link to="/afiliar" className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#a78bfa]/20 px-4 py-2.5 text-xs text-[#c1acff] hover:bg-[#a78bfa]/[.06]">Quero participar como afiliado <ArrowRight size={14} /></Link></div>
         <div className="faq-list divide-y divide-white/[.08] border-y border-white/[.08]">{[
           ['Este curso promete que vou ganhar dinheiro?', 'Não. Ele ensina conceitos, pesquisa e organização de risco. O mercado pode gerar perdas, inclusive perda total do capital.'],
           ['Preciso saber programar ou já ter cripto?', 'Não. A trilha começa pelos fundamentos e explica termos antes de avançar. Você pode concluir tudo sem comprar ativos.'],
-          ['O que quer dizer acesso vitalício?', 'Acesso sem prazo de expiração ao material desta trilha. O plano ainda não pode ser comprado porque o checkout não está conectado.'],
-          ['Como funciona o plano de afiliados?', 'Cliques e cadastros são registrados no Supabase. Comissão só é gerada após confirmação do pagamento pelo servidor; o checkout ainda está indisponível.'],
+          ['O que quer dizer acesso vitalício?', 'Acesso sem prazo de expiração ao material desta trilha.'],
+          ['Como funciona o plano de afiliados?', 'Cliques e cadastros ficam ligados ao seu código. Comissão só após confirmação do pagamento.'],
         ].map(([q, a], index) => <details key={q} className="group py-4"><summary className="faq-question flex cursor-pointer list-none items-center gap-4 text-sm font-medium text-[#dce6df] marker:hidden"><span className="faq-number">{String(index + 1).padStart(2, '0')}</span><span className="flex-1">{q}</span><Plus size={16} className="shrink-0 text-[#7b8192] transition-all duration-300 group-open:rotate-45 group-open:text-[#b49cff]" /></summary><p className="max-w-2xl pb-1 pl-10 pt-3 text-xs leading-relaxed text-[#8790a2]">{a}</p></details>)}</div>
       </section>
-      <div className="border-t border-white/[.06] bg-[#0c0c11] py-5"><div className="page-shell flex items-start gap-3"><span className="mt-0.5 text-[#e4bc76]"><Shield size={15} /></span><p className="max-w-5xl text-[10px] leading-relaxed text-[#74877c]">Conteúdo educativo, não é recomendação individual de investimento. Criptoativos têm alta volatilidade, risco tecnológico, de liquidez e de perda parcial ou total. Pesquise por conta própria e procure orientação profissional para decisões financeiras e tributárias.</p></div></div>
     </main>
     <SiteFooter />
   </div>
@@ -236,9 +286,6 @@ function HeroVisual() {
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
         {!entryActive && <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
-        <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-2 text-[9px] font-semibold uppercase tracking-[.16em] text-white/75 backdrop-blur-md">
-          <span className="size-1.5 animate-pulse rounded-full bg-violet-200 shadow-[0_0_14px_#bca8ff]" /> Bitcoin · visualização ASCII
-        </div>
         <div className="absolute bottom-5 left-5 right-5 z-10 flex items-end justify-between gap-4">
           <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">pergunta antes da entrada</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">O que faria você mudar de ideia?</p></div>
         </div>

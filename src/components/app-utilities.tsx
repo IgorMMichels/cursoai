@@ -82,7 +82,6 @@ export function PlatformEntryAnimation({ onVisibilityChange }: { onVisibilityCha
     <div className="platform-loader-content">
       <div className="platform-loader-brand"><Brand compact /><span>Cripto do Zero</span></div>
       <div className="platform-ascii-stage" role="img" aria-label="Moeda de Bitcoin em arte ASCII">
-        <div className="platform-ascii-stage-heading"><span><i /> BITCOIN · VISUALIZAÇÃO ASCII</span></div>
         <Suspense fallback={<div className="platform-ascii-pending" role="img" aria-label="Carregando esfera de Bitcoin em ASCII"><pre>{'       .,:;-=+*#*=-:,.\n    .-+*#%@@@@@@@@@%#*+-.\n  :+#%@@@@@@@₿@@@@@@@%#+:\n  :+#%@@@@@@@@@@@@@@@@@%#+:\n    .-+*#%@@@@@@@@@%#*+-.\n       .,:;-=+*#*=-:,.'}</pre></div>}>
           <AsciiModelViewer className="absolute inset-0" baseScale={1.12} showLoadingOverlay={false} />
         </Suspense>

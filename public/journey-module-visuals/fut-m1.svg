@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Componentes de um perpétuo</title><desc id="desc">Mapa conceitual sem preço ou recomendação de operação.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#8ec5ff" stop-opacity=".17"/><stop offset="1" stop-color="#8ec5ff" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Componentes de um perpétuo</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="137" width="252" height="256" rx="18" class="card"/><text x="66" y="175" class="kicker">CONTRATO</text>
+<rect x="66" y="201" width="93" height="72" rx="12" fill="#91e5c0" fill-opacity=".1" stroke="#91e5c0" stroke-opacity=".5"/><text x="98" y="232" class="label mint">LONG</text><text x="82" y="255" class="tiny">beneficia alta*</text>
+<rect x="177" y="201" width="93" height="72" rx="12" fill="#f39b9b" fill-opacity=".08" stroke="#f39b9b" stroke-opacity=".5"/><text x="205" y="232" class="label rose">SHORT</text><text x="188" y="255" class="tiny">beneficia queda*</text>
+<path d="M83 310H253" stroke="#62677a" stroke-width="2"/><path d="M168 301v18m-8-9 8-9 8 9" fill="none" stroke="#a78bfa" stroke-width="2"/>
+<text x="66" y="349" class="small">posição é contrato</text><text x="66" y="371" class="small">não custódia do ativo</text>
+<rect x="326" y="137" width="252" height="256" rx="18" class="card"/><text x="350" y="175" class="kicker">GARANTIA</text><circle cx="452" cy="253" r="62" fill="#8ec5ff" fill-opacity=".08" stroke="#8ec5ff" stroke-opacity=".55" stroke-width="2"/><circle cx="452" cy="253" r="38" fill="#8ec5ff" fill-opacity=".1" stroke="#8ec5ff" stroke-opacity=".3"/><text x="421" y="259" class="label">MARGEM</text>
+<text x="350" y="349" class="small">colateral sustenta exposição</text><text x="350" y="371" class="small">isolada ou compartilhada*</text>
+<rect x="610" y="137" width="268" height="256" rx="18" class="card"/><text x="634" y="175" class="kicker">REFERÊNCIAS E CUSTO</text>
+<path d="M640 231h204" stroke="#8ec5ff" stroke-width="2"/><circle cx="691" cy="231" r="7" fill="#8ec5ff"/><circle cx="787" cy="231" r="7" fill="#b9a5ff"/><text x="658" y="214" class="tiny blue">índice</text><text x="756" y="214" class="tiny violet">marca</text>
+<path d="M640 285h204" stroke="#343846"/><text x="634" y="314" class="label">Funding</text><text x="634" y="339" class="small">pagamento periódico entre lados</text><text x="634" y="364" class="tiny">regras mudam por contrato</text>
+</g>
+<text x="42" y="429" class="small">*Simplificação didática. Margem, funding e regras de liquidação variam por produto e plataforma.</text>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

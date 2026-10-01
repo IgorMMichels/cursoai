@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Peças que formam um mercado de token</title><desc id="desc">Esquema fictício relacionando oferta, preço, liquidez e atividade.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#a78bfa" stop-opacity=".17"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Peças que formam um mercado de token</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="120" width="248" height="270" rx="18" class="card"/>
+<text x="66" y="157" class="kicker">CAPITALIZAÇÃO</text><text x="66" y="202" class="metric">$1.2M</text>
+<rect x="66" y="226" width="200" height="1" fill="#343746"/>
+<text x="66" y="258" class="small">preço ilustrativo</text><text x="66" y="284" class="label">$0.012</text>
+<text x="66" y="324" class="small">oferta circulante</text><text x="66" y="350" class="label">100M unidades</text>
+<text x="66" y="376" class="tiny">preço × oferta circulante</text>
+<rect x="318" y="120" width="258" height="270" rx="18" class="card"/>
+<text x="342" y="157" class="kicker">POOL DE LIQUIDEZ</text>
+<circle cx="447" cy="248" r="61" fill="#a78bfa" fill-opacity=".09" stroke="#a78bfa" stroke-opacity=".5" stroke-width="2"/>
+<circle cx="424" cy="248" r="23" fill="#b9a5ff"/><circle cx="470" cy="248" r="23" fill="#91e5c0"/>
+<text x="393" y="322" class="small">reserva A</text><text x="465" y="322" class="small">reserva B</text>
+<text x="342" y="361" class="tiny">profundidade afeta impacto de ordens</text>
+<rect x="604" y="120" width="274" height="270" rx="18" class="card"/>
+<text x="628" y="157" class="kicker">ATIVIDADE</text>
+<rect x="632" y="274" width="24" height="55" rx="5" fill="#91e5c0" fill-opacity=".75"/><rect x="670" y="244" width="24" height="85" rx="5" fill="#91e5c0" fill-opacity=".5"/><rect x="708" y="260" width="24" height="69" rx="5" fill="#91e5c0" fill-opacity=".7"/><rect x="746" y="218" width="24" height="111" rx="5" fill="#91e5c0" fill-opacity=".42"/><rect x="784" y="236" width="24" height="93" rx="5" fill="#91e5c0" fill-opacity=".66"/>
+<path d="M628 330H850" class="line"/><text x="628" y="361" class="small">volume em intervalo hipotético</text>
+<text x="628" y="380" class="tiny">capitalização ≠ liquidez ≠ volume</text>
+</g>
+<path d="M290 255H316M576 255H602" stroke="#a78bfa" stroke-width="2" stroke-dasharray="4 6" opacity=".65"/>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

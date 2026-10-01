@@ -64,7 +64,7 @@ export async function saveCloudProfile(
     .eq('id', userId)
     .maybeSingle()
   if (currentError) throw currentError
-  if (!current) throw new Error('Perfil Supabase não encontrado. Reaplique migrações pendentes.')
+  if (!current) throw new Error('Perfil não encontrado.')
 
   const oldPath = current.avatar_path
   let avatarPath = oldPath

@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowRight, AudioLines, BookOpenCheck, Check, ChevronRight, Clock3, Play, Shield } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { AudioNarration } from '@/components/audio-narration'
 import { welcomeNarration } from '@/lib/audio-tracks'
@@ -11,8 +11,6 @@ import { allLessons, modules } from '@/lib/course'
 import { moduleCovers } from '@/lib/course-media'
 import { loadReviewSchedule, saveReviewSchedule, type ReviewSchedule } from '@/lib/learning-service'
 import { AmbientShader } from '@/components/ui/ambient-shader'
-
-const moduleIcons: Record<string, string> = { Blocks: '▦', ArrowLeftRight: '↔', Bitcoin: '₿', ScanSearch: '⌕', Scale: '⚖', ShieldCheck: '⌑', Orbit: '◉', ChartNoAxesCombined: '↗', Compass: '⌖' }
 const reviewCards = [
   { id: 'blockchain', prompt: 'O que uma blockchain ajuda a fazer?', answer: 'Manter um histórico compartilhado de transações validado pelas regras da rede.' },
   { id: 'custody', prompt: 'O que uma carteira realmente protege?', answer: 'As chaves que autorizam transações; as moedas ficam registradas na rede.' },
@@ -25,7 +23,8 @@ const reviewCards = [
 
 export function CourseDashboard() {
   const { user, completedLessons } = useSession()
-  const percent = Math.round((completedLessons.length / allLessons.length) * 100)
+  const legacyCompleted = allLessons.filter((lesson) => completedLessons.includes(lesson.id)).length
+  const percent = Math.round((legacyCompleted / allLessons.length) * 100)
   const next = allLessons.find((lesson) => !completedLessons.includes(lesson.id)) ?? allLessons[0]
   const completedModules = modules.filter((module) => module.lessons.every((lesson) => completedLessons.includes(lesson.id))).length
   const nextModule = modules.find((module) => module.id === next.moduleId) ?? modules[0]!
@@ -45,7 +44,7 @@ export function CourseDashboard() {
           <div className="flex flex-wrap items-center gap-2"><span className="bento-kicker">Continuar de onde parou</span><span className="text-[11px] text-[#a29bad]">Módulo {nextModule.number}</span></div>
           <h2>{next.title}</h2>
           <p>Uma ideia por vez. Entenda o conceito e pratique com um cenário ao final da aula.</p>
-          <div className="mt-6 flex flex-wrap items-center gap-4"><Link to={`/curso/aula/${next.moduleId}/${next.id}`} className="button-motion inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-5 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]"><Play size={15} fill="currentColor" />{completedLessons.length ? 'Retomar aula' : 'Começar primeira aula'}</Link><span className="flex items-center gap-1.5 text-xs text-[#b4adbf]"><Clock3 size={14} />{next.duration} de estudo</span></div>
+          <div className="mt-6 flex flex-wrap items-center gap-4"><Link to={`/curso/aula/${next.moduleId}/${next.id}`} className="button-motion inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-5 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]"><Play size={15} fill="currentColor" />{legacyCompleted ? 'Retomar aula' : 'Começar primeira aula'}</Link><span className="flex items-center gap-1.5 text-xs text-[#b4adbf]"><Clock3 size={14} />{next.duration} de estudo</span></div>
           <div className="study-hero-progress"><div className="mb-2 flex justify-between text-[11px]"><span>Progresso da trilha</span><span className="font-semibold text-[#d3c4ff]">{percent}%</span></div><Progress value={percent} aria-label="Progresso da trilha" className="h-1.5 bg-white/[.09]" /></div>
         </div>
       </Card>
@@ -55,7 +54,7 @@ export function CourseDashboard() {
         <AudioNarration compact title="Boas-vindas" track={welcomeNarration} transcript={welcomeScript.transcript} summary={welcomeScript.summary} />
       </Card>
       <div className="study-metrics">
-        <Metric icon={<BookOpenCheck size={16} />} label="Aulas concluídas" value={`${completedLessons.length} / ${allLessons.length}`} note="Seu avanço na trilha" tone="mint" />
+        <Metric icon={<BookOpenCheck size={16} />} label="Aulas concluídas" value={`${legacyCompleted} / ${allLessons.length}`} note="Seu avanço na trilha" tone="mint" />
         <Metric icon={<Check size={16} />} label="Módulos completos" value={`${completedModules} / ${modules.length}`} note="Uma etapa de cada vez" tone="blue" />
         <Metric icon={<Shield size={16} />} label="Próxima habilidade" value={nextModule.title} note="Aplique na próxima aula" tone="amber" />
       </div>
@@ -63,23 +62,54 @@ export function CourseDashboard() {
     </section>
 
     <section id="modulos" className="scroll-mt-24">
-      <div className="mb-5"><p className="eyebrow">a jornada completa</p><h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#eeeaf4]">Nove módulos. Uma base melhor.</h2></div>
-      <div className="course-modules-bento">
-        {modules.map((module, index) => {
+      <div className="mb-6"><p className="eyebrow">a jornada completa</p><h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#eeeaf4]">Nove módulos. Uma base melhor.</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#90a298]">Comece pelo Módulo 01 e avance no seu ritmo. Cada card mostra progresso, duração e o próximo passo.</p></div>
+      {(() => {
+        const featured = modules[0]!
+        const featuredDone = featured.lessons.filter((lesson) => completedLessons.includes(lesson.id)).length
+        const featuredPercent = Math.round((featuredDone / featured.lessons.length) * 100)
+        const featuredTargetId = featured.lessons.find((lesson) => !completedLessons.includes(lesson.id))?.id ?? featured.lessons[0]!.id
+        return (
+          <Link to={`/curso/aula/${featured.id}/${featuredTargetId}`} className="focus-ring group grid overflow-hidden rounded-2xl border border-white/[.07] bg-[#12121a] transition-colors hover:border-[#a78bfa]/30 sm:grid-cols-2">
+            <div className="relative min-h-[220px] overflow-hidden bg-[#1c1728] sm:min-h-[300px]">
+              <img src={moduleCovers[featured.id] ?? moduleCovers.m1} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#12121a]/50 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-[#12121a]/10" />
+              <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/60 px-3 py-1 text-[10px] font-medium text-white backdrop-blur">Módulo {featured.number}</span>
+            </div>
+            <div className="flex flex-col justify-center p-6 sm:p-8">
+              <span className="text-[11px] font-semibold uppercase tracking-[.14em] text-[#c6b4ff]">{featuredDone === featured.lessons.length ? 'Concluído' : 'Próximo na trilha'}</span>
+              <h3 className="mt-3 font-display text-2xl font-medium tracking-[-.04em] text-[#f0eaf6] sm:text-[32px] sm:leading-[1.1]">{featured.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-[#a89fb7]">{featured.subtitle}</p>
+              <div className="mt-6 flex items-center justify-between text-xs text-[#afa6bc]"><span>{featuredDone}/{featured.lessons.length} aulas</span><span className="inline-flex items-center gap-1.5"><Clock3 size={13} />{featured.duration}</span></div>
+              <Progress value={featuredPercent} aria-label={`Progresso: ${featured.title}`} className="mt-2 h-1.5 bg-white/[.07]" />
+              <span className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-[#cbbbf1]">Abrir módulo <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" /></span>
+            </div>
+          </Link>
+        )
+      })()}
+      <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        {modules.slice(1).map((module, restIndex) => {
+          const index = restIndex + 1
           const done = module.lessons.filter((lesson) => completedLessons.includes(lesson.id)).length
           const modulePercent = Math.round((done / module.lessons.length) * 100)
           const active = index === activeModuleIndex
-          return <Link key={module.id} to={`/curso/aula/${module.id}/${module.lessons.find((lesson) => !completedLessons.includes(lesson.id))?.id ?? module.lessons[0].id}`} className={`course-module-tile group focus-ring ${active ? 'is-current' : ''}`}>
-            <Card className="bento-panel bento-module-card">
-              <CardContent className="bento-module-content">
-                <div className="bento-module-cover"><img src={moduleCovers[module.id] ?? moduleCovers.m1} alt="" loading="lazy" /><span className="bento-module-number">Módulo {module.number}</span><span className="bento-module-symbol">{moduleIcons[module.icon] ?? module.number}</span></div>
-                <div className="bento-module-copy">
-                  <span className={`text-[10px] font-medium ${active ? 'text-[#c6b4ff]' : 'text-[#9f96ae]'}`}>{done === module.lessons.length ? 'Concluído' : active ? 'Próximo na trilha' : module.lessons.length + ' aulas disponíveis'}</span>
-                  <h3>{module.title}</h3><p>{module.subtitle}</p>
-                  <div className="bento-module-footer"><div className="mb-2 flex items-center justify-between text-[10px] text-[#afa6bc]"><span>{done}/{module.lessons.length} aulas</span><span>{module.duration}</span></div><Progress value={modulePercent} aria-label={`Progresso: ${module.title}`} className="h-1 bg-white/[.07]" /><div className="mt-4 flex items-center justify-between text-[11px] text-[#cbbbf1]"><span>{done === module.lessons.length ? 'Revisar módulo' : 'Abrir módulo'}</span><ChevronRight size={15} className="transition-transform group-hover:translate-x-1" /></div></div>
-                </div>
-              </CardContent>
-            </Card>
+          const targetId = module.lessons.find((lesson) => !completedLessons.includes(lesson.id))?.id ?? module.lessons[0]!.id
+          const status = done === module.lessons.length ? 'Concluído' : active ? 'Próximo na trilha' : `${module.lessons.length} aulas disponíveis`
+          return <Link key={module.id} to={`/curso/aula/${module.id}/${targetId}`} className="focus-ring group flex flex-col overflow-hidden rounded-2xl border border-white/[.07] bg-[#12121a] transition-colors hover:border-[#a78bfa]/30">
+            <div className="relative h-44 overflow-hidden bg-[#1c1728]">
+              <img src={moduleCovers[module.id] ?? moduleCovers.m1} alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#12121a]/60 to-transparent" />
+              <span className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/60 px-3 py-1 text-[10px] font-medium text-white backdrop-blur">Módulo {module.number}</span>
+            </div>
+            <div className="flex flex-1 flex-col p-5 sm:p-6">
+              <span className={`text-[11px] font-medium ${active ? 'text-[#c6b4ff]' : 'text-[#9f96ae]'}`}>{status}</span>
+              <h3 className="mt-2 font-display text-xl font-medium tracking-[-.03em] text-[#f0eaf6]">{module.title}</h3>
+              <p className="mt-2 text-xs leading-relaxed text-[#a89fb7]">{module.subtitle}</p>
+              <div className="mt-auto pt-5">
+                <div className="flex items-center justify-between text-[11px] text-[#afa6bc]"><span>{done}/{module.lessons.length} aulas</span><span className="inline-flex items-center gap-1"><Clock3 size={12} />{module.duration}</span></div>
+                <Progress value={modulePercent} aria-label={`Progresso: ${module.title}`} className="mt-2 h-1 bg-white/[.07]" />
+                <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-[#cbbbf1]">Abrir módulo <ChevronRight size={14} className="transition-transform group-hover:translate-x-1" /></span>
+              </div>
+            </div>
           </Link>
         })}
       </div>

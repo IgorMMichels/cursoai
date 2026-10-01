@@ -3,12 +3,16 @@ import { ArrowLeft, ArrowRight, Check, CircleHelp, RotateCcw, Trophy } from 'luc
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { modules, allLessons } from '@/lib/course'
+import { useJourney } from '@/lib/use-journey'
 import { useSession } from '@/contexts/session-context'
 import { issueCourseCertificate, loadModuleQuiz, loadQuizAttempts, submitModuleQuiz, type QuizAttempt, type QuizQuestion, type QuizSubmission } from '@/lib/learning-service'
 
 export function ModuleQuizPage() {
-  const { moduleId = '' } = useParams()
-  const module = modules.find((item) => item.id === moduleId)
+  const { journeyId, moduleId = '' } = useParams()
+  const { journey, loading: journeyLoading, error: journeyError } = useJourney(journeyId)
+  const activeModules = journeyId ? journey?.modules ?? [] : modules
+  const basePath = journeyId ? `/jornadas/${journeyId}` : '/curso'
+  const module = activeModules.find((item) => item.id === moduleId)
   const { user, completedLessons } = useSession()
   const navigate = useNavigate()
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -38,9 +42,11 @@ export function ModuleQuizPage() {
     return () => { active = false }
   }, [module, user])
 
-  if (!module) return <Navigate to="/curso" replace />
+  if (journeyLoading) return <p role="status" className="text-xs text-[#8ca096]">Carregando jornada…</p>
+  if (journeyError) return <p role="alert" className="text-xs text-rose-200">{journeyError}</p>
+  if (!module) return <Navigate to={journeyId ? '/jornadas' : '/curso'} replace />
   const doneCount = module.lessons.filter((lesson) => completedLessons.includes(lesson.id)).length
-  const nextModule = modules[modules.findIndex((item) => item.id === module.id) + 1]
+  const nextModule = activeModules[activeModules.findIndex((item) => item.id === module.id) + 1]
   const allCourseLessonsDone = allLessons.every((lesson) => completedLessons.includes(lesson.id))
   const previousResult = attempts[module.id]
 
@@ -54,7 +60,7 @@ export function ModuleQuizPage() {
     setError('')
   }
 
-  const goNext = () => nextModule ? navigate(`/curso/aula/${nextModule.id}/${nextModule.lessons[0].id}`) : navigate('/curso/certificado')
+  const goNext = () => nextModule ? navigate(`${basePath}/aula/${nextModule.id}/${nextModule.lessons[0].id}`) : navigate(journeyId ? basePath : '/curso/certificado')
 
   const nextQuestion = async () => {
     if (selected === null || submitting) return
@@ -72,7 +78,7 @@ export function ModuleQuizPage() {
       setResult(submission)
       setAttempts((current) => ({ ...current, [module.id]: { moduleId: module.id, score: submission.score, total: submission.total, passed: submission.passed, createdAt: new Date().toISOString() } }))
       const allPassed = modules.every((item) => item.id === module.id ? submission.passed : attempts[item.id]?.passed)
-      if (submission.passed && allCourseLessonsDone && allPassed) {
+      if (!journeyId && submission.passed && allCourseLessonsDone && allPassed) {
         await issueCourseCertificate()
         setCertificateUnlocked(true)
       }
@@ -87,10 +93,10 @@ export function ModuleQuizPage() {
   const currentQuestion = questions[questionIndex]
 
   return <div className="mx-auto max-w-[800px]">
-    <Link to="/curso#modulos" className="mb-7 inline-flex items-center gap-2 text-xs text-[#8a9c91] hover:text-white"><ArrowLeft size={14} />Voltar à trilha</Link>
+    <Link to={journeyId ? basePath : '/curso#modulos'} className="mb-7 inline-flex items-center gap-2 text-xs text-[#8a9c91] hover:text-white"><ArrowLeft size={14} />Voltar à trilha</Link>
     <div className="rounded-xl border border-white/[.08] bg-[#12121a] p-6 sm:p-9">
       <p className="eyebrow">módulo {module.number} · revisão</p><h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#eaf2ec]">{module.title}</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#8fa197]">{module.subtitle} Confira o que ficou e veja explicações para cada resposta.</p>
-      {!allLessonsReady && <div className="mt-8 rounded-2xl border border-[#e4bc76]/20 bg-[#e4bc76]/[.045] p-5"><p className="text-sm font-medium text-[#e9d3a5]">Ainda faltam {module.lessons.length - doneCount} aulas deste módulo.</p><p className="mt-1 text-xs text-[#a69a7d]">Complete a trilha antes da revisão.</p><div className="mt-4 space-y-2">{module.lessons.filter((lesson) => !completedLessons.includes(lesson.id)).map((lesson) => <Link key={lesson.id} to={`/curso/aula/${module.id}/${lesson.id}`} className="flex items-center justify-between rounded-xl border border-white/[.06] bg-black/[.12] px-3 py-3 text-xs text-[#c5d0c8] hover:border-[#a78bfa]/20"><span>{lesson.title}</span><ArrowRight size={13} className="text-[#a78bfa]" /></Link>)}</div></div>}
+      {!allLessonsReady && <div className="mt-8 rounded-2xl border border-[#e4bc76]/20 bg-[#e4bc76]/[.045] p-5"><p className="text-sm font-medium text-[#e9d3a5]">Ainda faltam {module.lessons.length - doneCount} aulas deste módulo.</p><p className="mt-1 text-xs text-[#a69a7d]">Complete a trilha antes da revisão.</p><div className="mt-4 space-y-2">{module.lessons.filter((lesson) => !completedLessons.includes(lesson.id)).map((lesson) => <Link key={lesson.id} to={`${basePath}/aula/${module.id}/${lesson.id}`} className="flex items-center justify-between rounded-xl border border-white/[.06] bg-black/[.12] px-3 py-3 text-xs text-[#c5d0c8] hover:border-[#a78bfa]/20"><span>{lesson.title}</span><ArrowRight size={13} className="text-[#a78bfa]" /></Link>)}</div></div>}
       {allLessonsReady && loading && <p className="mt-8 text-xs text-[#8fa197]" role="status">Carregando revisão…</p>}
       {error && <p role="alert" className="mt-5 rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]">{error}</p>}
       {allLessonsReady && !loading && !error && result && <div className="mt-8 rounded-xl border border-[#a78bfa]/15 bg-[#a78bfa]/[.045] p-6 sm:p-8"><div className="grid size-11 place-items-center rounded-full bg-[#a78bfa]/[.1] text-[#a78bfa]">{result.passed ? <Trophy size={20} /> : <CircleHelp size={20} />}</div><h2 className="mt-5 font-display text-2xl font-medium tracking-[-.04em] text-[#e5efe8]">{result.passed ? 'Revisão concluída.' : 'Vamos reforçar alguns pontos.'}</h2><p className="mt-2 text-sm text-[#9dafA4]">Você acertou <strong className="text-[#dbe9df]">{result.score} de {result.total}</strong>. {result.passed ? 'A explicação de cada resposta está abaixo.' : 'Você precisa acertar pelo menos dois terços para concluir.'}</p>

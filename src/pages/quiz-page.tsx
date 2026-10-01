@@ -68,7 +68,7 @@ export function QuizPage() {
           .then(() => setSaveNotice('Seu perfil de aprendizagem foi salvo na conta.'))
           .catch((error: unknown) => setSaveNotice(error instanceof Error ? `Não foi possível salvar: ${error.message}` : 'Não foi possível salvar seu perfil.'))
       } else {
-        setSaveNotice('Entre na conta para sincronizar seu perfil de aprendizagem.')
+        setSaveNotice('Entre na conta para salvar seu resultado.')
       }
     }
   }

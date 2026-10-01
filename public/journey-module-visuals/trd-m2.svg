@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Indicadores como camadas</title><desc id="desc">Exemplo sintético: indicadores resumem dados passados e podem divergir.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#b9a5ff" stop-opacity=".17"/><stop offset="1" stop-color="#b9a5ff" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Indicadores como camadas</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="125" width="590" height="285" rx="18" class="card"/><text x="66" y="159" class="kicker">SÉRIE FICTÍCIA · LEITURA MULTICAMADA</text>
+<path d="M66 223H608M66 290H608M66 350H608" stroke="#2d303c"/>
+<path d="M83 262c36-22 52-9 78-26s48-39 77-24 39 20 62 8 47 29 66 35 42-22 65-17 46-33 71-38 52 16 91-9" fill="none" stroke="#e9e2ff" stroke-width="2.5"/>
+<path d="M83 276c57-9 77-18 119-19s61 6 98 9 60 0 96-4 72-19 106-20 66-9 91-12" fill="none" stroke="#b9a5ff" stroke-width="3"/>
+<path d="M84 292h13m8-4h13m8-10h13m8-15h13m8 4h13m8 10h13m8-12h13m8 15h13m8 9h13m8-5h13m8 9h13m8-17h13m8-5h13m8 7h13m8-13h13m8 17h13m8 11h13m8-14h13m8 4h13m8-7h13m8 8h13m8-13h13m8 12h13m8-4h13m8 3h13" stroke="#8ec5ff" stroke-width="6" stroke-linecap="round"/>
+<text x="670" y="161" class="kicker">CAMADAS</text><circle cx="676" cy="205" r="5" fill="#e9e2ff"/><text x="692" y="209" class="small">preço sintético</text><circle cx="676" cy="241" r="5" fill="#b9a5ff"/><text x="692" y="245" class="small">média móvel</text><circle cx="676" cy="277" r="5" fill="#8ec5ff"/><text x="692" y="281" class="small">volume</text><rect x="670" y="317" width="205" height="63" rx="11" fill="#b9a5ff" fill-opacity=".07" stroke="#b9a5ff" stroke-opacity=".2"/><text x="686" y="342" class="label">Cada indicador atrasa</text><text x="686" y="365" class="small">e pode falhar em lateralização.</text>
+</g>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

@@ -8,19 +8,28 @@ import { AudioNarration } from '@/components/audio-narration'
 import { LessonVisual } from '@/components/lesson-visual'
 import { useSession } from '@/contexts/session-context'
 import { allLessons, findLesson, modules } from '@/lib/course'
+import { journeyLessons } from '@/lib/journeys'
+import { useJourney } from '@/lib/use-journey'
 import { loadLessonContent, verifyLessonExercise, type ProtectedLessonContent } from '@/lib/learning-service'
 
 export function LessonPage() {
-  const { moduleId = '', lessonId = '' } = useParams()
-  return <LessonPageContent key={`${moduleId}:${lessonId}`} moduleId={moduleId} lessonId={lessonId} />
+  const { journeyId, moduleId = '', lessonId = '' } = useParams()
+  const { journey, loading, error } = useJourney(journeyId)
+  if (loading) return <p role="status" className="text-xs text-[#8ca096]">Carregando jornada…</p>
+  if (error) return <p role="alert" className="text-xs text-rose-200">{error}</p>
+  if (journeyId && !journey) return <Navigate to="/jornadas" replace />
+  return <LessonPageContent key={`${moduleId}:${lessonId}`} moduleId={moduleId} lessonId={lessonId} journeyId={journeyId} journeyModules={journey?.modules} />
 }
 
-function LessonPageContent({ moduleId, lessonId }: { moduleId: string; lessonId: string }) {
-  const module = modules.find((item) => item.id === moduleId)
-  const lesson = findLesson(moduleId, lessonId)
+function LessonPageContent({ moduleId, lessonId, journeyId, journeyModules }: { moduleId: string; lessonId: string; journeyId?: string; journeyModules?: typeof modules }) {
+  const activeModules = journeyModules ?? modules
+  const basePath = journeyId ? `/jornadas/${journeyId}` : '/curso'
+  const activeLessons = journeyModules ? journeyLessons({ modules: journeyModules } as Parameters<typeof journeyLessons>[0]) : allLessons
+  const module = activeModules.find((item) => item.id === moduleId)
+  const lesson = journeyModules ? module?.lessons.find((item) => item.id === lessonId) : findLesson(moduleId, lessonId)
   const { completedLessons, completeLesson } = useSession()
-  const lessonIndex = useMemo(() => allLessons.findIndex((item) => item.id === lessonId), [lessonId])
-  const nextLesson = allLessons[lessonIndex + 1]
+  const lessonIndex = useMemo(() => activeLessons.findIndex((item) => item.id === lessonId), [activeLessons, lessonId])
+  const nextLesson = activeLessons[lessonIndex + 1]
   const alreadyComplete = completedLessons.includes(lessonId)
   const [selected, setSelected] = useState<number | null>(null)
   const [checked, setChecked] = useState(false)
@@ -48,7 +57,7 @@ function LessonPageContent({ moduleId, lessonId }: { moduleId: string; lessonId:
     return () => { current = false }
   }, [lessonId, retryContent])
 
-  if (!module || !lesson) return <Navigate to="/curso" replace />
+  if (!module || !lesson) return <Navigate to={basePath} replace />
 
   const moduleLesson = module.lessons.findIndex((item) => item.id === lessonId)
   const checkExercise = async () => {
@@ -78,7 +87,7 @@ function LessonPageContent({ moduleId, lessonId }: { moduleId: string; lessonId:
   }
 
   return <div className="mx-auto max-w-[970px]">
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><Link to="/curso#modulos" className="inline-flex items-center gap-2 text-xs text-[#8ca096] transition-colors hover:text-white"><ArrowLeft size={14} />Trilha completa</Link><div className="flex items-center gap-3 text-[10px] text-[#7e9287]"><span>Módulo {module.number}</span><span className="size-1 rounded-full bg-[#52665b]" /><span>Aula {moduleLesson + 1} de {module.lessons.length}</span></div></div>
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-3"><Link to={journeyId ? basePath : '/curso#modulos'} className="inline-flex items-center gap-2 text-xs text-[#8ca096] transition-colors hover:text-white"><ArrowLeft size={14} />Trilha completa</Link><div className="flex items-center gap-3 text-[10px] text-[#7e9287]"><span>Módulo {module.number}</span><span className="size-1 rounded-full bg-[#52665b]" /><span>Aula {moduleLesson + 1} de {module.lessons.length}</span></div></div>
     <div className="mb-8 flex items-center gap-3"><Progress value={((moduleLesson + 1) / module.lessons.length) * 100} className="h-1 flex-1 bg-white/[.08] [&_[data-slot=progress-indicator]]:bg-[#a78bfa]" /><span className="text-[10px] text-[#7f9287]">{module.duration}</span></div>
 
     <article className="rounded-xl border border-white/[.07] bg-[#12121a] p-5 sm:p-9">
@@ -88,7 +97,7 @@ function LessonPageContent({ moduleId, lessonId }: { moduleId: string; lessonId:
 
       {contentLoading && <p className="mt-7 rounded-xl border border-white/[.07] bg-black/15 p-4 text-xs text-[#aab7ae]" role="status">Carregando conteúdo seguro da aula…</p>}
       {contentError && <div className="mt-7 rounded-xl border border-amber-200/15 bg-amber-100/[.04] p-4"><p className="text-xs text-amber-100">{contentError}</p><button type="button" onClick={() => { setContent(null); setContentError(''); setContentLoading(true); setRetryContent((value) => value + 1) }} className="mt-3 text-xs text-[#c1acff] underline underline-offset-4">Tentar novamente</button></div>}
-      {content && <AudioNarration title={lesson.title} track={content.narration} transcript={content.narration.transcript} summary={content.takeaway} />}
+      {content?.narration.src && <AudioNarration title={lesson.title} track={content.narration} transcript={content.narration.transcript} summary={content.takeaway} />}
 
       {content && <div className="mt-8 space-y-5">{content.paragraphs.map((paragraph, index) => <p key={index} className="max-w-[760px] text-[14px] leading-[1.9] text-[#c0ccc4]">{paragraph}</p>)}</div>}
       <LessonVisual moduleId={module.id} />
@@ -106,10 +115,10 @@ function LessonPageContent({ moduleId, lessonId }: { moduleId: string; lessonId:
         </>}
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 border-t border-white/[.07] pt-6 sm:flex-row sm:items-center sm:justify-between"><button type="button" onClick={() => { setSelected(null); setChecked(false); setExerciseCorrect(null); setExerciseError('') }} className="inline-flex h-10 items-center gap-2 self-start rounded-full px-3 text-xs text-[#809389] hover:text-white"><RotateCcw size={13} />Refazer atividade</button><div className="flex flex-wrap items-center gap-3">{alreadyComplete ? <span className="inline-flex h-11 items-center gap-1.5 text-[10px] text-[#b49cff]"><Check size={13} />Aula concluída</span> : <Button onClick={markDone} disabled={!checked || saving} className="h-11 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] hover:bg-[#c1acff] disabled:opacity-40">{saving ? 'Salvando…' : 'Marcar aula concluída'} <Check size={14} /></Button>}<Link to={nextLesson ? `/curso/aula/${nextLesson.moduleId}/${nextLesson.id}` : `/curso/modulo/${module.id}`} className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/[.1] px-4 text-xs text-[#d6d0df] transition-all hover:-translate-y-0.5 hover:border-[#b49cff]/35 hover:bg-[#b49cff]/[.06]">{nextLesson ? 'Próxima aula' : 'Revisar módulo'} <ArrowRight size={14} /></Link></div></div>
+      <div className="mt-8 flex flex-col gap-3 border-t border-white/[.07] pt-6 sm:flex-row sm:items-center sm:justify-between"><button type="button" onClick={() => { setSelected(null); setChecked(false); setExerciseCorrect(null); setExerciseError('') }} className="inline-flex h-10 items-center gap-2 self-start rounded-full px-3 text-xs text-[#809389] hover:text-white"><RotateCcw size={13} />Refazer atividade</button><div className="flex flex-wrap items-center gap-3">{alreadyComplete ? <span className="inline-flex h-11 items-center gap-1.5 text-[10px] text-[#b49cff]"><Check size={13} />Aula concluída</span> : <Button onClick={markDone} disabled={!checked || saving} className="h-11 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] hover:bg-[#c1acff] disabled:opacity-40">{saving ? 'Salvando…' : 'Marcar aula concluída'} <Check size={14} /></Button>}<Link to={nextLesson ? `${basePath}/aula/${nextLesson.moduleId}/${nextLesson.id}` : `${basePath}/modulo/${module.id}`} className="inline-flex h-11 items-center gap-2 rounded-xl border border-white/[.1] px-4 text-xs text-[#d6d0df] transition-all hover:-translate-y-0.5 hover:border-[#b49cff]/35 hover:bg-[#b49cff]/[.06]">{nextLesson ? 'Próxima aula' : 'Revisar módulo'} <ArrowRight size={14} /></Link></div></div>
       {saveError && <p className="mt-3 text-xs text-rose-300" role="alert">{saveError}</p>}
     </article>
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#768a7e]"><span>{module.number} / {module.title}</span>{nextLesson && <Link to={`/curso/aula/${nextLesson.moduleId}/${nextLesson.id}`} className="inline-flex items-center gap-1.5 hover:text-[#c1acff]">Prévia da próxima aula: {nextLesson.title} <ArrowRight size={13} /></Link>}</div>
+    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#768a7e]"><span>{module.number} / {module.title}</span>{nextLesson && <Link to={`${basePath}/aula/${nextLesson.moduleId}/${nextLesson.id}`} className="inline-flex items-center gap-1.5 hover:text-[#c1acff]">Prévia da próxima aula: {nextLesson.title} <ArrowRight size={13} /></Link>}</div>
   </div>
 }
 

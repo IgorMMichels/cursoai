@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Investigar antes de concluir</title><desc id="desc">Fluxo de pesquisa com dados sintéticos; cada etapa pode encerrar a análise.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#91e5c0" stop-opacity=".17"/><stop offset="1" stop-color="#91e5c0" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Investigar antes de concluir</text>
+
+<path d="M114 249H787" stroke="#343846" stroke-width="4" stroke-linecap="round"/>
+<g filter="url(#shadow)">
+<g><rect x="42" y="150" width="155" height="194" rx="17" class="card"/><circle cx="80" cy="192" r="20" fill="#91e5c0" fill-opacity=".15"/><text x="74" y="198" class="label">01</text><text x="66" y="242" class="label">Candidato</text><text x="66" y="268" class="small">origem e idade</text><text x="66" y="290" class="small">da informação</text><rect x="66" y="310" width="87" height="18" rx="9" fill="#91e5c0" fill-opacity=".12"/><text x="77" y="323" class="tiny mint">registrar fonte</text></g>
+<g><rect x="222" y="150" width="155" height="194" rx="17" class="card"/><circle cx="260" cy="192" r="20" fill="#efc17d" fill-opacity=".16"/><text x="254" y="198" class="label">02</text><text x="246" y="242" class="label">Contrato</text><text x="246" y="268" class="small">funções, taxas</text><text x="246" y="290" class="small">e permissões</text><rect x="246" y="310" width="108" height="18" rx="9" fill="#efc17d" fill-opacity=".12"/><text x="257" y="323" class="tiny amber">pare se incerto</text></g>
+<g><rect x="402" y="150" width="155" height="194" rx="17" class="card"/><circle cx="440" cy="192" r="20" fill="#8ec5ff" fill-opacity=".16"/><text x="434" y="198" class="label">03</text><text x="426" y="242" class="label">Liquidez</text><text x="426" y="268" class="small">profundidade</text><text x="426" y="290" class="small">e bloqueio LP</text><rect x="426" y="310" width="99" height="18" rx="9" fill="#8ec5ff" fill-opacity=".12"/><text x="438" y="323" class="tiny blue">verifique saída</text></g>
+<g><rect x="582" y="150" width="155" height="194" rx="17" class="card"/><circle cx="620" cy="192" r="20" fill="#b9a5ff" fill-opacity=".16"/><text x="614" y="198" class="label">04</text><text x="606" y="242" class="label">Carteiras</text><text x="606" y="268" class="small">concentração e</text><text x="606" y="290" class="small">origens comuns</text><rect x="606" y="310" width="99" height="18" rx="9" fill="#b9a5ff" fill-opacity=".12"/><text x="618" y="323" class="tiny violet">mapear vínculos</text></g>
+<g><rect x="762" y="150" width="116" height="194" rx="17" class="card"/><circle cx="800" cy="192" r="20" fill="#f39b9b" fill-opacity=".16"/><text x="794" y="198" class="label">05</text><text x="786" y="242" class="label">Decisão</text><text x="786" y="268" class="small">documente</text><text x="786" y="290" class="small">limites</text><text x="786" y="323" class="tiny rose">sem pressa</text></g>
+</g>
+<text x="42" y="398" class="small">Qualquer alerta pode encerrar a pesquisa; nenhuma etapa garante segurança.</text>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

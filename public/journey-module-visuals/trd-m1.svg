@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 500" role="img" aria-labelledby="title desc">
+<title id="title">Candles e zonas de contexto</title><desc id="desc">Candles e níveis totalmente sintéticos para fins didáticos.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101117"/><stop offset="1" stop-color="#171522"/></linearGradient>
+<radialGradient id="glow"><stop stop-color="#b9a5ff" stop-opacity=".17"/><stop offset="1" stop-color="#b9a5ff" stop-opacity="0"/></radialGradient>
+<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow" x="-.2" y="-.2" width="1.4" height="1.4"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000" flood-opacity=".22"/></filter></defs>
+
+<style>
+*{box-sizing:border-box}
+text{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.kicker{fill:#a89be4;font-size:12px;font-weight:700;letter-spacing:2.2px}
+.heading{fill:#f2f2fa;font-size:25px;font-weight:650;letter-spacing:-.6px}
+.label{fill:#ebedf4;font-size:15px;font-weight:600}
+.small{fill:#9699a9;font-size:12px}
+.tiny{fill:#838699;font-size:10px}
+.metric{fill:#f5f3fa;font-size:22px;font-weight:650}
+.card{fill:#161821;stroke:#2a2d3a;stroke-width:1}
+.card2{fill:#1b1d29;stroke:#353747;stroke-width:1}
+.line{stroke:#373a48;stroke-width:1}
+.mint{fill:#91e5c0}.violet{fill:#b9a5ff}.amber{fill:#efc17d}.rose{fill:#f39b9b}.blue{fill:#8ec5ff}
+</style>
+<rect width="920" height="500" rx="22" fill="url(#bg)"/><rect width="920" height="500" rx="22" fill="url(#grid)"/><ellipse cx="780" cy="100" rx="270" ry="200" fill="url(#glow)"/>
+<text x="42" y="47" class="kicker">DIAGRAMA DIDÁTICO · EXEMPLO SINTÉTICO</text>
+<text x="42" y="83" class="heading">Candles e zonas de contexto</text>
+
+<g filter="url(#shadow)">
+<rect x="42" y="127" width="590" height="284" rx="18" class="card"/><text x="66" y="160" class="kicker">SÉRIE FICTÍCIA · SEM ESCALA DE PREÇO</text>
+<path d="M66 213H608M66 281H608M66 350H608" stroke="#2b2e3b"/>
+<rect x="66" y="334" width="542" height="37" rx="7" fill="#8ec5ff" fill-opacity=".07" stroke="#8ec5ff" stroke-opacity=".35"/><text x="76" y="357" class="tiny blue">zona de suporte</text>
+<rect x="66" y="188" width="542" height="34" rx="7" fill="#efc17d" fill-opacity=".06" stroke="#efc17d" stroke-opacity=".33"/><text x="76" y="210" class="tiny amber">zona de resistência</text>
+<path d="M157 274V233M202 258V212M247 238V193M292 253V219M337 281V229M382 308V258M427 296V248M472 269V223M517 245V203M562 259V222" stroke="#858a9c" stroke-width="2"/>
+<rect x="148" y="242" width="18" height="24" rx="2" fill="#91e5c0"/><rect x="193" y="225" width="18" height="27" rx="2" fill="#91e5c0"/><rect x="238" y="206" width="18" height="25" rx="2" fill="#91e5c0"/><rect x="283" y="229" width="18" height="14" rx="2" fill="#f39b9b"/><rect x="328" y="240" width="18" height="31" rx="2" fill="#f39b9b"/><rect x="373" y="272" width="18" height="21" rx="2" fill="#f39b9b"/><rect x="418" y="263" width="18" height="23" rx="2" fill="#91e5c0"/><rect x="463" y="235" width="18" height="26" rx="2" fill="#91e5c0"/><rect x="508" y="215" width="18" height="25" rx="2" fill="#91e5c0"/><rect x="553" y="229" width="18" height="21" rx="2" fill="#f39b9b"/>
+<text x="669" y="161" class="kicker">LEITURA</text><text x="669" y="204" class="label">Corpo</text><text x="669" y="226" class="small">abertura → fechamento</text><text x="669" y="268" class="label">Pavios</text><text x="669" y="290" class="small">extremos negociados</text><text x="669" y="332" class="label">Estrutura</text><text x="669" y="354" class="small">contexto entre candles</text><text x="669" y="384" class="tiny">nível é zona, não linha exata</text>
+</g>
+
+<text x="42" y="474" class="tiny">ESTUDO VISUAL · DADOS ILUSTRATIVOS · NÃO É SINAL DE MERCADO</text>
+</svg>

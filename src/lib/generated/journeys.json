@@ -1,0 +1,434 @@
+[
+  {
+    "id": "memecoins",
+    "ordinal": 1,
+    "title": "Jornada de Memecoins",
+    "shortDesc": "Aprenda a analisar memecoins do básico ao avançado.",
+    "longDesc": "Aprenda desde os fundamentos até estratégias mais avançadas para analisar e operar memecoins: como esses tokens funcionam, como ler market cap, liquidez e volume, como investigar contratos e holders, e como operar com processo e limites claros num dos cantos mais arriscados do mercado.",
+    "icon": "Rocket",
+    "color": "mint",
+    "level": "iniciante",
+    "coverUrl": "/journey-covers/memecoins.webp",
+    "published": true,
+    "modules": [
+      {
+        "id": "meme-m1",
+        "number": "01",
+        "title": "Fundamentos",
+        "subtitle": "",
+        "icon": "Rocket",
+        "color": "mint",
+        "duration": "33 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "meme-m1l1",
+            "title": "O que são memecoins",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "meme-m1l2",
+            "title": "Market cap e FDV",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m1l3",
+            "title": "Liquidez: o que sustenta o preço",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m1l4",
+            "title": "Volume e holders",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "meme-m1l5",
+            "title": "DEX e swaps",
+            "duration": "7 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "meme-m2",
+        "number": "02",
+        "title": "Análise",
+        "subtitle": "",
+        "icon": "Rocket",
+        "color": "mint",
+        "duration": "35 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "meme-m2l1",
+            "title": "Como encontrar tokens",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m2l2",
+            "title": "Como analisar liquidez e LP",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m2l3",
+            "title": "Contrato e permissões perigosas",
+            "duration": "8 min",
+            "published": true
+          },
+          {
+            "id": "meme-m2l4",
+            "title": "Distribuição de holders e insiders",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m2l5",
+            "title": "Comunidade e narrativa",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "meme-m3",
+        "number": "03",
+        "title": "Operação",
+        "subtitle": "",
+        "icon": "Rocket",
+        "color": "mint",
+        "duration": "27 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "meme-m3l1",
+            "title": "Ferramentas e preparo da carteira",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m3l2",
+            "title": "Entradas e saídas com plano",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m3l3",
+            "title": "Slippage, taxas e MEV",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m3l4",
+            "title": "Gestão de posição e banca",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "meme-m4",
+        "number": "04",
+        "title": "Riscos e golpes",
+        "subtitle": "",
+        "icon": "Rocket",
+        "color": "mint",
+        "duration": "19 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "meme-m4l1",
+            "title": "Rug pulls e soft rugs",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "meme-m4l2",
+            "title": "Golpes comuns fora do contrato",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "meme-m4l3",
+            "title": "Checklist final do operador",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "futuros",
+    "ordinal": 2,
+    "title": "Jornada de Futuros",
+    "shortDesc": "Domine contratos perpétuos, alavancagem e gestão de margem.",
+    "longDesc": "Entenda como funcionam os futuros perpétuos: long e short, alavancagem, margem, funding e liquidação. Aprenda a executar ordens com proteção, dimensionar posições e construir um plano de trade que sobreviva ao mercado mais implacável do cripto.",
+    "icon": "CandlestickChart",
+    "color": "blue",
+    "level": "intermediario",
+    "coverUrl": "/journey-covers/futuros.webp",
+    "published": true,
+    "modules": [
+      {
+        "id": "fut-m1",
+        "number": "01",
+        "title": "Base dos contratos",
+        "subtitle": "",
+        "icon": "CandlestickChart",
+        "color": "blue",
+        "duration": "29 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "fut-m1l1",
+            "title": "O que são futuros perpétuos",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m1l2",
+            "title": "Long e short na prática",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m1l3",
+            "title": "Alavancagem e margem",
+            "duration": "8 min",
+            "published": true
+          },
+          {
+            "id": "fut-m1l4",
+            "title": "Funding rate e basis",
+            "duration": "7 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "fut-m2",
+        "number": "02",
+        "title": "Execução",
+        "subtitle": "",
+        "icon": "CandlestickChart",
+        "color": "blue",
+        "duration": "29 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "fut-m2l1",
+            "title": "Tipos de ordem nos futuros",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m2l2",
+            "title": "Preço de marca e liquidação",
+            "duration": "8 min",
+            "published": true
+          },
+          {
+            "id": "fut-m2l3",
+            "title": "Stop, alvo e ordens combinadas",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m2l4",
+            "title": "Tamanho de posição e risco por trade",
+            "duration": "7 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "fut-m3",
+        "number": "03",
+        "title": "Estratégia e risco",
+        "subtitle": "",
+        "icon": "CandlestickChart",
+        "color": "blue",
+        "duration": "29 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "fut-m3l1",
+            "title": "Contexto e padrões de mercado",
+            "duration": "8 min",
+            "published": true
+          },
+          {
+            "id": "fut-m3l2",
+            "title": "Hedge com futuros",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m3l3",
+            "title": "Erros que liquidam contas",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "fut-m3l4",
+            "title": "Plano de trade completo",
+            "duration": "7 min",
+            "published": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "trading",
+    "ordinal": 3,
+    "title": "Jornada de Trading",
+    "shortDesc": "Construa a base do trading: leitura de gráfico, risco e rotina.",
+    "longDesc": "A base completa para operar qualquer mercado: leitura de candles, suporte e resistência, tendência e volume; indicadores usados com critério; gestão de risco de verdade; e a rotina — plano, diário e psicologia — que separa quem dura de quem desiste.",
+    "icon": "LineChart",
+    "color": "lilac",
+    "level": "iniciante",
+    "coverUrl": "/journey-covers/trading.webp",
+    "published": true,
+    "modules": [
+      {
+        "id": "trd-m1",
+        "number": "01",
+        "title": "Leitura de mercado",
+        "subtitle": "",
+        "icon": "LineChart",
+        "color": "lilac",
+        "duration": "27 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "trd-m1l1",
+            "title": "Candles e o que eles contam",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m1l2",
+            "title": "Suporte e resistência",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m1l3",
+            "title": "Tendência e estrutura de mercado",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m1l4",
+            "title": "Volume como confirmação",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "trd-m2",
+        "number": "02",
+        "title": "Análise técnica aplicada",
+        "subtitle": "",
+        "icon": "LineChart",
+        "color": "lilac",
+        "duration": "27 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "trd-m2l1",
+            "title": "Médias móveis",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m2l2",
+            "title": "RSI e momentum",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m2l3",
+            "title": "Confluência de sinais",
+            "duration": "7 min",
+            "published": true
+          },
+          {
+            "id": "trd-m2l4",
+            "title": "Timeframes e o quadro maior",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "trd-m3",
+        "number": "03",
+        "title": "Gestão de risco",
+        "subtitle": "",
+        "icon": "LineChart",
+        "color": "lilac",
+        "duration": "18 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "trd-m3l1",
+            "title": "Risco por operação",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "trd-m3l2",
+            "title": "Relação risco-retorno",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "trd-m3l3",
+            "title": "Drawdown e recuperação",
+            "duration": "6 min",
+            "published": true
+          }
+        ]
+      },
+      {
+        "id": "trd-m4",
+        "number": "04",
+        "title": "Rotina do trader",
+        "subtitle": "",
+        "icon": "LineChart",
+        "color": "lilac",
+        "duration": "19 min",
+        "published": true,
+        "lessons": [
+          {
+            "id": "trd-m4l1",
+            "title": "Plano de trading",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "trd-m4l2",
+            "title": "Diário de operações",
+            "duration": "6 min",
+            "published": true
+          },
+          {
+            "id": "trd-m4l3",
+            "title": "Psicologia e disciplina",
+            "duration": "7 min",
+            "published": true
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,45 @@
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { ArrowUpRight, ExternalLink, ShieldAlert, X } from 'lucide-react'
+import { platformGuidesByJourney, platformUrl, type PlatformGuide } from '@/lib/platform-guides'
+
+export function PlatformGuides({ journeyId }: { journeyId: string }) {
+  const collection = platformGuidesByJourney[journeyId]
+  const [selected, setSelected] = useState<PlatformGuide | null>(null)
+  if (!collection) return null
+  return <section className="mt-8" aria-labelledby="platform-heading"><div className="mb-5"><p className="eyebrow">{collection.title}</p><h2 id="platform-heading" className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#e9f1eb]">Plataformas recomendadas</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#8ea197]">{collection.subtitle}</p></div>
+    <div className="space-y-8">{collection.groups.map((group) => <div key={group.label}><h3 className="mb-3 text-[10px] font-semibold uppercase tracking-[.14em] text-[#9eb0a4]">{group.label}</h3><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{group.guides.map((guide) => <button type="button" key={guide.id} onClick={() => setSelected(guide)} aria-haspopup="dialog" className="group flex min-h-[150px] flex-col rounded-xl border border-white/[.07] bg-[#12121a] p-5 text-left transition-colors hover:border-[#a78bfa]/25 hover:bg-[#171720] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]"><div className="flex w-full items-start gap-3"><span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/[.08] bg-white/[.04]" style={{ color: guide.tint }}>{guide.iconPath ? <img src={guide.iconPath} alt="" className="size-8 object-contain" onError={(event) => { event.currentTarget.style.display = 'none' }} /> : <span className="text-sm font-semibold">{guide.name.slice(0, 2).toUpperCase()}</span>}</span><span className="min-w-0 flex-1"><strong className="block text-sm font-medium text-[#e5eee7]">{guide.name}</strong><span className="mt-1 inline-block rounded-full border border-white/[.09] px-2 py-0.5 text-[9px] text-[#b0a4cb]">{guide.badge}</span></span><ArrowUpRight size={16} className="text-[#867ba0] group-hover:text-[#b8a3f0]" /></div><span className="mt-4 text-xs leading-relaxed text-[#8ea096]">{guide.description}</span><span className="mt-auto pt-4 text-[10px] font-medium text-[#b8a3f0]">Abrir guia passo a passo</span></button>)}</div></div>)}</div>
+    {selected && <PlatformDialog guide={selected} onClose={() => setSelected(null)} />}
+  </section>
+}
+
+function PlatformDialog({ guide, onClose }: { guide: PlatformGuide; onClose: () => void }) {
+  const dialog = useRef<HTMLDivElement>(null)
+  const closeButton = useRef<HTMLButtonElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
+  const action = platformUrl(guide)
+  useEffect(() => {
+    previousFocus.current = document.activeElement as HTMLElement
+    const oldOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    closeButton.current?.focus()
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); onClose(); return }
+      if (event.key !== 'Tab' || !dialog.current) return
+      const focusable = Array.from(dialog.current.querySelectorAll<HTMLElement>('button:not([disabled]),a[href]'))
+      const first = focusable[0]
+      const last = focusable.at(-1)
+      if (!first || !last) return
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener('keydown', keydown)
+    return () => { document.body.style.overflow = oldOverflow; document.removeEventListener('keydown', keydown); previousFocus.current?.focus() }
+  }, [onClose])
+  return createPortal(<div className="fixed inset-0 z-[110] grid place-items-center bg-black/75 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}><div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="platform-dialog-title" className="flex max-h-[min(92dvh,800px)] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-white/[.11] bg-[#12121a] shadow-[0_28px_90px_rgba(0,0,0,.55)]"><div className="flex items-start gap-4 border-b border-white/[.07] p-5 sm:p-7"><span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl border border-white/[.08] bg-white/[.04] text-sm font-semibold" style={{ color: guide.tint }}>{guide.iconPath ? <img src={guide.iconPath} alt="" className="size-9 object-contain" /> : guide.name.slice(0, 2).toUpperCase()}</span><div className="min-w-0 flex-1"><p className="text-[10px] uppercase tracking-[.14em] text-[#aa9bbf]">Guia de plataforma</p><h2 id="platform-dialog-title" className="mt-1 font-display text-2xl font-medium tracking-[-.04em] text-[#eaf2ec]">{guide.name}</h2><p className="mt-1 text-xs leading-relaxed text-[#92a59a]">{guide.description}</p></div><button ref={closeButton} type="button" onClick={onClose} aria-label="Fechar guia" className="grid size-9 shrink-0 place-items-center rounded-lg border border-white/[.09] text-[#abb9ae] hover:bg-white/[.06]"><X size={17} /></button></div>
+      <div className="min-h-0 overflow-y-auto p-5 sm:p-7"><div className="space-y-3">{guide.steps.map((step, index) => <article key={`${step.title}-${index}`} className="rounded-xl border border-white/[.07] bg-white/[.025] p-4"><div className="flex gap-3"><span className="grid size-7 shrink-0 place-items-center rounded-full border border-[#a78bfa]/20 bg-[#a78bfa]/[.08] text-[10px] font-semibold text-[#c1acff]">{index + 1}</span><div><h3 className="text-xs font-semibold text-[#dce8df]">{step.title}</h3><p className="mt-2 text-xs leading-relaxed text-[#94a69a]">{step.text}</p></div></div>{step.screenshot && <figure className="mt-4"><img src={step.screenshot.src} alt={step.screenshot.alt} className="max-h-72 w-full rounded-lg object-contain" /><figcaption className="mt-1 text-[10px] text-[#829488]">Fonte: <a href={step.screenshot.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{step.screenshot.sourceLabel}</a></figcaption></figure>}</article>)}</div>
+        {guide.warning && <p className="mt-5 rounded-xl border border-amber-300/20 bg-amber-300/[.04] p-4 text-xs leading-relaxed text-amber-100"><ShieldAlert size={14} className="mr-2 inline" />{guide.warning}</p>}
+        <p className="mt-5 text-xs leading-relaxed text-[#8fa197]">Disponibilidade, taxas e produtos variam por região e conta. Derivativos e memecoins envolvem risco elevado de perda. Informações verificadas em 2026; confira taxas e regras na página oficial antes de usar.</p>
+        <a href={guide.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-[10px] text-[#bdaafa] underline underline-offset-4">{guide.sourceLabel}<ExternalLink size={12} /></a>
+      </div><div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[.07] p-5 sm:px-7"><span className="text-[10px] text-[#879a8e]">{action.referral ? 'Link de indicação' : 'Endereço oficial'}</span><a href={action.url} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#0d0e14] hover:bg-[#c1acff]">Abrir plataforma <ExternalLink size={14} /></a></div></div></div>, document.body)
+}

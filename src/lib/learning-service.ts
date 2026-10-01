@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import type { NarrationTrack } from '@/lib/narration-script'
 
 function client() {
-  if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
+  if (!supabase) throw new Error('Serviço indisponível no momento.')
   return supabase
 }
 
