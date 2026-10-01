@@ -58,6 +58,3 @@
 
 /* Anchor offset for sticky header (h-16 + pt-3). No visual change. */
 section[id] { scroll-margin-top: 88px; }
-@media (prefers-reduced-motion: reduce) {
-  section[id] { scroll-behavior: auto; }
-}

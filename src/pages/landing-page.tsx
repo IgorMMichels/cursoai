@@ -59,8 +59,7 @@ export function LandingPage() {
     const frame = window.requestAnimationFrame(() => {
       const target = document.getElementById(id)
       if (!target) return
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
     return () => window.cancelAnimationFrame(frame)
   }, [location.hash, location.pathname])
@@ -73,8 +72,7 @@ export function LandingPage() {
       const target = document.getElementById(href.slice(1))
       if (!target) return
       event.preventDefault()
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
       window.history.pushState(null, '', href)
     }
     document.addEventListener('click', onClick)

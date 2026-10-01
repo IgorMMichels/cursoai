@@ -99,9 +99,6 @@
 
 * { box-sizing: border-box; }
 html { min-width: 320px; scroll-behavior: smooth; scroll-padding-top: 96px; scrollbar-color: #4b405e #0d0e14; scrollbar-width: thin; }
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; scroll-padding-top: 96px; }
-}
 *::-webkit-scrollbar { width: 8px; height: 8px; }
 *::-webkit-scrollbar-track { background: #0d0e14; }
 *::-webkit-scrollbar-thumb { border: 2px solid #0d0e14; border-radius: 999px; background: #4b405e; }

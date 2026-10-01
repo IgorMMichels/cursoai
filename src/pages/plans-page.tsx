@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import { ArrowLeft, ArrowUpRight, Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Brand } from '@/components/brand'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
+
+const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
 
 /**
  * Página pública de planos (/planos).
@@ -11,19 +13,28 @@ import { plans, type Currency, type PlanId } from '@/lib/offers'
 export function PlansPage() {
   const [currency, setCurrency] = useState<Currency>('BRL')
   return <div className="min-h-screen bg-[#09090d] pb-16 text-[#e6eee9]">
-    <header className="page-shell flex h-16 items-center justify-between">
-      <Brand />
-      <div className="flex items-center gap-3">
-        <Link to="/login" className="text-xs text-[#b1abbc] hover:text-white">Entrar</Link>
-        <Link to="/landing" className="inline-flex items-center gap-1.5 text-xs text-[#8da096] hover:text-white"><ArrowLeft size={14} />Voltar</Link>
+    <section className="relative isolate overflow-hidden border-b border-white/[.04]">
+      <Suspense fallback={null}>
+        <HeroWebGLShader />
+      </Suspense>
+      <div className="hero-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(9,9,13,.18)_0%,rgba(9,9,13,0)_32%,rgba(9,9,13,0)_62%,rgba(9,9,13,.82)_100%),linear-gradient(90deg,rgba(9,9,13,.62)_0%,rgba(9,9,13,.18)_46%,rgba(9,9,13,0)_72%)]" aria-hidden="true" />
+      <div className="relative z-10">
+        <header className="page-shell flex h-16 items-center justify-between">
+          <Brand />
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="text-xs text-[#b1abbc] hover:text-white">Entrar</Link>
+            <Link to="/landing" className="inline-flex items-center gap-1.5 text-xs text-[#8da096] hover:text-white"><ArrowLeft size={14} />Voltar</Link>
+          </div>
+        </header>
+        <div className="page-shell mx-auto max-w-2xl pb-10 pt-10 text-center">
+          <p className="eyebrow">escolha seu tempo de estudo</p>
+          <h1 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h1>
+          <p className="body-lg mt-4 text-[15px]">Escolha o período de acesso que combina com seu ritmo de estudo.</p>
+        </div>
       </div>
-    </header>
+    </section>
     <main className="page-shell">
-      <div className="mx-auto max-w-2xl pt-10 text-center">
-        <p className="eyebrow">escolha seu tempo de estudo</p>
-        <h1 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h1>
-        <p className="body-lg mt-4 text-[15px]">Escolha o período de acesso que combina com seu ritmo de estudo.</p>
-      </div>
       <div className="mt-8 flex justify-center">
         <div className="inline-flex rounded-xl border border-white/[.08] bg-[#14151d] p-1" role="group" aria-label="Moeda de pagamento">
           {(['BRL', 'SOL'] as const).map((item) => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)} className={`focus-ring rounded-xl px-5 py-2 text-xs font-semibold transition-colors ${currency === item ? 'bg-[#b49cff] text-[#100c19] hover:bg-[#c6b4ff]' : 'text-[#b1abbc] hover:bg-white/[.05] hover:text-white'}`}>

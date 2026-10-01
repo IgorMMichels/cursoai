@@ -6,19 +6,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
 
-function prefersReducedMotion() {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
 function scrollToSection(id: string) {
   const target = document.getElementById(id)
   if (!target) return false
-  target.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return true
 }
 
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const studentAreaLinks = [
@@ -268,7 +264,7 @@ export function SiteHeader() {
   const isLogged = !loading && !!user
   const activePlan = isLogged && hasActivePlan(user)
   const landing = location.pathname === '/landing'
-  const links = landing ? [{ label: 'A jornada', href: '#jornada' }, { label: 'Avaliações', href: '#avaliacoes' }, { label: 'Planos', href: '/planos' }, { label: 'Afiliados', href: '/afiliar' }] : [{ label: 'O método', href: '/landing#jornada' }, { label: 'Avaliações', href: '/landing#avaliacoes' }, { label: 'Planos', href: '/planos' }, { label: 'Afiliados', href: '/afiliar' }]
+  const links = landing ? [{ label: 'O método', href: '#metodo' }, { label: 'A jornada', href: '#jornada' }, { label: 'Avaliações', href: '#avaliacoes' }, { label: 'Planos', href: '#planos' }, { label: 'Afiliados', href: '/afiliar' }] : [{ label: 'O método', href: '/landing#metodo' }, { label: 'A jornada', href: '/landing#jornada' }, { label: 'Avaliações', href: '/landing#avaliacoes' }, { label: 'Planos', href: '/landing#planos' }, { label: 'Afiliados', href: '/afiliar' }]
   const handleAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       const id = href.slice(1)
