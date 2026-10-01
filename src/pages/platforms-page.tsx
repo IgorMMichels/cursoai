@@ -5,6 +5,49 @@ import { WalletGuideSection } from '@/components/wallet-guides'
 
 type Filter = 'todas' | 'memecoins' | 'futuros' | 'pagamentos'
 
+const walletBasics: { title: string; frase: string; bullets: string[]; alerta: string }[] = [
+  {
+    title: 'Hot vs Cold',
+    frase: 'Hot fica online no app; cold fica offline no aparelho.',
+    bullets: [
+      'Hot: Phantom, Solflare, Backpack e Rabby no celular ou navegador.',
+      'Cold: hardware offline assina sem expor a chave à internet.',
+      'Comece na hot com valor pequeno; use cold para guarda longa.',
+    ],
+    alerta: 'Não estréie com saldo alto. Teste envio e recebimento com valor mínimo.',
+  },
+  {
+    title: 'Custodial vs Autocustódia',
+    frase: 'Na custodial a corretora guarda; na autocustódia só você tem a chave.',
+    bullets: [
+      'Custodial: acesso por login, senha e 2FA. Ex.: saldo em Robinhood Crypto.',
+      'Autocustódia: você guarda a chave. Ex.: Phantom, Solflare, Backpack, Rabby e Robinhood Wallet.',
+      'Na custodial, saque e conta dependem da empresa e da região.',
+    ],
+    alerta: 'Conta travada ou região bloqueada deixa o saldo custodial inacessível. Mantenha mínimo operacional.',
+  },
+  {
+    title: 'Seed Phrase',
+    frase: '12 a 24 palavras que recriam sua carteira em qualquer app.',
+    bullets: [
+      'Anote no papel, na ordem, e guarde offline em local seguro.',
+      'Perdeu a frase e o acesso, perdeu o saldo. Não há recuperação.',
+      'Suporte real nunca pede a frase.',
+    ],
+    alerta: 'Nunca digite a frase em site, formulário ou mensagem. Quem pede é golpe.',
+  },
+  {
+    title: 'Solana vs EVM',
+    frase: 'Formatos diferentes: confira rede e endereço antes de enviar.',
+    bullets: [
+      'Solana: endereço base58, taxa paga em SOL.',
+      'EVM: mesmo formato 0x em Ethereum, Base, Arbitrum, Polygon e outras.',
+      'Só envie na mesma rede do destino. Rede errada pode perder fundos.',
+    ],
+    alerta: 'No Brasil: pratique autocustódia com valor pequeno na carteira; use corretora BR regulada para PIX/BRL e guarde comprovantes para IR.',
+  },
+]
+
 const categories: { id: Exclude<Filter, 'todas'>; title: string; description: string; cover: string; cta: string; anchor: string }[] = [
   {
     id: 'memecoins',
@@ -140,6 +183,22 @@ export function PlatformsPage() {
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#8ea197]">
               Prepare USDT na rede certa. Confira endereço, rede e taxas na tela antes de confirmar.
             </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {walletBasics.map((card) => (
+                <article key={card.title} className="flex flex-col rounded-xl border border-white/[.07] bg-[#12121a] p-5">
+                  <h3 className="font-display text-base font-medium text-[#e9f1eb]">{card.title}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-[#c5d1c8]">{card.frase}</p>
+                  <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#8ea197]">
+                    {card.bullets.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <p className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/[.04] p-3 text-[11px] leading-relaxed text-amber-100">
+                    {card.alerta}
+                  </p>
+                </article>
+              ))}
+            </div>
             <div className="mt-6">
               <WalletGuideSection variant="access" />
             </div>

@@ -208,6 +208,15 @@ details[open] > :not(summary) { animation: reveal .3s ease both; }
 .scrollbar-thin::-webkit-scrollbar, .audio-transcript::-webkit-scrollbar { width: 6px; height: 6px; }
 .scrollbar-thin::-webkit-scrollbar-thumb, .audio-transcript::-webkit-scrollbar-thumb { border-radius: 12px; background: #393546; }
 
+.platform-guide-image-wrap { position: relative; width: fit-content; max-width: 100%; overflow: hidden; margin-inline: auto; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; background: #0d1117; }
+.platform-guide-image-wrap img { display: block; width: auto; max-width: 100%; max-height: 420px; object-fit: contain; }
+.platform-guide-highlight { position: absolute; z-index: 1; box-sizing: border-box; border: 4px solid #ff4444; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; animation: platform-guide-pulse 1.5s ease-in-out infinite; }
+.platform-guide-screenshot figcaption { margin-top: 7px; color: #ff4444; font-size: 14px; line-height: 1.5; }
+.platform-guide-screenshot figcaption a { text-decoration: underline; text-underline-offset: 3px; }
+.platform-guide-missing { margin: 14px 0 0 40px; border-left: 2px solid #ff4444; padding: 8px 10px; color: #ffb0a8; font-size: 12px; line-height: 1.55; }
+@keyframes platform-guide-pulse { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: .65; transform: translate(-50%, -50%) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .platform-guide-highlight { animation: none; } }
+
 .site-header { margin-bottom: 0; }
 .header-dock { position: relative; isolation: isolate; border: 1px solid rgba(226,218,247,.12); border-radius: 12px; background: rgba(15,15,22,.82); box-shadow: 0 12px 44px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.055); backdrop-filter: blur(22px) saturate(145%); transition: border-color .35s ease, box-shadow .4s ease, transform .4s cubic-bezier(.16,1,.3,1); }
 .header-dock::before { position: absolute; z-index: -1; inset: 0; border-radius: inherit; content: ""; opacity: 0; background: radial-gradient(340px circle at 50% 0%, rgba(167,139,250,.1), transparent 75%); transition: opacity .4s ease; pointer-events: none; }
