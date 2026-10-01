@@ -1,7 +1,35 @@
 import { ArrowRight, Image } from 'lucide-react'
 import { journeyModuleVisuals, moduleCovers, moduleVisualGuides } from '@/lib/course-media'
+import { getLessonVisual } from '@/lib/lesson-visuals'
+import { lessonCompareDatasets, lessonFlowDatasets } from '@/lib/visual-datasets'
+import { BarsCompare } from './visuals/bars-compare'
+import { BeforeAfter } from './visuals/before-after'
+import { VisualShell } from './visuals/visual-shell'
 
-export function LessonVisual({ moduleId }: { moduleId: string }) {
+export function LessonVisual({ moduleId, lessonId }: { moduleId: string; lessonId?: string }) {
+  const lessonSpec = getLessonVisual(lessonId)
+  if (lessonSpec && lessonId) {
+    if (lessonSpec.type === 'bars-compare') {
+      const bars = lessonCompareDatasets[lessonId] ?? []
+      if (bars.length > 0) {
+        return (
+          <VisualShell title={lessonSpec.title} description={lessonSpec.description} alt={lessonSpec.alt}>
+            <BarsCompare title={lessonSpec.title} desc={lessonSpec.alt} bars={bars} />
+          </VisualShell>
+        )
+      }
+    } else {
+      const steps = lessonFlowDatasets[lessonId] ?? []
+      if (steps.length > 0) {
+        return (
+          <VisualShell title={lessonSpec.title} description={lessonSpec.description} alt={lessonSpec.alt}>
+            <BeforeAfter title={lessonSpec.title} desc={lessonSpec.alt} steps={steps} />
+          </VisualShell>
+        )
+      }
+    }
+  }
+
   const visual = journeyModuleVisuals[moduleId]
   if (visual) return (
     <figure className="my-8 overflow-hidden rounded-2xl border border-white/[.08] bg-[#101117]">
