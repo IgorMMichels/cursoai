@@ -11,7 +11,7 @@ export type StudentReview = {
 }
 
 function client() {
-  if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
+  if (!supabase) throw new Error('Serviço indisponível no momento.')
   return supabase
 }
 
@@ -40,11 +40,11 @@ export async function submitReview(rating: number, body: string) {
 }
 
 export async function moderateReview(id: string, status: 'approved' | 'rejected') {
-  const { error } = await client().from('student_reviews').update({ status, updated_at: new Date().toISOString() }).eq('id', id)
+  const { error } = await client().rpc('moderate_review', { p_id: id, p_result: status })
   if (error) throw error
 }
 
 export async function deleteReview(id: string) {
-  const { error } = await client().from('student_reviews').delete().eq('id', id)
+  const { error } = await client().rpc('delete_review', { p_id: id })
   if (error) throw error
 }

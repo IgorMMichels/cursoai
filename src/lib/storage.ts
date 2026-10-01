@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'admin' | 'affiliate'
+export type UserRole = 'student' | 'admin'
 
 const referralKey = 'cripto-mentoria:referral'
 const volatileStorage = new Map<string, string>()
@@ -22,4 +22,8 @@ export function removeStoredValue(key: string) {
 }
 
 export const getReferralCode = () => getStoredValue(referralKey) || undefined
-export const rememberReferral = (code: string) => setStoredValue(referralKey, code.trim().toUpperCase())
+export const rememberReferral = (code: string) => {
+  const normalized = code.trim().toLowerCase()
+  if (!/^[a-z][a-z0-9_-]{2,23}$/.test(normalized)) return
+  setStoredValue(referralKey, normalized)
+}

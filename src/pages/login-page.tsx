@@ -17,6 +17,10 @@ function authErrorText(error: unknown) {
   return message || 'Não foi possível concluir. Tente novamente.'
 }
 
+function safeRedirectPath(path: unknown): path is string {
+  return typeof path === 'string' && path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\')
+}
+
 export function LoginPage() {
   const {
     user,
@@ -68,7 +72,7 @@ export function LoginPage() {
   useEffect(() => {
     if (!user || mode === 'recovery') return
     const requestedPath = location.state?.from
-    const destination = requestedPath && user.role === 'student' && typeof requestedPath === 'string'
+    const destination = requestedPath && user.role !== 'admin' && safeRedirectPath(requestedPath)
       ? requestedPath
       : destinationForRole(user.role)
     navigate(destination, { replace: true })
@@ -76,7 +80,7 @@ export function LoginPage() {
 
   const goToSession = (session: AppSession) => {
     const requestedPath = location.state?.from
-    const destination = requestedPath && session.role === 'student' && typeof requestedPath === 'string'
+    const destination = requestedPath && session.role !== 'admin' && safeRedirectPath(requestedPath)
       ? requestedPath
       : destinationForRole(session.role)
     navigate(destination, { replace: true })
@@ -152,7 +156,7 @@ export function LoginPage() {
       <div className="w-full max-w-[460px]">
         <div className="mb-9 flex items-center justify-between lg:hidden"><Brand /><Link to="/landing" className="text-xs text-[#8da096] hover:text-white">Voltar ao curso</Link></div>
         <Link to="/landing" className="mb-9 hidden items-center gap-2 text-xs text-[#8a9d92] hover:text-white lg:inline-flex"><ArrowLeft size={14} />Voltar para a apresentação</Link>
-        <div className="mb-7"><div className="mb-5 grid size-11 place-items-center rounded-lg border border-[#a78bfa]/20 bg-[#a78bfa]/[.08] text-[#a78bfa]"><BadgeCheck size={20} /></div><p className="eyebrow">acesso à plataforma</p><h2 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#e9f1eb]">{title}</h2><p className="mt-2 text-sm leading-relaxed text-[#8fa197]">{description}</p></div>
+        <div className="mb-7"><div className="mb-5 grid size-11 place-items-center rounded-lg border border-[#a78bfa]/20 bg-[#a78bfa]/[.08] text-[#a78bfa]"><BadgeCheck size={20} /></div><p className="eyebrow">acesso à plataforma</p><h2 className="mt-3 font-display text-3xl font-semibold tracking-[-.05em] text-[#e9f1eb]">{title}</h2><p className="mt-2 text-sm leading-relaxed text-[#8fa197]">{description}</p></div>
 
         {chosenPlan && <div className="mb-6 rounded-xl border border-[#e4bc76]/18 bg-[#e4bc76]/[.045] p-4"><p className="text-[10px] font-semibold uppercase tracking-[.13em] text-[#e4bc76]">Plano selecionado</p><div className="mt-2 flex items-start justify-between gap-4"><p className="pt-1 font-display text-lg font-medium text-[#e6efe8]">Plano {plans[chosenPlan].name}</p><div className="text-right"><span className="rounded-full border border-white/[.1] px-2.5 py-1 text-xs font-medium text-[#d2c4ff]">{plans[chosenPlan].prices[chosenCurrency]}</span><p className="mt-2 text-[10px] font-medium text-[#bca9e8]">ou {chosenCurrency === 'SOL' ? plans[chosenPlan].prices.BRL : plans[chosenPlan].prices.SOL}</p></div></div><p className="mt-1 text-[10px] leading-relaxed text-[#b7a77e]">Checkout ainda não está disponível; nenhum pagamento será processado por esta tela.</p></div>}
 
@@ -161,16 +165,16 @@ export function LoginPage() {
           <button type="button" onClick={() => setFormMode('signup')} className={`rounded-lg px-3 py-2.5 transition-colors ${mode === 'signup' ? 'bg-[#211f2b] text-white' : 'text-[#82968a] hover:text-white'}`}>Criar conta</button>
         </div>}
 
-        {!authConfigured ? <div className="rounded-xl border border-[#e4bc76]/15 bg-[#e4bc76]/[.035] p-4"><p className="text-xs font-medium text-[#e8d4a7]">Conexão Supabase indisponível</p><p className="mt-1.5 text-[10px] leading-relaxed text-[#a39471]">Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY para habilitar login e criação de conta.</p></div> : mode === 'recovery' && loading ? <div className="rounded-xl border border-white/[.08] bg-[#12121a] p-4 text-sm text-[#8fa197]" role="status">Validando link de recuperação…</div> : mode === 'recovery' && !user ? <div className="rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]" role="alert">Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.</div> : <form onSubmit={submit} className="space-y-4">
+        {!authConfigured ? <div className="rounded-xl border border-[#e4bc76]/15 bg-[#e4bc76]/[.035] p-4"><p className="text-xs font-medium text-[#e8d4a7]">Login indisponível no momento</p><p className="mt-1.5 text-[10px] leading-relaxed text-[#a39471]">O acesso por conta está em manutenção. Você ainda pode explorar as áreas públicas.</p></div> : mode === 'recovery' && loading ? <div className="rounded-xl border border-white/[.08] bg-[#12121a] p-4 text-sm text-[#8fa197]" role="status">Validando link de recuperação…</div> : mode === 'recovery' && !user ? <div className="rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]" role="alert">Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.</div> : <form onSubmit={submit} className="space-y-4">
           {authConfigured && mode === 'signup' && <div><label htmlFor="name" className="mb-2 block text-xs font-medium text-[#b3c1b8]">Seu nome</label><input id="name" name="name" autoComplete="name" required value={name} onChange={(event) => setName(event.target.value)} placeholder="Como devemos chamar você?" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#12121a] px-4 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b] focus:border-[#a78bfa]/40 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>}
           {authConfigured && mode === 'signup' && <div>
-            <label htmlFor="username" className="mb-2 block text-xs font-medium text-[#b3c1b8]">Seu ID de afiliado</label>
-            <div className="flex h-11 items-center overflow-hidden rounded-xl border border-white/[.1] bg-[#12121a] focus-within:border-[#a78bfa]/40 focus-within:ring-2 focus-within:ring-[#a78bfa]/10">
-              <span className="pl-3 text-sm text-[#71847a]">/</span>
-              <input id="username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} minLength={3} maxLength={24} pattern="[a-z][a-z0-9_-]{2,23}" required value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24))} placeholder="seu-nome" aria-describedby="username-hint username-status" className="h-full min-w-0 flex-1 bg-transparent px-2 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b]" />
+            <label htmlFor="username" className="mb-2 block text-xs font-medium text-[#b3c1b8]">Seu @id</label>
+            <div className="flex h-11 items-center gap-1 rounded-xl border border-white/[.1] bg-[#12121a] px-3 focus-within:border-[#a78bfa]/40 focus-within:ring-2 focus-within:ring-[#a78bfa]/10">
+              <span aria-hidden="true" className="shrink-0 select-none text-sm text-[#71847a]">/</span>
+              <input id="username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} minLength={3} maxLength={24} pattern="[a-z][a-z0-9_-]{2,23}" required value={username} onChange={(event) => setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24))} placeholder="seu-nome" aria-describedby="username-hint username-status" className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm text-[#e3ece5] outline-none placeholder:text-[#63766b]" />
             </div>
             <div className="mt-2 flex min-h-4 flex-wrap items-center justify-between gap-2 text-[10px]">
-              <span id="username-hint" className="text-[#71847a]">3–24 caracteres. Letras, números, - ou _. ID permanente.</span>
+              <span id="username-hint" className="text-[#71847a]">Vira seu link /seu-id e seu código de afiliado. Não pode trocar depois.</span>
               <span id="username-status" role="status" className={usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'}>
                 {usernameStatus === 'checking' ? 'Verificando…' : usernameStatus === 'available' ? 'Disponível' : usernameStatus === 'taken' ? 'Em uso ou reservado' : usernameStatus === 'invalid' ? 'Use 3–24 caracteres; comece com letra' : usernameStatus === 'error' ? 'Não foi possível verificar agora' : ''}
               </span>

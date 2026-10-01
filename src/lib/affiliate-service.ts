@@ -9,7 +9,7 @@ export type Commission = { id: string; amount: number; currency: Currency; statu
 export type Payout = { id: string; amount: number; currency: Currency; status: string; createdAt: string }
 
 function client() {
-  if (!supabase) throw new Error('Supabase não está configurado neste ambiente.')
+  if (!supabase) throw new Error('Serviço indisponível no momento.')
   return supabase
 }
 
@@ -26,17 +26,18 @@ export async function recordReferralClick(code: string, visitorId: string, sourc
 
 export async function loadAffiliateDashboard(userId: string) {
   const db = client()
-  const [profileResult, eventsResult, ordersResult, commissionsResult, payoutsResult] = await Promise.all([
-    db.from('affiliate_profiles').select('referral_code, commission_bps, active').eq('user_id', userId).single(),
-    db.from('affiliate_events').select('id,event_type,referral_code,source_path,created_at').order('created_at', { ascending: false }).limit(250),
-    db.from('orders').select('id,plan_id,currency,amount,status,referral_code,created_at').order('created_at', { ascending: false }).limit(250),
-    db.from('commission_entries').select('id,amount,currency,status,created_at').eq('affiliate_user_id', userId).order('created_at', { ascending: false }).limit(250),
-    db.from('payout_requests').select('id,amount,currency,status,created_at').eq('affiliate_user_id', userId).order('created_at', { ascending: false }).limit(100),
-  ])
-  for (const result of [profileResult, eventsResult, ordersResult, commissionsResult, payoutsResult]) if (result.error) throw result.error
+  const profileResult = await db.from('affiliate_profiles').select('referral_code, commission_bps, active').eq('user_id', userId).single()
+  if (profileResult.error) throw profileResult.error
   const profile = profileResult.data
   if (!profile) throw new Error('Perfil de afiliado não encontrado.')
   const affiliateCode = profile.referral_code
+  const [eventsResult, ordersResult, commissionsResult, payoutsResult] = await Promise.all([
+    db.from('affiliate_events').select('id,event_type,referral_code,source_path,created_at').eq('referral_code', affiliateCode).order('created_at', { ascending: false }).limit(250),
+    db.from('orders').select('id,plan_id,currency,amount,status,referral_code,created_at').eq('referral_code', affiliateCode).order('created_at', { ascending: false }).limit(250),
+    db.from('commission_entries').select('id,amount,currency,status,created_at').eq('affiliate_user_id', userId).order('created_at', { ascending: false }).limit(250),
+    db.from('payout_requests').select('id,amount,currency,status,created_at').eq('affiliate_user_id', userId).order('created_at', { ascending: false }).limit(100),
+  ])
+  for (const result of [eventsResult, ordersResult, commissionsResult, payoutsResult]) if (result.error) throw result.error
   return {
     profile,
     events: (eventsResult.data ?? []).filter((row) => row.referral_code === affiliateCode).map((row) => ({ id: row.id, type: row.event_type as AffiliateEvent['type'], at: row.created_at, code: row.referral_code, detail: row.source_path ?? undefined })),

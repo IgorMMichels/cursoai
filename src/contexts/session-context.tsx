@@ -16,6 +16,7 @@ export type AppSession = {
   avatarUrl?: string
   role: UserRole
   roles: UserRole[]
+  isAffiliate: boolean
   plan: PlanId | null
   planStartedAt: string
   expiresAt?: string
@@ -47,12 +48,11 @@ function errorMessage(error: unknown) {
 
 function mapRole(roles: string[]): UserRole {
   if (roles.includes('admin')) return 'admin'
-  if (roles.includes('affiliate')) return 'affiliate'
   return 'student'
 }
 
 function mapRoles(roles: string[]): UserRole[] {
-  return roles.filter((role): role is UserRole => role === 'student' || role === 'admin' || role === 'affiliate')
+  return roles.filter((role): role is UserRole => role === 'student' || role === 'admin')
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -68,7 +68,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
     const sync = (async () => {
       try {
-        if (!supabase) throw new Error('Autenticação Supabase não configurada.')
+        if (!supabase) throw new Error('Autenticação não configurada.')
         const [rolesResult, subscriptionsResult, profile, progress] = await Promise.all([
           supabase.from('app_roles').select('role').eq('user_id', authUser.id),
           supabase.from('subscriptions').select('plan_id, starts_at, expires_at').eq('user_id', authUser.id).eq('status', 'active').order('created_at', { ascending: false }),
@@ -80,9 +80,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         const roles = mapRoles((rolesResult.data ?? []).map((entry) => entry.role))
         if (roles.length === 0) roles.push('student')
         const role = mapRole(roles)
-        const affiliateProfile = role === 'affiliate'
-          ? await supabase.from('affiliate_profiles').select('referral_code').eq('user_id', authUser.id).maybeSingle()
-          : null
+        const affiliateProfile = await supabase.from('affiliate_profiles').select('referral_code, active').eq('user_id', authUser.id).maybeSingle()
         if (affiliateProfile?.error) throw affiliateProfile.error
         const now = Date.now()
         const subscription = (subscriptionsResult.data ?? []).find((entry) =>
@@ -102,10 +100,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           avatarUrl: profile?.avatarUrl,
           role,
           roles,
+          isAffiliate: Boolean(affiliateProfile?.data && affiliateProfile.data.active),
           plan: activePlan,
           planStartedAt: subscription?.starts_at ?? '',
           expiresAt: subscription?.expires_at ?? undefined,
-          referralCode: affiliateProfile?.data?.referral_code ?? getReferralCode(),
+          referralCode: profile?.username || affiliateProfile?.data?.referral_code || getReferralCode(),
         }
         setUser(session)
         setCompletedLessons(progress)
@@ -121,7 +120,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!supabase) {
       setLoading(false)
-      setAuthError('Supabase não está configurado neste ambiente.')
+      setAuthError('Login indisponível neste ambiente.')
       return
     }
 
@@ -166,7 +165,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [syncSupabaseUser])
 
   const signInWithPassword = useCallback(async (email: string, password: string) => {
-    if (!supabase) throw new Error('Autenticação indisponível. Configure as variáveis do Supabase.')
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) throw error
     if (!data.user) throw new Error('Não foi possível validar a conta.')
@@ -175,7 +174,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [syncSupabaseUser])
 
   const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string) => {
-    if (!supabase) throw new Error('Autenticação indisponível. Configure as variáveis do Supabase.')
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const referralCode = getReferralCode()
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
@@ -208,13 +207,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [user, syncSupabaseUser])
 
   const sendPasswordReset = useCallback(async (email: string) => {
-    if (!supabase) throw new Error('Autenticação indisponível. Configure as variáveis do Supabase.')
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/login?recovery=1` })
     if (error) throw error
   }, [])
 
   const updatePassword = useCallback(async (password: string) => {
-    if (!supabase) throw new Error('Autenticação indisponível. Configure as variáveis do Supabase.')
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const { error } = await supabase.auth.updateUser({ password })
     if (error) throw error
   }, [])
@@ -230,7 +229,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         bio: input.bio.trim(),
         location: input.location.trim(),
       }, avatarToUpload)
-      if (!result.synced || !result.profile) throw new Error(result.error ?? 'O perfil não foi sincronizado.')
+      if (!result.synced || !result.profile) throw new Error(result.error ?? 'O perfil não foi salvo.')
       setUser((current) => current?.id === user.id ? {
         ...current,
         name: result.profile!.displayName,
@@ -287,5 +286,5 @@ export function useSession() {
   return context
 }
 
-export const destinationForRole = (role: UserRole) => role === 'admin' ? '/admin' : role === 'affiliate' ? '/afiliado' : '/curso'
+export const destinationForRole = (role: UserRole) => role === 'admin' ? '/admin' : '/curso'
 export const planTitle = (plan: PlanId | null) => plan ? plans[plan].name : 'Sem acesso ao curso'
