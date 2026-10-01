@@ -26,7 +26,7 @@ export async function recordReferralClick(code: string, visitorId: string, sourc
 
 export async function loadAffiliateDashboard(userId: string) {
   const db = client()
-  const profileResult = await db.from('affiliate_profiles').select('referral_code, commission_bps, active').eq('user_id', userId).single()
+  const profileResult = await db.from('affiliate_profiles').select('referral_code, commission_bps, active, payout_pix_key, payout_sol_address').eq('user_id', userId).single()
   if (profileResult.error) throw profileResult.error
   const profile = profileResult.data
   if (!profile) throw new Error('Perfil de afiliado não encontrado.')
@@ -51,6 +51,20 @@ export async function requestAffiliatePayout(currency: Currency) {
   const { data, error } = await client().rpc('request_affiliate_payout', { p_currency: currency })
   if (error) throw error
   return Array.isArray(data) ? data[0] : data
+}
+
+export async function saveAffiliatePayoutDestinations(input: { pixKey: string; solAddress: string }) {
+  const db = client()
+  const { data, error: sessionError } = await db.auth.getSession()
+  if (sessionError) throw sessionError
+  const userId = data.session?.user.id
+  if (!userId) throw new Error('Entre na sua conta para atualizar os dados de pagamento.')
+
+  const { error } = await db.from('affiliate_profiles').update({
+    payout_pix_key: input.pixKey.trim() || null,
+    payout_sol_address: input.solAddress.trim() || null,
+  }).eq('user_id', userId)
+  if (error) throw error
 }
 
 export async function processAffiliatePayout(payoutId: string, result: 'paid' | 'rejected') {

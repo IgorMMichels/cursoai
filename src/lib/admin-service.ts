@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase'
 import type { Currency } from '@/lib/offers'
 
 export type AdminOrder = { id: string; at: string; userId: string; plan: string; currency: Currency; amount: number; status: string; referralCode?: string; commission: number }
-export type AdminPayout = { id: string; affiliateUserId: string; affiliateName: string; amount: number; currency: Currency; status: string; createdAt: string }
+export type AdminPayout = { id: string; affiliateUserId: string; affiliateName: string; amount: number; currency: Currency; status: string; createdAt: string; destination?: string }
 export type AdminAffiliate = { userId: string; name: string; code: string; active: boolean; commissionBps: number; clicks: number; signups: number; sales: number; commissionBrl: number; commissionSol: number }
 export type AdminCourseModule = { id: string; ordinal: number; title: string; subtitle: string; published: boolean; lessons: { id: string; title: string; durationMinutes: number }[] }
 export type AdminSnapshot = { events: { id: string; type: string; code: string; at: string }[]; orders: AdminOrder[]; payouts: AdminPayout[]; affiliates: AdminAffiliate[]; reviews: StudentReview[]; modules: AdminCourseModule[] }
@@ -17,7 +17,7 @@ export async function loadAdminSnapshot(): Promise<AdminSnapshot> {
     db.from('affiliate_events').select('id,event_type,referral_code,created_at').order('created_at', { ascending: false }).limit(1000),
     db.from('orders').select('id,user_id,plan_id,currency,amount,status,referral_code,created_at').order('created_at', { ascending: false }).limit(1000),
     db.from('commission_entries').select('id,affiliate_user_id,order_id,amount,currency,status,created_at').limit(1000),
-    db.from('payout_requests').select('id,affiliate_user_id,amount,currency,status,created_at').order('created_at', { ascending: false }).limit(250),
+    db.from('payout_requests').select('id,affiliate_user_id,amount,currency,status,created_at,payout_destination').order('created_at', { ascending: false }).limit(250),
     loadAdminReviews(),
     db.from('course_modules').select('id,ordinal,title,subtitle,published').order('ordinal'),
     db.from('lessons').select('id,module_id,title,duration_minutes,ordinal').order('ordinal'),
@@ -61,6 +61,7 @@ export async function loadAdminSnapshot(): Promise<AdminSnapshot> {
     currency: payout.currency as Currency,
     status: payout.status,
     createdAt: payout.created_at,
+    destination: payout.payout_destination ?? undefined,
   }))
   const moduleRows = courseModules.data ?? []
   const lessonRows = lessons.data ?? []

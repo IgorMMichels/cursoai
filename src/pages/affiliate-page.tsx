@@ -1,36 +1,83 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { ArrowRight, ArrowUpRight, Check, Copy, ExternalLink, MousePointerClick, Share2, Wallet, WalletCards } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, ExternalLink, Link2, LogOut, MousePointerClick, Quote, Save, Share2, ShieldCheck, Sparkles, UserRound, Wallet, WalletCards } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Brand } from '@/components/brand'
+import { ProfileSettings } from '@/components/profile-settings'
 import { useSession } from '@/contexts/session-context'
-import { loadAffiliateDashboard, requestAffiliatePayout } from '@/lib/affiliate-service'
+import { loadPublishedReviews, type StudentReview } from '@/lib/community-service'
+import { loadAffiliateDashboard, requestAffiliatePayout, saveAffiliatePayoutDestinations } from '@/lib/affiliate-service'
 import type { Currency } from '@/lib/offers'
+
+gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 type DashboardData = Awaited<ReturnType<typeof loadAffiliateDashboard>>
 type Totals = Record<Currency, { available: number; requested: number; earned: number; paid: number }>
 
 export function AffiliatePage() {
   const { user, signOut } = useSession()
+  const activityRef = useRef<HTMLElement>(null)
   const [data, setData] = useState<DashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState<StudentReview[]>([])
+  const [reviewIndex, setReviewIndex] = useState(0)
+  const [loading, setLoading] = useState(Boolean(user))
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [pixKey, setPixKey] = useState('')
+  const [solAddress, setSolAddress] = useState('')
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (!user) return
-    setData(await loadAffiliateDashboard(user.id))
-  }
+    const value = await loadAffiliateDashboard(user.id)
+    setData(value)
+    setPixKey(value.profile.payout_pix_key ?? '')
+    setSolAddress(value.profile.payout_sol_address ?? '')
+  }, [user])
+
   useEffect(() => {
     let active = true
-    if (!user) { setLoading(false); return }
+    if (!user) return
     loadAffiliateDashboard(user.id)
-      .then((value) => { if (active) setData(value) })
+      .then((value) => {
+        if (!active) return
+        setData(value)
+        setPixKey(value.profile.payout_pix_key ?? '')
+        setSolAddress(value.profile.payout_sol_address ?? '')
+      })
       .catch((cause: unknown) => { if (active) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar os dados do afiliado.') })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [user])
+
+  useEffect(() => {
+    let active = true
+    loadPublishedReviews().then((items) => { if (active) setReviews(items) }).catch(() => undefined)
+    return () => { active = false }
+  }, [])
+
+  useGSAP(() => {
+    if (!activityRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const section = activityRef.current
+    const heading = section.querySelector<HTMLElement>('[data-activity-heading]')
+    const items = gsap.utils.toArray<HTMLElement>('[data-activity-item]', section)
+    if (window.matchMedia('(min-width: 1024px)').matches && heading && items.length > 2) {
+      ScrollTrigger.create({ trigger: section, start: 'top top+=110', end: 'bottom bottom-=120', pin: heading, pinSpacing: false })
+    }
+    if (items.length) {
+      gsap.from(items, {
+        opacity: 0,
+        y: 28,
+        stagger: 0.07,
+        duration: 0.65,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: section, start: 'top 72%', once: true },
+      })
+    }
+  }, { scope: activityRef, dependencies: [data?.events.length], revertOnUpdate: true })
 
   const affiliateCode = data?.profile.referral_code ?? user?.referralCode ?? ''
   const referralUrl = typeof window === 'undefined' ? '' : `${window.location.origin}/${encodeURIComponent(affiliateCode)}`
@@ -48,49 +95,134 @@ export function AffiliatePage() {
   const clicks = data?.events.filter((event) => event.type === 'click').length ?? 0
   const signups = data?.events.filter((event) => event.type === 'signup').length ?? 0
   const sales = data?.orders.filter((order) => order.status === 'confirmed').length ?? 0
+  const conversion = clicks ? (sales / clicks * 100).toFixed(1).replace('.', ',') : '0,0'
 
   const copyLink = async () => {
-    try { await navigator.clipboard.writeText(referralUrl); setCopied(true); setNotice('Link copiado.') }
-    catch { setNotice('Não foi possível copiar. Selecione e copie o link manualmente.') }
+    try { await navigator.clipboard.writeText(referralUrl); setCopied(true); setNotice('Link copiado para compartilhar.') }
+    catch { setNotice('Não foi possível copiar. Selecione e copie o endereço manualmente.') }
     window.setTimeout(() => setCopied(false), 1800)
   }
+
+  const saveDestinations = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setBusy(true); setNotice(''); setError('')
+    try {
+      await saveAffiliatePayoutDestinations({ pixKey, solAddress })
+      await refresh()
+      setNotice('Dados de recebimento salvos com segurança.')
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível salvar os dados de recebimento.') }
+    finally { setBusy(false) }
+  }
+
   const askPayout = async (currency: Currency) => {
     if (busy) return
+    const destination = currency === 'BRL' ? pixKey : solAddress
+    if (!destination.trim()) {
+      setError(`Adicione ${currency === 'BRL' ? 'sua chave PIX' : 'sua carteira Solana'} antes de solicitar o saque.`)
+      document.getElementById('affiliate-payout-account')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     setBusy(true); setNotice(''); setError('')
     try {
       const request = await requestAffiliatePayout(currency)
       await refresh()
-      setNotice(`Solicitação registrada: ${formatMoney(Number(request?.requested_amount ?? 0), currency)}.`)
+      setNotice(`Solicitação registrada: ${formatMoney(Number(request?.requested_amount ?? 0), currency)}. O destino foi salvo junto ao pedido.`)
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível solicitar o saque.') }
     finally { setBusy(false) }
   }
 
-  return <div className="min-h-screen bg-[#09090d] text-[#e6eee9]">
-    <header className="sticky top-0 z-30 border-b border-white/[.06] bg-[#09090d]/90 backdrop-blur-xl"><div className="mx-auto flex h-[68px] max-w-[1450px] items-center justify-between px-4 sm:px-7 lg:px-10"><div className="flex items-center gap-6"><Brand /><span className="hidden text-xs text-[#778a7f] sm:inline">painel de parcerias</span></div><div className="flex items-center gap-3"><Link to="/landing" className="hidden text-[11px] text-[#8c9f94] hover:text-white sm:inline">Abrir site <ArrowUpRight size={13} className="inline" /></Link><button type="button" onClick={() => { signOut(); location.assign('/login') }} className="rounded-full border border-white/[.08] px-3 py-2 text-[10px] text-[#99a99f] hover:text-white">Sair</button></div></div></header>
-    <main className="mx-auto max-w-[1300px] px-4 py-8 sm:px-7 sm:py-10">
-      {loading && <p role="status" className="py-10 text-center text-xs text-[#8fa197]">Carregando painel…</p>}
-      {error && <p role="alert" className="mb-5 rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs text-[#f2a8b2]">{error}</p>}
+  return <main className="affiliate-page min-h-screen w-full max-w-full overflow-x-hidden text-[#eceaf2]">
+    <header className="sticky top-0 z-30 border-b border-white/[.06] bg-[#09090d]/85 backdrop-blur-2xl">
+      <div className="mx-auto flex h-[72px] max-w-[1450px] items-center justify-between gap-4 px-4 sm:px-7 lg:px-10">
+        <div className="flex min-w-0 items-center gap-5"><Brand /><span className="hidden h-7 w-px bg-white/10 sm:block" /><span className="hidden text-xs text-[#898395] sm:block">Central de parcerias</span></div>
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Navegação do painel"><a href="#desempenho" className="affiliate-nav-link">Desempenho</a><a href="#recebimentos" className="affiliate-nav-link">Recebimentos</a><a href="#atividade" className="affiliate-nav-link">Atividade</a></nav>
+        <div className="flex items-center gap-2"><ProfileSettings compact /><button type="button" onClick={() => { signOut(); location.assign('/login') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white" aria-label="Sair da conta" title="Sair"><LogOut size={15} /></button></div>
+      </div>
+    </header>
+
+    <div className="affiliate-shell mx-auto max-w-[1320px] px-4 pb-24 sm:px-7 lg:px-10">
+      {loading && <p role="status" className="py-24 text-center text-sm text-[#918b9d]">Preparando seu painel…</p>}
+      {error && <p role="alert" className="mb-5 mt-7 rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-sm text-[#f2a8b2]">{error}</p>}
       {!loading && data && <>
-        <section className="affiliate-intro relative isolate overflow-hidden rounded-xl border border-[#e4bc76]/18 bg-[linear-gradient(115deg,#191722,#12131b_62%,#111820)] p-6 sm:p-8"><div className="absolute -right-24 -top-24 -z-10 size-72 rounded-full bg-[#e4bc76]/[.08] blur-[90px]" /><div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div><p className="eyebrow text-[#e4bc76]">painel de parcerias</p><h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#edf3ee] sm:text-4xl">Indicações com transparência.</h1><p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9eaa9f]">Acompanhe cliques, cadastros, pedidos confirmados e comissões atribuídas ao seu link.</p></div><div className="flex items-center gap-3 rounded-xl border border-[#e4bc76]/15 bg-black/[.12] px-4 py-3"><span className="grid size-9 place-items-center rounded-xl bg-[#e4bc76]/[.09] text-[#e4bc76]"><WalletCards size={17} /></span><div><p className="text-[9px] uppercase tracking-[.13em] text-[#927f58]">seu ID</p><p className="mt-1 font-mono text-sm tracking-[.08em] text-[#e8d4a7]">/{affiliateCode || '—'}</p></div></div></div></section>
-
-        <section className="affiliate-metrics mt-5"><Stat icon={<MousePointerClick size={16} />} label="Cliques" value={clicks} note="Recebidos pelo seu link" tone="mint" /><Stat icon={<Check size={16} />} label="Cadastros" value={signups} note="Atribuídos pelo código" tone="blue" /><Stat icon={<WalletCards size={16} />} label="Vendas confirmadas" value={sales} note="Pedidos pagos" tone="amber" /></section>
-
-        <section className="affiliate-main-grid mt-5">
-          <div className="affiliate-link bento-panel p-5 sm:p-6"><div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-xl bg-[#a78bfa]/[.08] text-[#a78bfa]"><Share2 size={16} /></span><div><h2 className="text-sm font-medium text-[#e0eae3]">Seu link de indicação</h2><p className="mt-1 text-[10px] text-[#7f9287]">ID curto, cadastros associados automaticamente.</p></div></div><div className="mt-5 flex flex-col gap-2 sm:flex-row"><div className="min-w-0 flex-1 overflow-hidden rounded-xl border border-white/[.08] bg-[#09090d] px-4 py-3 font-mono text-[11px] text-[#a6b7ac]">{referralUrl}</div><button type="button" onClick={() => void copyLink()} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#dcebe1] px-4 text-xs font-semibold text-[#09090d] hover:bg-white">{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Copiado' : 'Copiar link'}</button></div>{notice && <p role="status" className="mt-3 text-[10px] text-[#c1acff]">{notice}</p>}<div className="mt-5 flex items-start gap-3 rounded-xl border border-[#98abff]/12 bg-[#98abff]/[.035] p-4"><ExternalLink size={14} className="mt-0.5 shrink-0 text-[#aab8ff]" /><p className="text-[10px] leading-relaxed text-[#8996aa]">Compartilhe este endereço. Cliques e cadastros ficam associados ao seu ID; comissão nasce após pedido confirmado e checkout conectado.</p></div></div>
-
-          <div className="affiliate-commissions bento-panel p-5 sm:p-6"><div className="flex items-center justify-between"><div><h2 className="text-sm font-medium text-[#e0eae3]">Comissões</h2><p className="mt-1 text-[10px] text-[#7f9287]">Valores separados por moeda.</p></div><Wallet size={16} className="text-[#e4bc76]" /></div><div className="mt-5 space-y-3">{(['BRL', 'SOL'] as const).map((currency) => <div key={currency} className="rounded-lg border border-white/[.06] bg-[#14151c] p-4"><div className="flex items-center justify-between"><span className="text-[10px] uppercase tracking-[.12em] text-[#778a7f]">{currency}</span><span className="text-[9px] text-[#6e8276]">{data.profile.commission_bps / 100}% por venda</span></div><p className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#e6eee7]">{formatMoney(totals[currency].available, currency)}</p><p className="mt-1 text-[9px] text-[#71857a]">{formatMoney(totals[currency].earned, currency)} acumulados · {formatMoney(totals[currency].requested, currency)} solicitados · {formatMoney(totals[currency].paid, currency)} pagos</p><button type="button" disabled={busy || totals[currency].available <= 0} onClick={() => void askPayout(currency)} className="mt-3 inline-flex h-8 items-center gap-1.5 rounded-full border border-white/[.1] px-3 text-[10px] text-[#b7c7bd] hover:border-[#e4bc76]/25 hover:text-[#f0d391] disabled:cursor-not-allowed disabled:opacity-35">Solicitar saque <ArrowRight size={12} /></button></div>)}</div></div>
+        <section className="affiliate-hero relative isolate mt-8 overflow-hidden rounded-2xl border border-white/[.09] sm:mt-10" aria-labelledby="affiliate-title">
+          <img className="affiliate-hero-image" src="https://picsum.photos/seed/crypto-partnership/1920/1080" alt="" />
+          <div className="affiliate-hero-wash" />
+          <div className="affiliate-hero-copy relative z-10 grid min-h-[440px] items-center gap-10 px-6 py-10 sm:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(300px,.7fr)] lg:px-14 lg:py-14">
+            <div>
+              <p className="eyebrow">Uma parceria com transparência</p>
+              <h1 id="affiliate-title" className="affiliate-title mt-5 max-w-6xl font-display">Sua comunidade aprende. <span className="inline-image-word" aria-label="evolui"><img src="https://picsum.photos/seed/crypto-learning/320/180" alt="" /></span> Você cresce junto.</h1>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-[#c0bacb] sm:text-base">Indique uma formação feita para decisões melhores no mercado cripto. Acompanhe cada etapa, do primeiro clique à comissão disponível.</p>
+              <div className="mt-8 flex flex-wrap gap-3"><a href="#seu-link" className="button-motion inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#c1acff] px-5 text-sm font-semibold text-[#100c19] hover:bg-[#d1c2ff]">Compartilhar meu link <ArrowDownRight size={16} /></a><a href="#recebimentos" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-black/20 px-5 text-sm font-medium text-white transition hover:border-white/40 hover:bg-black/35">Ver saldo <Wallet size={15} /></a></div>
+            </div>
+            <div className="affiliate-link-feature rounded-2xl border border-white/[.13] bg-[#0b0b12]/75 p-5 backdrop-blur-xl sm:p-6" id="seu-link">
+              <div className="flex items-center justify-between gap-3"><div><p className="text-xs font-medium text-[#d4c8f3]">Seu endereço de indicação</p><p className="mt-1 text-[11px] text-[#938ca0]">Código pessoal · {affiliateCode || 'aguardando'}</p></div><span className="grid size-10 place-items-center rounded-xl bg-[#a78bfa]/[.12] text-[#c1acff]"><Link2 size={17} /></span></div>
+              <div className="mt-5 flex items-center gap-2 rounded-xl border border-white/[.1] bg-black/35 p-2 pl-3"><span className="min-w-0 flex-1 truncate font-mono text-[11px] text-[#d0c8db]">{referralUrl}</span><button type="button" onClick={() => void copyLink()} aria-label="Copiar link de indicação" className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[#eeeafa] px-3 text-xs font-semibold text-[#17131f] transition hover:bg-white">{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? 'Copiado' : 'Copiar'}</button></div>
+              {notice && <p role="status" className="mt-3 text-xs text-[#b9a5ff]">{notice}</p>}
+              <p className="mt-4 flex items-start gap-2 text-[10px] leading-relaxed text-[#928c9e]"><ShieldCheck size={13} className="mt-0.5 shrink-0 text-[#8fd8ba]" />A atribuição é registrada pelo servidor; comissão apenas após pagamento confirmado.</p>
+            </div>
+          </div>
+          <div className="affiliate-orbit" aria-hidden="true" />
         </section>
 
-        <section className="affiliate-activity bento-panel mt-5 p-5 sm:p-6"><div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><h2 className="font-display text-base font-medium text-[#e0eae3]">Atividade do código</h2><p className="mt-1 text-[10px] text-[#7f9287]">Eventos registrados pelo servidor.</p></div><span className="rounded-full border border-white/[.08] px-2.5 py-1 text-[9px] text-[#83968b]">{data.events.length} eventos</span></div>{data.events.length ? <div className="divide-y divide-white/[.055]">{data.events.map((event) => <div key={event.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div className="flex items-center gap-3"><span className={`grid size-8 place-items-center rounded-lg ${event.type === 'sale' ? 'bg-[#e4bc76]/[.08] text-[#e4bc76]' : event.type === 'signup' ? 'bg-[#98abff]/[.08] text-[#aab8ff]' : 'bg-[#a78bfa]/[.08] text-[#a78bfa]'}`}>{event.type === 'sale' ? <WalletCards size={14} /> : event.type === 'signup' ? <Check size={14} /> : <MousePointerClick size={14} />}</span><div><p className="text-xs text-[#c3cfc7]">{event.type === 'click' ? 'Clique no link' : event.type === 'signup' ? 'Cadastro' : 'Venda confirmada'}</p><p className="mt-1 text-[9px] text-[#72867a]">{event.detail ?? affiliateCode}</p></div></div><div className="text-right"><p className="mt-1 text-[9px] text-[#71857a]">{new Date(event.at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p></div></div>)}</div> : <div className="grid min-h-[110px] place-items-center rounded-lg border border-dashed border-white/[.08]"><p className="text-xs text-[#7f9287]">Seu primeiro evento aparecerá aqui.</p></div>}</section>
+        <section id="desempenho" className="affiliate-performance py-20 sm:py-28" aria-labelledby="performance-title">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Seu alcance em números</p><h2 id="performance-title" className="mt-3 font-display text-3xl tracking-[-.05em] text-[#f0edf5] sm:text-4xl">Cada indicação conta.</h2></div><p className="max-w-sm text-xs leading-6 text-[#8f899b]">Dados reais do seu código. Atualizados a partir dos eventos registrados na plataforma.</p></div>
+          <div className="affiliate-data-grid grid grid-flow-dense grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12">
+            <MetricCard className="lg:col-span-4" icon={<MousePointerClick size={17} />} label="Cliques" value={String(clicks)} note="Visitas únicas atribuídas" accent="violet" />
+            <MetricCard className="lg:col-span-4" icon={<UserRound size={17} />} label="Cadastros" value={String(signups)} note="Novas contas pelo seu link" accent="blue" />
+            <MetricCard className="lg:col-span-4" icon={<WalletCards size={17} />} label="Vendas confirmadas" value={String(sales)} note={`${conversion}% de conversão sobre cliques`} accent="amber" />
+          </div>
+        </section>
+
+        <section id="recebimentos" className="affiliate-revenue-section scroll-mt-24 pb-20 sm:pb-28" aria-labelledby="revenue-title">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Comissões e recebimentos</p><h2 id="revenue-title" className="mt-3 font-display text-3xl tracking-[-.05em] text-[#f0edf5] sm:text-4xl">Saldo sempre explicado.</h2></div><span className="inline-flex items-center gap-2 rounded-full border border-[#8bd8b1]/15 bg-[#8bd8b1]/[.045] px-3 py-2 text-[10px] text-[#a8dfc0]"><span className="size-1.5 rounded-full bg-[#8bd8b1]" />Comissão {data.profile.commission_bps / 100}%</span></div>
+          <div className="grid grid-flow-dense grid-cols-1 gap-4 lg:grid-cols-12">
+            {(['BRL', 'SOL'] as const).map((currency, index) => <article key={currency} className={`affiliate-currency-card group relative overflow-hidden rounded-2xl border border-white/[.08] bg-[#12111a] p-5 sm:p-7 lg:col-span-6 ${index === 0 ? 'affiliate-card-first' : ''}`}>
+              <div className="affiliate-card-glow" /><div className="relative flex items-start justify-between"><div><p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[#9f98aa]">Saldo disponível · {currency}</p><p className="mt-4 font-display text-4xl font-medium tracking-[-.06em] text-[#f1edf5]">{formatMoney(totals[currency].available, currency)}</p><p className="mt-2 text-[11px] text-[#827c8d]">Total gerado {formatMoney(totals[currency].earned, currency)}</p></div><span className={`grid size-11 place-items-center rounded-xl ${index ? 'bg-[#70d9ef]/[.08] text-[#70d9ef]' : 'bg-[#e8bc76]/[.08] text-[#e8bc76]'}`}><Wallet size={19} /></span></div>
+              <div className="relative mt-7 grid grid-cols-2 gap-2 border-t border-white/[.07] pt-4"><Balance label="Em análise" value={formatMoney(totals[currency].requested, currency)} /><Balance label="Já recebido" value={formatMoney(totals[currency].paid, currency)} /></div>
+              <button type="button" disabled={busy || totals[currency].available <= 0} onClick={() => void askPayout(currency)} className="relative mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#ece8f5] px-4 text-xs font-semibold text-[#16131e] transition hover:bg-white disabled:cursor-not-allowed disabled:bg-white/[.07] disabled:text-[#6e6878]">Solicitar saque em {currency} <ArrowRight size={14} /></button>
+            </article>)}
+            <form id="affiliate-payout-account" onSubmit={(event) => void saveDestinations(event)} className="affiliate-account-card rounded-2xl border border-white/[.08] bg-[#12111a] p-5 sm:p-7 lg:col-span-12">
+              <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="eyebrow">Conta de recebimento</p><h3 className="mt-2 font-display text-xl font-medium tracking-[-.04em] text-[#edeaf2]">Para onde enviamos sua comissão?</h3><p className="mt-2 max-w-2xl text-xs leading-6 text-[#8b8596]">Os dados ficam vinculados à sua conta e são copiados para cada solicitação de saque. A chave PIX e a carteira Solana são opcionais até o primeiro pedido na respectiva moeda.</p></div><span className="grid size-10 place-items-center rounded-xl border border-white/[.08] bg-white/[.025] text-[#c1acff]"><ShieldCheck size={17} /></span></div>
+              <div className="mt-6 grid gap-4 md:grid-cols-2"><label className="block"><span className="mb-2 block text-xs font-medium text-[#d0cad8]">Chave PIX para BRL</span><input value={pixKey} onChange={(event) => setPixKey(event.target.value)} maxLength={160} autoComplete="off" placeholder="CPF, e-mail, telefone ou chave aleatória" className="affiliate-input" /></label><label className="block"><span className="mb-2 block text-xs font-medium text-[#d0cad8]">Carteira Solana para SOL</span><input value={solAddress} onChange={(event) => setSolAddress(event.target.value)} maxLength={64} autoComplete="off" placeholder="Endereço público da carteira" className="affiliate-input font-mono" /></label></div>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-[#777181]">Seu nome, e-mail e foto podem ser editados pelo ícone de perfil no topo.</p><button type="submit" disabled={busy} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#b49cff]/25 bg-[#a78bfa]/[.09] px-4 text-xs font-semibold text-[#d0c2ff] transition hover:bg-[#a78bfa]/[.16] disabled:opacity-50"><Save size={14} />Salvar dados</button></div>
+              {notice && <p role="status" className="mt-4 text-xs text-[#a8dfc0]">{notice}</p>}{error && <p role="alert" className="mt-4 text-xs text-[#f2a8b2]">{error}</p>}
+            </form>
+          </div>
+        </section>
+
+        <section ref={activityRef} id="atividade" className="affiliate-activity-section grid scroll-mt-24 gap-8 border-t border-white/[.07] py-20 sm:py-28 lg:grid-cols-[.7fr_1fr] lg:gap-16" aria-labelledby="activity-title">
+          <div data-activity-heading className="self-start"><p className="eyebrow">Rastro de atribuição</p><h2 id="activity-title" className="mt-3 max-w-md font-display text-3xl tracking-[-.05em] text-[#f0edf5] sm:text-4xl">Veja a confiança virar resultado.</h2><p className="mt-4 max-w-sm text-xs leading-6 text-[#8e8899]">Cada evento relevante do seu código aparece aqui, sem estimativas escondidas.</p><Link to="/curso" className="mt-6 inline-flex items-center gap-2 text-xs font-medium text-[#c6b5ff] transition hover:text-white">Voltar à plataforma <ArrowUpRight size={14} /></Link></div>
+          <div className="min-w-0">
+            <div className="mb-4 flex items-center justify-between"><h3 className="text-sm font-medium text-[#dcd7e4]">Atividade recente</h3><span className="text-[10px] text-[#7c7687]">{data.events.length} eventos</span></div>
+            {data.events.length ? <div className="divide-y divide-white/[.07]">{data.events.slice(0, 20).map((event) => <ActivityRow key={event.id} event={event} code={affiliateCode} />)}</div> : <div className="grid min-h-52 place-items-center rounded-2xl border border-dashed border-white/[.1] px-5 text-center"><div><span className="mx-auto grid size-11 place-items-center rounded-xl bg-[#a78bfa]/[.08] text-[#c1acff]"><Share2 size={18} /></span><p className="mt-4 text-sm text-[#d0cad8]">A primeira indicação começa com uma conversa.</p><p className="mt-2 text-xs text-[#817b8d]">Compartilhe seu link para acompanhar os próximos eventos aqui.</p><button type="button" onClick={() => void copyLink()} className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-[#c6b5ff]">Copiar link <Copy size={13} /></button></div></div>}
+          </div>
+        </section>
+
+        <section className="affiliate-how rounded-2xl border border-white/[.08] bg-[radial-gradient(ellipse_at_90%_0%,rgba(167,139,250,.1),transparent_42%),linear-gradient(125deg,#15131d,#0f1016)] p-6 sm:p-9" aria-labelledby="how-title">
+          <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-end"><div><p className="eyebrow">Programa de afiliados</p><h2 id="how-title" className="mt-3 max-w-xl font-display text-3xl tracking-[-.05em] text-[#f0edf5]">Uma parceria simples, do jeito certo.</h2><p className="mt-3 max-w-lg text-xs leading-6 text-[#90899a]">O saldo reflete pedidos pagos e comissões efetivamente lançadas. O checkout ainda está em integração, então novas comissões dependem da confirmação do provedor.</p></div><div className="affiliate-steps flex gap-2">{[['Compartilhe', 'Seu link identifica a origem do cadastro.'], ['Acompanhe', 'Eventos e pedidos aparecem com status real.'], ['Receba', 'Solicite o saque no destino cadastrado.']].map(([title, description], index) => <details key={title} className="affiliate-step min-w-0 flex-1 rounded-xl border border-white/[.07] bg-black/20 p-4" open={index === 0}><summary className="cursor-pointer list-none text-[10px] font-semibold uppercase tracking-[.14em] text-[#bba7f4]">{title}</summary><p className="mt-3 text-[11px] leading-5 text-[#9c96a6]">{description}</p></details>)}</div></div>
+          {reviews.length > 0 && <section className="affiliate-testimonial mt-8 border-t border-white/[.07] pt-6" aria-label="Avaliações de alunos"><div className="flex flex-wrap items-center justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#a78bfa]/[.09] text-[#c1acff]"><Quote size={16} /></span><div className="min-w-0"><p className="text-xs font-medium text-[#d9d3e2]">O que os alunos dizem</p><blockquote className="mt-2 max-w-3xl text-sm leading-6 text-[#aaa4b3]">“{reviews[reviewIndex % reviews.length].text}”</blockquote><p className="mt-2 text-[10px] text-[#817b8b]">{reviews[reviewIndex % reviews.length].name} · avaliação publicada</p></div></div><div className="flex shrink-0 gap-2"><button type="button" aria-label="Avaliação anterior" onClick={() => setReviewIndex((index) => (index - 1 + reviews.length) % reviews.length)} className="grid size-9 place-items-center rounded-lg border border-white/[.1] text-[#aaa4b3] hover:text-white"><ArrowLeft size={14} /></button><button type="button" aria-label="Próxima avaliação" onClick={() => setReviewIndex((index) => (index + 1) % reviews.length)} className="grid size-9 place-items-center rounded-lg border border-white/[.1] text-[#aaa4b3] hover:text-white"><ArrowRight size={14} /></button></div></div></section>}
+          <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-white/[.07] pt-5"><p className="flex items-center gap-2 text-[10px] text-[#7e7889]"><ExternalLink size={13} />Seu código pessoal <span className="font-mono text-[#bdb3d0]">/{affiliateCode}</span></p><button type="button" onClick={() => { signOut(); location.assign('/login') }} className="inline-flex items-center gap-2 text-[10px] text-[#8b8495] transition hover:text-white">Encerrar sessão <LogOut size={13} /></button></div>
+        </section>
       </>}
-      {!loading && !data && !error && <div className="grid min-h-40 place-items-center rounded-xl border border-dashed border-white/[.1] text-xs text-[#7f9287]">Perfil de afiliado não encontrado.</div>}
-    </main>
-  </div>
+      {!loading && !data && !error && <div className="grid min-h-52 place-items-center text-sm text-[#918b9d]">Perfil de afiliado não encontrado.</div>}
+    </div>
+  </main>
 }
 
-function Stat({ icon, label, value, note, tone }: { icon: ReactNode; label: string; value: number; note: string; tone: 'mint' | 'blue' | 'amber' }) {
-  const color = { mint: 'bg-[#a78bfa]/[.08] text-[#a78bfa]', blue: 'bg-[#98abff]/[.08] text-[#aab8ff]', amber: 'bg-[#e4bc76]/[.08] text-[#e4bc76]' }
-  return <div className="rounded-xl border border-white/[.07] bg-[#12121a] p-4"><div className="flex items-center gap-2.5"><span className={`grid size-8 place-items-center rounded-lg ${color[tone]}`}>{icon}</span><span className="text-[10px] text-[#8c9e94]">{label}</span></div><p className="mt-4 font-display text-2xl font-medium tracking-[-.045em] text-[#e7efe9]">{value}</p><p className="mt-1 text-[9px] text-[#708378]">{note}</p></div>
+function MetricCard({ icon, label, value, note, accent, className = '' }: { icon: ReactNode; label: string; value: string; note: string; accent: 'violet' | 'blue' | 'amber'; className?: string }) {
+  const tones = { violet: 'text-[#c1acff] bg-[#a78bfa]/[.09]', blue: 'text-[#82dbef] bg-[#70d9ef]/[.08]', amber: 'text-[#e8bc76] bg-[#e8bc76]/[.08]' }
+  return <article className={`affiliate-metric-card ${className}`}><div className="flex items-center gap-3"><span className={`grid size-9 place-items-center rounded-xl ${tones[accent]}`}>{icon}</span><span className="text-xs text-[#aaa4b3]">{label}</span></div><p className="mt-7 font-display text-4xl font-medium tracking-[-.06em] text-[#f1edf5]">{value}</p><p className="mt-2 text-[10px] text-[#7f798a]">{note}</p></article>
+}
+
+function Balance({ label, value }: { label: string; value: string }) {
+  return <div><p className="text-[9px] uppercase tracking-[.12em] text-[#797384]">{label}</p><p className="mt-1.5 text-xs font-medium tabular-nums text-[#c3bdcc]">{value}</p></div>
+}
+
+function ActivityRow({ event, code }: { event: DashboardData['events'][number]; code: string }) {
+  const labels = { click: 'Visita ao link', signup: 'Novo cadastro', sale: 'Venda confirmada' }
+  const icons = { click: <MousePointerClick size={14} />, signup: <Sparkles size={14} />, sale: <Check size={14} /> }
+  const colors = { click: 'bg-[#a78bfa]/[.08] text-[#c1acff]', signup: 'bg-[#70d9ef]/[.08] text-[#82dbef]', sale: 'bg-[#e8bc76]/[.08] text-[#e8bc76]' }
+  return <article data-activity-item className="flex items-center gap-3 py-4"><span className={`grid size-9 shrink-0 place-items-center rounded-xl ${colors[event.type]}`}>{icons[event.type]}</span><div className="min-w-0 flex-1"><p className="text-xs font-medium text-[#d2cdd9]">{labels[event.type]}</p><p className="mt-1 truncate text-[10px] text-[#777182]">{event.detail ?? code}</p></div><time dateTime={event.at} className="shrink-0 text-right text-[10px] text-[#827c8c]">{new Date(event.at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</time></article>
 }
 
 function formatMoney(value: number, currency: Currency) { return currency === 'BRL' ? `R$ ${value.toFixed(2).replace('.', ',')}` : `${value.toFixed(4).replace('.', ',')} SOL` }
