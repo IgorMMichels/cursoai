@@ -3,6 +3,17 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "rewrites": [
+    { "source": "/artigos", "destination": "/artigos/index.html" },
+    { "source": "/artigos/:slug", "destination": "/artigos/:slug/index.html" },
+    { "source": "/artigos/como-calcular-stop-loss-bitcoin", "destination": "/artigos/como-calcular-stop-loss-bitcoin/index.html" },
+    { "source": "/artigos/como-calcular-tamanho-posicao", "destination": "/artigos/como-calcular-tamanho-posicao/index.html" },
+    { "source": "/artigos/long-short-bitcoin-diferenca", "destination": "/artigos/long-short-bitcoin-diferenca/index.html" },
+    { "source": "/artigos/alavancagem-margem-fixa-exposicao-fixa", "destination": "/artigos/alavancagem-margem-fixa-exposicao-fixa/index.html" },
+    { "source": "/artigos/recuperacao-perdas-queda-cinquenta-por-cento", "destination": "/artigos/recuperacao-perdas-queda-cinquenta-por-cento/index.html" },
+    { "source": "/ferramentas", "destination": "/ferramentas/index.html" },
+    { "source": "/ferramentas/risco-stop", "destination": "/ferramentas/risco-stop/index.html" },
+    { "source": "/ferramentas/long-short", "destination": "/ferramentas/long-short/index.html" },
+    { "source": "/ferramentas/recuperacao-perdas", "destination": "/ferramentas/recuperacao-perdas/index.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

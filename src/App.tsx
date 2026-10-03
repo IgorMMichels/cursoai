@@ -24,6 +24,8 @@ const JourneysPage = lazy(() => import('@/pages/journeys-page').then((module) =>
 const PlatformsPage = lazy(() => import('@/pages/platforms-page').then((module) => ({ default: module.PlatformsPage })))
 const PlansPage = lazy(() => import('@/pages/plans-page').then((module) => ({ default: module.PlansPage })))
 const PreviewPage = lazy(() => import('@/pages/preview-page').then((module) => ({ default: module.PreviewPage })))
+const ToolsPage = lazy(() => import('@/pages/tools-page').then((module) => ({ default: module.ToolsPage })))
+const ToolArticlesPage = lazy(() => import('@/pages/tool-articles-page').then((module) => ({ default: module.ToolArticlesPage })))
 
 function AffiliateReferralRedirect() {
   const { affiliateId = '' } = useParams()
@@ -44,6 +46,10 @@ function AppRoutes() {
       <Route path="/planos" element={<PlansPage />} />
       <Route path="/explorar" element={<PreviewPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/ferramentas" element={<ToolsPage />} />
+      <Route path="/ferramentas/:slug" element={<ToolsPage />} />
+      <Route path="/artigos" element={<ToolArticlesPage />} />
+      <Route path="/artigos/:articleSlug" element={<ToolArticlesPage />} />
       <Route path="/:affiliateId" element={<AffiliateReferralRedirect />} />
       <Route element={<RequireAuth />}>
         <Route path="/afiliar" element={<AffiliateEnrollmentPage />} />
@@ -61,6 +67,8 @@ function AppRoutes() {
         </Route>
         <Route path="/curso" element={<CourseLayout />}>
           <Route path="seguranca" element={<SecurityPage />} />
+          <Route path="ferramentas" element={<ToolsPage insideCourse />} />
+          <Route path="ferramentas/:slug" element={<ToolsPage insideCourse />} />
           <Route element={<RequireCourseAccess />}>
             <Route index element={<CourseDashboard />} />
             <Route path="aula/:moduleId/:lessonId" element={<LessonPage />} />
@@ -73,7 +81,7 @@ function AppRoutes() {
       <Route element={<RequireAffiliate />}><Route path="/afiliado" element={<AffiliatePage />} /></Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes></div></Suspense>
-    {(location.pathname === '/landing' || location.pathname === '/planos' || location.pathname === '/explorar' || location.pathname === '/acesso' || location.pathname === '/plataformas' || location.pathname.startsWith('/curso') || location.pathname.startsWith('/jornadas')) && <PriceTicker />}
+    {(location.pathname === '/landing' || location.pathname === '/planos' || location.pathname === '/explorar' || location.pathname === '/acesso' || location.pathname === '/plataformas' || location.pathname.startsWith('/curso') || location.pathname.startsWith('/jornadas') || location.pathname.startsWith('/ferramentas') || location.pathname.startsWith('/artigos')) && <PriceTicker />}
   </PlatformEntryContext.Provider>
 }
 

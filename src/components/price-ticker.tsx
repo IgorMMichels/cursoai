@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { RefreshCw, X } from 'lucide-react'
+import { RefreshCw, X, Calculator } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
 import { getQuotes, getSeries, previousQuotes, type CoinSymbol, type Period, type PricePoint, type Quote } from '@/lib/market-prices'
 
 const Chart = lazy(() => import('@/components/price-ticker-chart').then((module) => ({ default: module.PriceTickerChart })))
@@ -19,6 +20,8 @@ const currency = (price: number) => `US$ ${price.toLocaleString('pt-BR', { minim
 const percent = (value: number) => `${value >= 0 ? '+' : ''}${value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`
 
 export function PriceTicker() {
+  const location = useLocation()
+  const toolsUrl = location.pathname.startsWith('/curso') || location.pathname.startsWith('/jornadas') || location.pathname === '/plataformas' || location.pathname === '/acesso' ? '/curso/ferramentas' : '/ferramentas'
   const [quotes, setQuotes] = useState<Quote[]>(previousQuotes)
   const [stale, setStale] = useState(false)
   const [loading, setLoading] = useState(!previousQuotes().length)
@@ -83,13 +86,14 @@ export function PriceTicker() {
   const chartError = seriesState?.key === chartKey && seriesState.error
   const periodChange = points.length > 1 ? (points.at(-1)!.price / points[0].price - 1) * 100 : period === '24H' ? quote?.change24h : undefined
 
-  return <><div className="fixed inset-x-0 bottom-0 z-40 flex h-10 items-center justify-center gap-1 border-t border-white/[.07] bg-[#0d0e14]/95 px-2 backdrop-blur-xl sm:gap-5" aria-label="Cotações em dólares">
+  return <><div className="fixed inset-x-0 bottom-0 z-40 flex h-10 items-center justify-center gap-0 border-t border-white/[.07] bg-[#0d0e14]/95 px-1 backdrop-blur-xl sm:gap-5" aria-label="Cotações e ferramentas">
     {coins.map((item) => {
       const current = quotes.find((entry) => entry.symbol === item.symbol)
       return <button key={item.symbol} ref={(node) => { buttons.current[item.symbol] = node }} type="button" aria-haspopup="dialog" aria-expanded={selected === item.symbol} aria-label={`${item.name}, ${current ? currency(current.price) : 'preço indisponível'}, ${current ? percent(current.change24h) : ''} em 24 horas`} onMouseEnter={() => open(item.symbol)} onMouseLeave={scheduleClose} onPointerDown={() => { pointerDown.current = true }} onFocus={() => { if (!pointerDown.current) open(item.symbol) }} onClick={() => { if (selected === item.symbol && !pointerDown.current) setSelected(null); else open(item.symbol); pointerDown.current = false }} className="flex min-h-9 min-w-0 items-center justify-center gap-1.5 rounded-md px-1.5 text-[10px] text-[#cad5cd] transition-colors hover:bg-white/[.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] sm:gap-2 sm:text-[11px]">
-        <img src={item.icon} alt="" className="size-[17px] shrink-0 object-contain" /><strong className="hidden font-semibold sm:inline">{item.symbol}</strong><span className="tabular-nums">{current ? currency(current.price) : loading ? '···' : '—'}</span><span className={`hidden tabular-nums sm:inline ${current?.change24h && current.change24h < 0 ? 'text-[#ed929b]' : 'text-[#92d4ab]'}`}>{current ? percent(current.change24h) : ''}</span>{stale && current && <RefreshCw size={11} className="shrink-0 text-[#e4bc76]" aria-label="Cotação desatualizada" />}
+        <img src={item.icon} alt="" className="size-[17px] shrink-0 object-contain" /><strong className="font-semibold sm:inline">{item.symbol}</strong><span className="hidden tabular-nums min-[480px]:inline">{current ? currency(current.price) : loading ? '···' : '—'}</span><span className={`hidden tabular-nums sm:inline ${current?.change24h && current.change24h < 0 ? 'text-[#ed929b]' : 'text-[#92d4ab]'}`}>{current ? percent(current.change24h) : ''}</span>{stale && current && <RefreshCw size={11} className="shrink-0 text-[#e4bc76]" aria-label="Cotação desatualizada" />}
       </button>
     })}
+    <Link to={toolsUrl} className="mx-1 flex min-h-8 shrink-0 items-center gap-1.5 rounded-full bg-white/[.055] px-2.5 text-[10px] text-[#c6b4ef] transition-colors hover:bg-white/[.1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] sm:text-[11px]" aria-label="Abrir calculadoras cripto"><Calculator size={13}/><span>Calculadoras</span></Link>
   </div>
     {coin && createPortal(<div id="price-ticker-popover" role="dialog" aria-modal="false" aria-label={`Gráfico de ${coin.name}`} onMouseEnter={cancelClose} onMouseLeave={scheduleClose} className="fixed z-[100] w-[min(320px,calc(100vw-16px))] rounded-xl border border-white/[.11] bg-[#14151d] p-4 text-[#e6eee9] shadow-[0_20px_60px_rgba(0,0,0,.45)]" style={{ left: popupLeft, bottom: popupBottom }}>
       <div className="flex items-start justify-between gap-3"><div className="flex items-center gap-2"><img src={coin.icon} alt="" className="size-8 object-contain" /><div><p className="text-xs font-medium">{coin.name}</p><p className="text-[10px] text-[#8da095]">{coin.symbol} / USD</p></div></div><button type="button" onClick={() => setSelected(null)} aria-label="Fechar gráfico" className="grid size-7 place-items-center rounded-md text-[#9eafa3] hover:bg-white/[.06]"><X size={15} /></button></div>
