@@ -1,0 +1,108 @@
+{
+  "audio": "/audio/m4_risco.mp3",
+  "method": "Reconhecimento automático de fala: faster-whisper, modelo small, português. Sem revisão humana.",
+  "duration": 64.3776875,
+  "transcript": "Se tem uma aula que pode salvar o seu dinheiro, é essa.\n\nGerenciamento de risco é um que separa quem sobrevive no mercado por anos de quem perde\n\ntudo em poucos meses.\n\nRegra número 1.\n\nNunca invista dinheiro que você não pode perder, muito menos dinheiro da reserva de\n\nemergência ou de contas do dia a dia.\n\nRegra número 2.\n\nDiversifique.\n\nColocar 100% do seu dinheiro em uma única moeda é extremamente afiscado, por\n\nmelhor que ela pareça.\n\nRegra número 3.\n\nFique de um método de aportes regulares, conhecido como DCA, comprando pequenas quantias\n\nperiódicamente em vez de uma vez só, o que reduz o impacto de comprar tudo em um momento\n\nde preço alto.\n\nRegra número 4.\n\nDefina antes de investir até onde você aceita perder em uma operação e respeite esse\n\nlimite sem se deixar levar pela esperança de que o preço vai voltar.\n\nE por último, tenha sempre um plano por escrito, quanto você vai investir, por quanto\n\ntempo e em quais situações você vai vender.\n\nQuem investe sem plano decide no calor da emoção, e emoção é a maior inimiga do investidor.",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 3.2,
+      "text": "Se tem uma aula que pode salvar o seu dinheiro, é essa."
+    },
+    {
+      "start": 3.2,
+      "end": 8.04,
+      "text": "Gerenciamento de risco é um que separa quem sobrevive no mercado por anos de quem perde"
+    },
+    {
+      "start": 8.04,
+      "end": 10.08,
+      "text": "tudo em poucos meses."
+    },
+    {
+      "start": 10.08,
+      "end": 11.08,
+      "text": "Regra número 1."
+    },
+    {
+      "start": 11.08,
+      "end": 15.56,
+      "text": "Nunca invista dinheiro que você não pode perder, muito menos dinheiro da reserva de"
+    },
+    {
+      "start": 15.56,
+      "end": 18.48,
+      "text": "emergência ou de contas do dia a dia."
+    },
+    {
+      "start": 18.48,
+      "end": 19.48,
+      "text": "Regra número 2."
+    },
+    {
+      "start": 19.48,
+      "end": 20.72,
+      "text": "Diversifique."
+    },
+    {
+      "start": 20.72,
+      "end": 25.56,
+      "text": "Colocar 100% do seu dinheiro em uma única moeda é extremamente afiscado, por"
+    },
+    {
+      "start": 25.56,
+      "end": 27.36,
+      "text": "melhor que ela pareça."
+    },
+    {
+      "start": 27.36,
+      "end": 28.72,
+      "text": "Regra número 3."
+    },
+    {
+      "start": 28.72,
+      "end": 33.76,
+      "text": "Fique de um método de aportes regulares, conhecido como DCA, comprando pequenas quantias"
+    },
+    {
+      "start": 33.76,
+      "end": 38.88,
+      "text": "periódicamente em vez de uma vez só, o que reduz o impacto de comprar tudo em um momento"
+    },
+    {
+      "start": 38.88,
+      "end": 40.44,
+      "text": "de preço alto."
+    },
+    {
+      "start": 40.44,
+      "end": 41.44,
+      "text": "Regra número 4."
+    },
+    {
+      "start": 41.44,
+      "end": 46.96,
+      "text": "Defina antes de investir até onde você aceita perder em uma operação e respeite esse"
+    },
+    {
+      "start": 46.96,
+      "end": 51.04,
+      "text": "limite sem se deixar levar pela esperança de que o preço vai voltar."
+    },
+    {
+      "start": 51.04,
+      "end": 55.88,
+      "text": "E por último, tenha sempre um plano por escrito, quanto você vai investir, por quanto"
+    },
+    {
+      "start": 55.88,
+      "end": 58.8,
+      "text": "tempo e em quais situações você vai vender."
+    },
+    {
+      "start": 58.8,
+      "end": 64.28,
+      "text": "Quem investe sem plano decide no calor da emoção, e emoção é a maior inimiga do investidor."
+    }
+  ]
+}

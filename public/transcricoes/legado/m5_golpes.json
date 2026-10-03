@@ -1,0 +1,98 @@
+{
+  "audio": "/audio/m5_golpes.mp3",
+  "method": "Reconhecimento automático de fala: faster-whisper, modelo small, português. Sem revisão humana.",
+  "duration": 74.5675,
+  "transcript": "O mercado de criptomoedas atrai muitos golpistas, e essa aula é sobre como se proteger.\n\nPrimeiro sinal de alerta.\n\nQualquer pessoa ou grupo que promete retorno garantido, fixo e muito alto, como dobrar\n\nseu dinheiro em poucos dias.\n\nIsso não existe em nenhum investimento sério, e geralmente é uma pirâmide financeira\n\ndisfarçada.\n\nSegundo sinal, mensagens de desconhecidos oferecendo consultoria de investimento\n\nou pedindo para você transferir cripto para uma carteira e prometendo devolver com lucro.\n\nNunca envia dinheiro para desbloquear um suposto prêmio ou saque.\n\nTerceiro sinal, sites falsos de exchanges muito parecidos com os originais, criados só para\n\nroubar sua senha, sempre confira o endereço do site com atenção antes de fazer login.\n\nQuarto sinal, projetos novos, sem histórico, cujos criadores desaparecem logo depois\n\nde captar dinheiro.\n\nO famoso rugpull.\n\nA regra de ouro é simples.\n\nDesconfia de qualquer promessa boa demais para ser verdade, pesquise antes de investir,\n\native a autenticação em duas etapas em todas as suas contas e nunca, em hipótese alguma,\n\ncompartilhe sua frase de recuperação ou suas chaves privadas com ninguém.",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 6.18,
+      "text": "O mercado de criptomoedas atrai muitos golpistas, e essa aula é sobre como se proteger."
+    },
+    {
+      "start": 6.18,
+      "end": 7.9,
+      "text": "Primeiro sinal de alerta."
+    },
+    {
+      "start": 7.9,
+      "end": 13.78,
+      "text": "Qualquer pessoa ou grupo que promete retorno garantido, fixo e muito alto, como dobrar"
+    },
+    {
+      "start": 13.78,
+      "end": 15.58,
+      "text": "seu dinheiro em poucos dias."
+    },
+    {
+      "start": 15.58,
+      "end": 20.5,
+      "text": "Isso não existe em nenhum investimento sério, e geralmente é uma pirâmide financeira"
+    },
+    {
+      "start": 20.5,
+      "end": 21.66,
+      "text": "disfarçada."
+    },
+    {
+      "start": 21.66,
+      "end": 26.94,
+      "text": "Segundo sinal, mensagens de desconhecidos oferecendo consultoria de investimento"
+    },
+    {
+      "start": 26.94,
+      "end": 32.1,
+      "text": "ou pedindo para você transferir cripto para uma carteira e prometendo devolver com lucro."
+    },
+    {
+      "start": 32.1,
+      "end": 36.48,
+      "text": "Nunca envia dinheiro para desbloquear um suposto prêmio ou saque."
+    },
+    {
+      "start": 36.48,
+      "end": 42.46,
+      "text": "Terceiro sinal, sites falsos de exchanges muito parecidos com os originais, criados só para"
+    },
+    {
+      "start": 42.46,
+      "end": 48.02,
+      "text": "roubar sua senha, sempre confira o endereço do site com atenção antes de fazer login."
+    },
+    {
+      "start": 48.02,
+      "end": 53.74,
+      "text": "Quarto sinal, projetos novos, sem histórico, cujos criadores desaparecem logo depois"
+    },
+    {
+      "start": 53.74,
+      "end": 54.98,
+      "text": "de captar dinheiro."
+    },
+    {
+      "start": 54.98,
+      "end": 56.82,
+      "text": "O famoso rugpull."
+    },
+    {
+      "start": 56.82,
+      "end": 58.62,
+      "text": "A regra de ouro é simples."
+    },
+    {
+      "start": 58.62,
+      "end": 64.42,
+      "text": "Desconfia de qualquer promessa boa demais para ser verdade, pesquise antes de investir,"
+    },
+    {
+      "start": 64.42,
+      "end": 70.34,
+      "text": "ative a autenticação em duas etapas em todas as suas contas e nunca, em hipótese alguma,"
+    },
+    {
+      "start": 70.34,
+      "end": 74.42,
+      "text": "compartilhe sua frase de recuperação ou suas chaves privadas com ninguém."
+    }
+  ]
+}

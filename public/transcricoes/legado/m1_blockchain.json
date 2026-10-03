@@ -1,0 +1,78 @@
+{
+  "audio": "/audio/m1_blockchain.mp3",
+  "method": "Reconhecimento automático de fala: faster-whisper, modelo small, português. Sem revisão humana.",
+  "duration": 72.3016875,
+  "transcript": "Vamos direto ao ponto. O que é Bitcoin e o que é blockchain?\n\nBlockchain é, basicamente, um grande livro de registros, público e compartilhado entre\n\nmilhares de computadores no mundo todo. Cada página desse livro é chamada de bloco,\n\ne cada bloco guarda um conjunto de transações. Depois de confirmado, um bloco se conecta\n\nao anterior, formando uma corrente, e é exatamente por isso que se chama blockchain\n\nou corrente de blocos. A grande novidade é que ninguém sozinho controla esse livro.\n\nEle é validado por uma rede inteira de computadores, o que torna extremamente difícil fraudar\n\nou apagar uma informação depois que ela foi registrada. O Bitcoin foi a primeira moeda\n\ncriada usando essa tecnologia, em 2009, com o objetivo de ser um dinheiro digital que\n\nnão depende de bancos ou governos. Depois dele, surgiram milhares de outras criptomoedas,\n\numa com uma proposta diferente. Algumas focam em pagamentos, outras em contratos inteligentes,\n\noutras em privacidade. Entender essa base é fundamental, porque todo o resto do curso,\n\nda compra, a análise, parte desse conceito. Sem entender o que você está comprando,\n\nfica impossível investir com segurança.",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 4.88,
+      "text": "Vamos direto ao ponto. O que é Bitcoin e o que é blockchain?"
+    },
+    {
+      "start": 4.88,
+      "end": 9.64,
+      "text": "Blockchain é, basicamente, um grande livro de registros, público e compartilhado entre"
+    },
+    {
+      "start": 9.64,
+      "end": 14.96,
+      "text": "milhares de computadores no mundo todo. Cada página desse livro é chamada de bloco,"
+    },
+    {
+      "start": 14.96,
+      "end": 20.52,
+      "text": "e cada bloco guarda um conjunto de transações. Depois de confirmado, um bloco se conecta"
+    },
+    {
+      "start": 20.52,
+      "end": 25.84,
+      "text": "ao anterior, formando uma corrente, e é exatamente por isso que se chama blockchain"
+    },
+    {
+      "start": 25.84,
+      "end": 31.24,
+      "text": "ou corrente de blocos. A grande novidade é que ninguém sozinho controla esse livro."
+    },
+    {
+      "start": 31.24,
+      "end": 36.76,
+      "text": "Ele é validado por uma rede inteira de computadores, o que torna extremamente difícil fraudar"
+    },
+    {
+      "start": 36.76,
+      "end": 41.56,
+      "text": "ou apagar uma informação depois que ela foi registrada. O Bitcoin foi a primeira moeda"
+    },
+    {
+      "start": 41.56,
+      "end": 47.04,
+      "text": "criada usando essa tecnologia, em 2009, com o objetivo de ser um dinheiro digital que"
+    },
+    {
+      "start": 47.04,
+      "end": 53.28,
+      "text": "não depende de bancos ou governos. Depois dele, surgiram milhares de outras criptomoedas,"
+    },
+    {
+      "start": 53.28,
+      "end": 59.24,
+      "text": "uma com uma proposta diferente. Algumas focam em pagamentos, outras em contratos inteligentes,"
+    },
+    {
+      "start": 59.24,
+      "end": 64.76,
+      "text": "outras em privacidade. Entender essa base é fundamental, porque todo o resto do curso,"
+    },
+    {
+      "start": 64.76,
+      "end": 70.16,
+      "text": "da compra, a análise, parte desse conceito. Sem entender o que você está comprando,"
+    },
+    {
+      "start": 70.16,
+      "end": 72.12,
+      "text": "fica impossível investir com segurança."
+    }
+  ]
+}
