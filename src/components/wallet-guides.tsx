@@ -169,7 +169,7 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
         </div>
 
         <div className="wallet-cards-grid" aria-label="Escolha sua carteira">
-          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog">
+          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog" aria-label={'Abrir guia de pagamento com ' + wallet.name}>
             <span className="wallet-choice-top"><WalletIcon wallet={wallet} />{wallet.recommended && <span className="wallet-recommended">Recomendada</span>}{!wallet.compatible && <span className="wallet-unsupported">Sem TRON</span>}</span>
             <span className="wallet-choice-name">{wallet.name}</span>
             <span className="wallet-choice-description">{wallet.description}</span>
@@ -180,7 +180,7 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
         <div className="exchange-guide-block">
           <div className="exchange-guide-heading"><div><p className="eyebrow">como comprar · passo 2</p><h3>Compre USDT na exchange.</h3></div><p>Tutoriais educativos; não são recomendação. Disponibilidade e taxas variam. Links de indicação podem gerar comissão.</p></div>
           <div className="exchange-cards-grid" aria-label="Tutoriais de exchanges">
-            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog">
+            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog" aria-label={'Abrir tutorial da ' + exchange.name}>
               <span className="exchange-card-top"><WalletIcon wallet={exchange} className="exchange-brand-icon" /><span className={exchange.supportsTron ? 'exchange-compatible' : 'exchange-incompatible'}>{exchange.status}</span></span>
               <span className="exchange-choice-name">{exchange.name}</span>
               <span className="exchange-choice-description">{exchange.description}</span>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import { ArrowLeft, Award, Printer } from 'lucide-react'
-import { Brand } from '@/components/brand'
 import { Button } from '@/components/ui/button'
 import { useSession } from '@/contexts/session-context'
 import { allLessons } from '@/lib/course'
@@ -32,7 +31,6 @@ export function CertificatePage() {
     {certificate && <>
       <section className="certificate-paper relative overflow-hidden rounded-xl border border-[#a78bfa]/25 bg-[radial-gradient(ellipse_at_top_right,rgba(167,139,250,.12),transparent_48%),linear-gradient(145deg,#171621,#12121a)] p-8 text-center sm:p-14">
         <div className="absolute inset-4 rounded-xl border border-[#a78bfa]/10" />
-        <div className="relative mb-8 flex justify-center"><Brand /></div>
         <div className="relative mx-auto grid size-14 place-items-center rounded-full border border-[#e4bc76]/30 bg-[#e4bc76]/[.08] text-[#e4bc76]"><Award size={26} /></div>
         <p className="relative mt-8 text-[10px] font-semibold uppercase tracking-[.2em] text-[#b49cff]">certificado de conclusão</p><h1 className="relative mt-4 font-display text-4xl font-medium tracking-[-.06em] text-[#eef5ef] sm:text-5xl">Cripto do Zero</h1>
         <p className="relative mx-auto mt-5 max-w-lg text-sm leading-relaxed text-[#a6b7ac]">Certificamos que</p><p className="relative mt-3 font-display text-2xl font-medium text-[#e5eee7]">{certificate.name || user?.name}</p>

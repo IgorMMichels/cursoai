@@ -15,7 +15,7 @@ const assets = await readdir('dist/assets')
 const toolsStyles = assets.filter((name) => name.endsWith('.css') && /tools|tool-articles/.test(name)).map((name) => `<link rel="stylesheet" href="/assets/${name}">`).join('')
 const escape = (text) => String(text).replace(/[&<>"']/g,(char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))
 const link = (path,title) => `<a href="${escape(path)}">${escape(title)}</a>`
-const navigation = `<nav aria-label="Navegação principal">${link('/landing','Ômega')} · ${link('/ferramentas','Ferramentas')} · ${link('/artigos','Artigos')} · ${link('/planos','Planos')}</nav>`
+const navigation = `<nav aria-label="Navegação principal">${link('/landing','Cripto do Zero')} · ${link('/ferramentas','Ferramentas')} · ${link('/artigos','Artigos')} · ${link('/planos','Planos')}</nav>`
 const siteUrl = process.env.VITE_SITE_URL ?? loadEnv('production', process.cwd(), 'VITE_SITE_URL').VITE_SITE_URL
 let canonicalOrigin
 if (siteUrl) {
@@ -25,7 +25,7 @@ if (siteUrl) {
 }
 async function page(path,title,description,body) {
   const canonical = canonicalOrigin ? `<link rel="canonical" href="${escape(canonicalOrigin+path)}">` : ''
-  const html = template.replace(/<title>.*?<\/title>/s,`<title>${escape(title)} | Ômega</title>`)
+  const html = template.replace(/<title>.*?<\/title>/s,`<title>${escape(title)} | Cripto do Zero</title>`)
     .replace(/<meta name="description"[^>]*>/,`<meta name="description" content="${escape(description)}">`)
     .replace('</head>',`${canonical}${toolsStyles}</head>`)
     .replace('<div id="root"></div>',`<div id="root"><div class="tools-root"><main class="tools-content tools-public-content">${navigation}${body}</main></div></div>`)

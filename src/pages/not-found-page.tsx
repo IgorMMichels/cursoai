@@ -29,7 +29,7 @@ export function NotFoundPage() {
           </div>
         </motion.div>
       </section>
-      <footer className="not-found-footer"><Brand compact /><span>Ômega · conteúdo educacional</span><Compass size={14} /></footer>
+      <footer className="not-found-footer"><Brand compact /><span>Cripto do Zero · conteúdo educacional</span><Compass size={14} /></footer>
     </div>
   </main>
 }

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, ChevronDown, ChevronUp, Eye, LogIn, LogOut, Menu, Pencil, Play, Sparkles, X } from 'lucide-react'
 import { Brand } from '@/components/brand'
-import { ThemeControl } from '@/components/theme-control'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
@@ -10,12 +9,12 @@ import { hasActivePlan } from '@/components/guards'
 function scrollToSection(id: string) {
   const target = document.getElementById(id)
   if (!target) return false
-  target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' })
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return true
 }
 
 function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const studentAreaLinks = [
@@ -261,16 +260,6 @@ export function SiteHeader() {
   const location = useLocation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  useEffect(() => {
-    if (!open) return
-    const close = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      document.querySelector<HTMLButtonElement>('.dock-menu')?.focus()
-    }
-    document.addEventListener('keydown', close)
-    return () => document.removeEventListener('keydown', close)
-  }, [open])
   const { user, loading } = useSession()
   const isLogged = !loading && !!user
   const activePlan = isLogged && hasActivePlan(user)
@@ -302,7 +291,6 @@ export function SiteHeader() {
   }
   return (
     <header className="site-header sticky top-0 z-40 px-3 pt-3">
-      <a href="#conteudo" className="omega-skip-link">Pular para o conteúdo</a>
       <div className="page-shell header-dock flex h-16 items-center justify-between gap-3 px-3 sm:gap-5 sm:px-5 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <Brand className="min-w-0 justify-self-start whitespace-nowrap" />
         <nav className="dock-navigation hidden items-center gap-1 xl:flex" aria-label="Navegação principal">
@@ -312,7 +300,6 @@ export function SiteHeader() {
           <StudentAreaDropdown />
         </nav>
         <div className="hidden items-center justify-self-end gap-3 sm:flex">
-          <ThemeControl />
           {isLogged ? (
             <>
               {activePlan ? (
@@ -332,7 +319,6 @@ export function SiteHeader() {
         <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white xl:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} aria-expanded={open} aria-controls="site-mobile-navigation" onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
       {open && <nav id="site-mobile-navigation" className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] max-h-[calc(100dvh-130px)] overflow-y-auto rounded-2xl p-2 shadow-2xl xl:hidden" aria-label="Navegação móvel">
-        <div className="px-3 py-2 sm:hidden"><ThemeControl /></div>
         <Link to="/simulador" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Simulador de trade</Link>
         <Link to="/ferramentas" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Ferramentas gratuitas</Link>
         <Link to="/artigos" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Artigos e conceitos</Link>
@@ -379,7 +365,7 @@ export function SiteFooter() {
     <div className="page-shell">
       <div className="footer-main">
         <div className="footer-identity">
-          <div className="footer-brand-lockup"><Brand /></div>
+          <div className="footer-brand-lockup"><Brand compact /><span>Ômega</span></div>
           <p className="footer-tagline">Aprenda cripto com método e critério.</p>
         </div>
         <nav className="footer-links" aria-label="Links do rodapé">
@@ -394,7 +380,7 @@ export function SiteFooter() {
       </div>
 
       <div className="footer-bottomline">
-        <span>© {new Date().getFullYear()} Ômega</span>
+        <span>© {new Date().getFullYear()} Cripto do Zero</span>
         <span>Criptoativos envolvem risco de perda.</span>
         <a href="#top" onClick={(event) => { event.preventDefault(); scrollToTop() }}>Voltar ao topo <ChevronUp size={14} /></a>
       </div>

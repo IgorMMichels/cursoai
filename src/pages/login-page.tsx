@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, Eye, EyeOff, Link2 } from 'lucide-react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { OmegaSymbol } from '@/components/brand'
-import { ThemeControl } from '@/components/theme-control'
 import { Brand } from '@/components/brand'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { isAffiliateHandleAvailable, isValidAffiliateHandle } from '@/lib/affiliate-service'
@@ -146,7 +144,7 @@ export function LoginPage() {
   const chosenPlan = queryPlan && queryPlan in plans ? queryPlan : undefined
   const chosenCurrency = currencyParam === 'SOL' || currencyParam === 'BRL' ? currencyParam : 'BRL'
   const referralParam = search.get('ref')?.trim()
-  const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : search.get('mode') === 'signup' ? 'signup' : 'signin')
+  const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : 'signin')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken' | 'error'>('idle')
@@ -255,7 +253,7 @@ export function LoginPage() {
   const usernameHintColor = usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'
 
   return (
-    <div className="omega-auth min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <style>{`
         @keyframes login-shimmer-slide { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
         @keyframes login-enter { from { opacity: 0; transform: translateY(16px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
@@ -269,7 +267,7 @@ export function LoginPage() {
       <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:px-12 xl:px-20">
         <div className="relative m-auto w-full max-w-[420px] py-5 sm:py-8">
           <div className="mb-12 flex items-center justify-between gap-4">
-            <div className="omega-auth-brand"><Brand /><ThemeControl /></div>
+            <Brand />
             <Link to="/landing" className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-[#a1aaa2] transition hover:text-white">
               <ArrowLeft size={13} /> Voltar ao curso
             </Link>
@@ -469,11 +467,9 @@ export function LoginPage() {
         <div className="absolute -right-24 top-[18%] size-[420px] rounded-full border border-[#a7b8a9]/10" />
         <div className="absolute -right-8 top-[27%] size-[300px] rounded-full border border-[#a7b8a9]/10" />
         <div className="absolute right-10 top-[37%] size-[180px] rounded-full border border-[#a7b8a9]/10" />
-
-        <div className="omega-auth-art" aria-hidden="true"><OmegaSymbol /></div>
         <div className="relative flex items-center gap-3 text-xs text-[#9aa89b]">
           <span className="size-1.5 rounded-full bg-[#9bb49b]" />
-          Ômega
+          Cripto do Zero
         </div>
         <div className="relative max-w-[540px] pb-8">
           <div className="mb-7 h-px w-12 bg-[#9bb49b]/70" />

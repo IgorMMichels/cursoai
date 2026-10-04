@@ -1,6 +1,4 @@
-# Ômega
-
-Identidade visual e aplicações da marca: [guia Ômega](docs/omega/guia-da-marca.md).
+# Cripto do Zero
 
 Plataforma de educação sobre criptoativos: Bitcoin, Ethereum, carteiras, análise de projetos, DeFi, futuros e gestão de risco. Feita em React, TypeScript, Vite, Tailwind CSS v4, shadcn/ui e Framer Motion. Autenticação, perfil, progresso, quizzes, avaliações, certificados e operações de afiliados usam Supabase. Pagamentos e ativação de assinaturas ainda dependem de backend seguro.
 

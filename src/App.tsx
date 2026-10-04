@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { SessionProvider } from '@/contexts/session-context'
 import { RequireAffiliate, RequireAuth, RequireCourseAccess, RequireRole } from '@/components/guards'
-import { ReferralTracker, RouteLoading } from '@/components/app-utilities'
+import { ReferralTracker, PlatformEntryAnimation } from '@/components/app-utilities'
+import { PlatformEntryContext, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
 import { PriceTicker } from '@/components/price-ticker'
 
 const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => ({ default: module.LandingPage })))
@@ -34,9 +35,12 @@ function AffiliateReferralRedirect() {
 
 function AppRoutes() {
   const location = useLocation()
-  return <>
+  const [entryVisible, setEntryVisible] = useState(false)
+  const entryActive = shouldShowPlatformEntry(location.pathname) || entryVisible
+  return <PlatformEntryContext.Provider value={entryActive}>
     <ReferralTracker />
-    <Suspense fallback={<RouteLoading />}><div key={location.pathname} className="route-enter omega-shell"><Routes location={location}>
+    <PlatformEntryAnimation onVisibilityChange={setEntryVisible} />
+    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><div key={location.pathname} className="route-enter"><Routes location={location}>
       <Route path="/" element={<Navigate to="/landing" replace />} />
       <Route path="/quiz" element={<Navigate to="/landing" replace />} />
       <Route path="/landing" element={<LandingPage />} />
@@ -81,7 +85,7 @@ function AppRoutes() {
       <Route path="*" element={<NotFoundPage />} />
     </Routes></div></Suspense>
     {(location.pathname === '/landing' || location.pathname === '/planos' || location.pathname === '/explorar' || location.pathname === '/acesso' || location.pathname === '/plataformas' || location.pathname.startsWith('/curso') || location.pathname.startsWith('/jornadas') || location.pathname.startsWith('/ferramentas') || location.pathname.startsWith('/artigos')) && <PriceTicker />}
-  </>
+  </PlatformEntryContext.Provider>
 }
 
 export default function App() {
