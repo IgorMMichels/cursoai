@@ -4,12 +4,13 @@ import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield, X } from 'lucide-react'
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { WalletGuideSection } from '@/components/wallet-guides'
 import { CourseOutline } from '@/components/course-outline'
+import { omegaCopy } from '@/lib/omega-copy'
 import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
@@ -98,7 +99,7 @@ export function LandingPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[.22em] text-[#c6baf0]">{TOTAL_JOURNEYS} jornadas · do zero ao plano de trade</p>
             </motion.div>
             <motion.h1 variants={heroItemReveal} className="landing-hero-title text-[#edf4ef]">Entenda cripto.<span>Decida com critério.</span></motion.h1>
-            <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[580px] text-[15px] leading-[1.8] text-[#b3b0bd] sm:text-base">{TOTAL_LESSONS} aulas narradas com transcrição, exercício em toda aula, quiz explicado por módulo e certificado no Cripto do Zero. De Bitcoin e carteiras a memecoins, DeFi e futuros — com checklist de segurança em cada passo. Sem promessa de lucro.</motion.p>
+            <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[580px] text-[15px] leading-[1.8] text-[#b3b0bd] sm:text-base">{TOTAL_LESSONS} aulas narradas com transcrição, exercício em toda aula, quiz explicado por módulo e certificado de conclusão. De Bitcoin e carteiras a memecoins, DeFi e futuros — com checklist de segurança em cada passo. Sem promessa de lucro.</motion.p>
             <motion.div variants={heroItemReveal} className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
               <Link to="/login" className="button-motion focus-ring inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white sm:w-auto">Criar minha conta <ArrowUpRight size={16} /></Link>
               <a href="#jornada" className="button-motion inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[.15] bg-white/[.02] px-5 text-sm text-[#c1c2cb] backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/[.05] sm:w-auto">Ver conteúdo do curso <ArrowDown size={15} /></a>
@@ -148,26 +149,14 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="comparison-section py-20 sm:py-28" aria-labelledby="comparison-title">
+      <section className="omega-features-section py-20 sm:py-28" aria-labelledby="comparison-title">
         <div className="page-shell">
-          <p className="eyebrow text-center">o mercado recompensa contexto, não barulho</p>
-          <h2 id="comparison-title" className="display-lg mx-auto mt-4 max-w-3xl text-center text-[#eaf2ec]">Aprenda com critério.<br /><span className="text-[#aeb0b9]">Decida no seu tempo.</span></h2>
-          <div className="comparison-grid mt-12">
-            <article className="comparison-card comparison-card-muted">
-              <p className="comparison-label">o caminho comum</p>
-              <ul>
-                {['FOMO sem entender o ativo', 'Dicas soltas e promessas de retorno', 'Ruído de feed sem contexto', 'Risco ignorado até dar errado', 'Decisões sem um plano próprio'].map((item) => <li key={item}><span className="comparison-icon comparison-icon-no"><X size={12} /></span>{item}</li>)}
-              </ul>
-            </article>
-            <div className="comparison-vs" aria-hidden="true">vs</div>
-            <article className="comparison-card comparison-card-featured">
-              <p className="comparison-label">no cripto do zero</p>
-              <ul>
-                {['Fundamentos antes de agir', 'Contexto para avaliar projetos', 'Aulas organizadas do básico ao avançado', 'Segurança e riscos em cada etapa', 'Um processo que você pode adaptar'].map((item) => <li key={item}><span className="comparison-icon comparison-icon-yes"><Check size={12} /></span>{item}</li>)}
-              </ul>
-            </article>
-          </div>
-          <p className="comparison-note">Conteúdo educacional. Não é recomendação de investimento nem promessa de resultado.</p>
+          <h2 id="comparison-title" className="display-lg max-w-3xl text-[#eaf2ec]">{omegaCopy.featuresTitle}</h2>
+          <div className="omega-feature-list mt-10">{omegaCopy.features.map((feature, index) => <article key={feature.title} className="omega-feature">
+            <span className="omega-feature-number" aria-hidden="true">0{index + 1}</span>
+            <div><h3>{feature.title}</h3><p>{feature.text}</p></div>
+            <Link to={feature.href}>{feature.action}<ArrowUpRight size={16} /></Link>
+          </article>)}</div>
         </div>
       </section>
 

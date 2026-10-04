@@ -1,0 +1,22 @@
+/* Logo refinements apply everywhere; the page design remains unchanged. */
+.brand-mark, .footer-brand-lockup .brand-mark { border:0; border-radius:0; background:transparent; box-shadow:none; padding:0; overflow:visible; }
+.omega-login-panel { background:#101015; }
+.omega-login-scene { width:min(100%,520px); }
+.omega-login-model { position:relative; width:100%; height:420px; color:#a58bf4; }
+.omega-login-model .ascii-viewer { position:absolute; inset:0; }
+.omega-login-static,.omega-ascii-static { width:100%; height:100%; display:grid; place-items:center; }
+.omega-login-static svg,.omega-ascii-static svg { width:78%; height:85%; }
+.omega-login-pause { display:flex; align-items:center; justify-content:center; gap:8px; margin:16px auto 0; min-height:40px; padding:8px 12px; background:none; color:#aaa3bc; font-size:11px; cursor:pointer; }
+.omega-login-pause:hover { color:#eee8ff; }
+.omega-login-pause:focus-visible { outline:2px solid #a58bf4; outline-offset:4px; }
+.omega-feature { display:grid; grid-template-columns:50px minmax(0,1fr) auto; align-items:center; gap:24px; padding:28px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+.omega-feature:first-child { border-top:1px solid rgba(255,255,255,.08); }
+.omega-feature-number { color:#a58bf4; font-size:13px; font-variant-numeric:tabular-nums; }
+.omega-feature h3 { color:#eeeaf4; font-size:18px; font-weight:500; letter-spacing:-.02em; }
+.omega-feature p { margin-top:8px; color:#92959e; font-size:13px; line-height:1.7; }
+.omega-feature a { display:inline-flex; align-items:center; gap:8px; min-height:44px; color:#c2adfb; font-size:12px; }
+@media(max-width:767px) {
+  .omega-feature { grid-template-columns:24px minmax(0,1fr); gap:12px; padding:22px 0; }
+  .omega-feature a { grid-column:2; justify-self:start; }
+  .omega-feature h3 { font-size:16px; }
+}

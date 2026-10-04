@@ -365,7 +365,7 @@ export function SiteFooter() {
     <div className="page-shell">
       <div className="footer-main">
         <div className="footer-identity">
-          <div className="footer-brand-lockup"><Brand compact /><span>Ômega</span></div>
+          <div className="footer-brand-lockup"><Brand compact /><span>Omega</span></div>
           <p className="footer-tagline">Aprenda cripto com método e critério.</p>
         </div>
         <nav className="footer-links" aria-label="Links do rodapé">
@@ -380,7 +380,7 @@ export function SiteFooter() {
       </div>
 
       <div className="footer-bottomline">
-        <span>© {new Date().getFullYear()} Cripto do Zero</span>
+        <span>© {new Date().getFullYear()} Omega</span>
         <span>Criptoativos envolvem risco de perda.</span>
         <a href="#top" onClick={(event) => { event.preventDefault(); scrollToTop() }}>Voltar ao topo <ChevronUp size={14} /></a>
       </div>

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, BadgeCheck, Check, Eye, EyeOff, Link2 } from 'lucide-react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { OmegaLoginScene } from '@/components/omega-login-scene'
+import { omegaCopy } from '@/lib/omega-copy'
+import { PageMeta } from '@/components/tools/page-meta'
 import { Brand } from '@/components/brand'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { isAffiliateHandleAvailable, isValidAffiliateHandle } from '@/lib/affiliate-service'
@@ -241,7 +244,7 @@ export function LoginPage() {
     }
   }
 
-  const title = mode === 'signup' ? 'Crie sua conta.' : mode === 'reset' ? 'Recupere seu acesso.' : mode === 'recovery' ? 'Defina uma nova senha.' : 'Entre para continuar.'
+  const title = omegaCopy.login[mode]
   const description = mode === 'signup'
     ? 'Escolha seu ID público. Ele vira seu link de indicação assim que criar a conta.'
     : mode === 'reset'
@@ -253,7 +256,8 @@ export function LoginPage() {
   const usernameHintColor = usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'
 
   return (
-    <div className="min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="omega-login min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <PageMeta title="Acesso" description="Entre na Omega para acessar suas jornadas e seu progresso de estudo." path="/login" privatePage />
       <style>{`
         @keyframes login-shimmer-slide { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
         @keyframes login-enter { from { opacity: 0; transform: translateY(16px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
@@ -461,26 +465,9 @@ export function LoginPage() {
         </div>
       </main>
 
-      {/* RIGHT — quiet brand panel */}
-      <aside className="relative hidden min-h-[100dvh] overflow-hidden border-l border-white/[.07] bg-[#111512] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16" aria-hidden="true">
-        <div className="absolute inset-0 opacity-[.12]" style={{ backgroundImage: 'linear-gradient(rgba(174,194,174,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(174,194,174,.16) 1px, transparent 1px)', backgroundSize: '72px 72px', maskImage: 'linear-gradient(to bottom, transparent, black 35%, transparent)' }} />
-        <div className="absolute -right-24 top-[18%] size-[420px] rounded-full border border-[#a7b8a9]/10" />
-        <div className="absolute -right-8 top-[27%] size-[300px] rounded-full border border-[#a7b8a9]/10" />
-        <div className="absolute right-10 top-[37%] size-[180px] rounded-full border border-[#a7b8a9]/10" />
-        <div className="relative flex items-center gap-3 text-xs text-[#9aa89b]">
-          <span className="size-1.5 rounded-full bg-[#9bb49b]" />
-          Cripto do Zero
-        </div>
-        <div className="relative max-w-[540px] pb-8">
-          <div className="mb-7 h-px w-12 bg-[#9bb49b]/70" />
-          <p className="font-display text-4xl font-medium leading-[1.15] tracking-[-.045em] text-[#e7ece6] xl:text-5xl">
-            Aprenda a entender o mercado com mais clareza.
-          </p>
-          <p className="mt-5 max-w-[38ch] text-sm leading-7 text-[#9aa69b]">
-            Conteúdo organizado para você estudar no seu ritmo e construir uma base sólida.
-          </p>
-        </div>
-        <p className="relative text-[11px] text-[#68766b]">Entre na sua conta para continuar de onde parou.</p>
+      <aside className="omega-login-panel relative hidden min-h-[100dvh] flex-col items-center justify-center px-10 py-16 lg:flex">
+        <OmegaLoginScene />
+        <p className="mt-8 text-center text-sm text-[#aaa3bc]">{omegaCopy.sceneCaption}</p>
       </aside>
     </div>
   )

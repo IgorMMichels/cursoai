@@ -80,7 +80,7 @@ export function PlatformEntryAnimation({ onVisibilityChange }: { onVisibilityCha
   }, [closing, onVisibilityChange, visible])
   return visible && <div className={`platform-entry fixed inset-0 z-[100] grid place-items-center ${closing ? 'platform-entry-closing' : ''}`}>
     <div className="platform-loader-content">
-      <div className="platform-loader-brand"><Brand compact /><span>Ômega</span></div>
+      <div className="platform-loader-brand"><Brand compact /><span>Omega</span></div>
       <div className="platform-ascii-stage" role="img" aria-label="Moeda de Bitcoin em arte ASCII">
         <Suspense fallback={<div className="platform-ascii-pending" role="img" aria-label="Carregando esfera de Bitcoin em ASCII"><pre>{'       .,:;-=+*#*=-:,.\n    .-+*#%@@@@@@@@@%#*+-.\n  :+#%@@@@@@@₿@@@@@@@%#+:\n  :+#%@@@@@@@@@@@@@@@@@%#+:\n    .-+*#%@@@@@@@@@%#*+-.\n       .,:;-=+*#*=-:,.'}</pre></div>}>
           <AsciiModelViewer className="absolute inset-0" baseScale={1.12} showLoadingOverlay={false} />

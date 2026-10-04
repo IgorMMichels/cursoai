@@ -15,7 +15,7 @@ export function ToolArticlesPage() {
   const tool = tools.find((item) => item.slug === article?.toolSlug)
   useEffect(() => { window.scrollTo(0,0) },[articleSlug])
   return <div className="tools-root"><SiteHeader/><main className="tools-public-content tools-content">
-    {articleSlug && !article ? <div className="tool-not-found"><PageMeta title="Artigo não encontrado" description="Veja os artigos educativos do Cripto do Zero." path="/artigos" privatePage/><h1>Artigo não encontrado</h1><Link className="tool-button" to="/artigos">Ver artigos <ArrowRight size={16}/></Link></div> : article ? <>
+    {articleSlug && !article ? <div className="tool-not-found"><PageMeta title="Artigo não encontrado" description="Veja os artigos educativos da Omega." path="/artigos" privatePage/><h1>Artigo não encontrado</h1><Link className="tool-button" to="/artigos">Ver artigos <ArrowRight size={16}/></Link></div> : article ? <>
       <PageMeta title={article.title} description={article.description} path={`/artigos/${article.slug}`}/>
       <article className="tool-editorial"><Link className="tool-back" to="/artigos"><ArrowLeft size={14}/>Todos os artigos</Link><header><p className="tools-intro">Aprenda e experimente</p><h1>{article.title}</h1><p className="article-deck">{article.description}</p><span className="article-reading-time"><Clock3 size={14}/>{article.readingMinutes} min de leitura · Conteúdo educativo</span></header>
         <nav className="article-toc" aria-label="Neste artigo"><strong>Neste artigo</strong>{article.sections.map((section,index) => <a key={section.heading} href={`#conceito-${index+1}`}>{section.heading}</a>)}</nav>

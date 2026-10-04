@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
+import { omegaCopy } from '@/lib/omega-copy'
 
 export function PageMeta({ title, description, path, privatePage = false }: { title: string; description: string; path: string; privatePage?: boolean }) {
   useEffect(() => {
-    document.title = `${title} | Cripto do Zero`
+    document.title = `${title} | ${omegaCopy.name}`
     const configuredOrigin = import.meta.env.VITE_SITE_URL
     let origin = window.location.origin
     if (configuredOrigin) {
@@ -21,11 +22,11 @@ export function PageMeta({ title, description, path, privatePage = false }: { ti
       return () => {
         // O HTML de entrada pode ser de um artigo pré-renderizado. Não restaurar
         // seu canonical/título ao navegar para uma rota que usa o shell global.
-        if (selector === 'meta[name="description"]') element.setAttribute('content','Cripto do Zero: aprenda sobre criptoativos, Bitcoin, Ethereum, carteiras, DeFi e futuros com aulas narradas e exercícios interativos.')
+        if (selector === 'meta[name="description"]') element.setAttribute('content','Omega: aprenda sobre criptoativos, Bitcoin, Ethereum, carteiras, DeFi e futuros com aulas narradas e exercícios interativos.')
         else element.remove()
       }
     })
-    return () => { document.title = 'Cripto do Zero — método antes do mercado'; cleanups.forEach((cleanup) => cleanup()) }
+    return () => { document.title = omegaCopy.title; cleanups.forEach((cleanup) => cleanup()) }
   }, [title, description, path, privatePage])
   return null
 }
