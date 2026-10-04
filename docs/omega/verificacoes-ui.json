@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "Eight actual landing sections",
+    "No artificial entry overlay",
+    "Reduced motion has a static symbol",
+    "No horizontal overflow at 360",
+    "No horizontal overflow at 390",
+    "No horizontal overflow at 768",
+    "No horizontal overflow at 1280",
+    "No horizontal overflow at 1440",
+    "Mobile navigation opens",
+    "Escape closes mobile navigation",
+    "Currency changes display without changing prices",
+    "Plan selection preserves unavailable checkout notice",
+    "Curriculum accordion expands",
+    "Wallet guide remains accessible",
+    "Wallet guide closes",
+    "Create-account CTA opens signup",
+    "Standalone plans preserve BRL default",
+    "Plan login parameters preserved",
+    "Brand metadata updated"
+  ],
+  "additionalManualChecks": [
+    "Theme preference survives reload",
+    "ASCII renderer loads only after activation",
+    "ASCII animation can be paused",
+    "Static fallback when WebGL is unavailable",
+    "Private course route redirects to login",
+    "No horizontal overflow with 200% root font on mobile"
+  ]
+}

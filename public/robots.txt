@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /landing
+Allow: /artigos
+Allow: /ferramentas
+Allow: /planos
+Allow: /explorar
+Disallow: /curso
+Disallow: /jornadas
+Disallow: /admin
+Disallow: /afiliado
+Disallow: /login

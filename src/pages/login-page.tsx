@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ArrowLeft, ArrowRight, BadgeCheck, Check, Eye, EyeOff, Link2, Play, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BadgeCheck, Check, Eye, EyeOff, Link2 } from 'lucide-react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { OmegaSymbol } from '@/components/brand'
+import { ThemeControl } from '@/components/theme-control'
 import { Brand } from '@/components/brand'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { isAffiliateHandleAvailable, isValidAffiliateHandle } from '@/lib/affiliate-service'
@@ -144,7 +146,7 @@ export function LoginPage() {
   const chosenPlan = queryPlan && queryPlan in plans ? queryPlan : undefined
   const chosenCurrency = currencyParam === 'SOL' || currencyParam === 'BRL' ? currencyParam : 'BRL'
   const referralParam = search.get('ref')?.trim()
-  const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : 'signin')
+  const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : search.get('mode') === 'signup' ? 'signup' : 'signin')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken' | 'error'>('idle')
@@ -249,49 +251,39 @@ export function LoginPage() {
       : mode === 'recovery'
         ? 'Escolha uma senha nova para proteger sua conta.'
         : 'Acesse com seu e-mail e senha.'
-  const showFullStrength = mode === 'signup' || mode === 'recovery'
-  const showFaintStrength = mode === 'signin' && password.length > 0
   const displayHandle = username.trim().toLowerCase() || 'seu-id'
   const usernameHintColor = usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'
 
   return (
-    <div className="h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[#09090d] text-[#e6eee9] lg:grid lg:grid-cols-[1.05fr_.95fr]">
+    <div className="omega-auth min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <style>{`
-        @keyframes login-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes login-float-soft { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         @keyframes login-shimmer-slide { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
         @keyframes login-enter { from { opacity: 0; transform: translateY(16px); filter: blur(5px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
         .login-enter { animation: login-enter .7s cubic-bezier(.2,.8,.2,1) both; }
         .login-enter-delay { animation: login-enter .8s cubic-bezier(.2,.8,.2,1) .12s both; }
-        .login-float { animation: login-float 7s ease-in-out infinite; }
-        .login-float-soft { animation: login-float-soft 6s ease-in-out infinite; }
-        .login-float-delay { animation-delay: 1.4s; }
         .login-shimmer { position: absolute; inset: 0; width: 38%; border-radius: inherit; background: linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); animation: login-shimmer-slide 2.2s ease-in-out infinite; pointer-events: none; }
-        @media (prefers-reduced-motion: reduce) { .login-float, .login-float-soft, .login-shimmer, .login-enter, .login-enter-delay { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .login-shimmer, .login-enter, .login-enter-delay { animation: none; } }
       `}</style>
 
       {/* LEFT — form column */}
-      <main className="relative flex h-full min-h-0 overflow-y-auto p-5 sm:p-9 lg:px-14 xl:px-20">
-        <div className="pointer-events-none absolute -left-32 top-[-120px] size-[380px] rounded-full bg-[#a78bfa]/[.07] blur-[110px]" aria-hidden="true" />
-        <div className="pointer-events-none absolute bottom-[-140px] left-[30%] size-[320px] rounded-full bg-[#67dff3]/[.05] blur-[110px]" aria-hidden="true" />
-
-        <div className="relative m-auto w-full max-w-[440px]">
-          <div className="mb-10 flex items-center justify-between gap-4">
-            <Brand />
-            <Link to="/landing" className="inline-flex items-center gap-2 rounded-full border border-white/[.08] bg-white/[.03] px-3.5 py-2 text-[11px] font-medium text-[#8da096] backdrop-blur-md transition hover:border-white/[.16] hover:text-white">
+      <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:px-12 xl:px-20">
+        <div className="relative m-auto w-full max-w-[420px] py-5 sm:py-8">
+          <div className="mb-12 flex items-center justify-between gap-4">
+            <div className="omega-auth-brand"><Brand /><ThemeControl /></div>
+            <Link to="/landing" className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-[#a1aaa2] transition hover:text-white">
               <ArrowLeft size={13} /> Voltar ao curso
             </Link>
           </div>
 
-          <div className="login-enter mb-7">
-            <div className="mb-5 grid size-11 place-items-center rounded-2xl border border-[#a78bfa]/25 bg-gradient-to-b from-[#a78bfa]/[.16] to-[#a78bfa]/[.05] text-[#c8b5ff] shadow-[0_0_28px_rgba(167,139,250,.18)]">
-              <BadgeCheck size={20} />
+          <div className="login-enter mb-8">
+            <div className="mb-5 grid size-10 place-items-center rounded-xl border border-[#a7b8a9]/20 bg-[#a7b8a9]/[.07] text-[#b7c8b7]">
+              <BadgeCheck size={19} />
             </div>
-            <p className="eyebrow">acesso à plataforma</p>
-            <h2 className="mt-3 max-w-[18ch] font-display text-4xl font-semibold leading-[1.04] tracking-[-.05em] text-[#e9f1eb]">
+            <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#91a394]">Acesso à plataforma</p>
+            <h2 className="mt-3 max-w-[18ch] font-display text-[34px] font-medium leading-[1.12] tracking-[-.045em] text-[#f0f2ee]">
               {title}
             </h2>
-            <p className="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#8fa197]">{description}</p>
+            <p className="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#a0aaa1]">{description}</p>
           </div>
 
           {chosenPlan && (
@@ -422,8 +414,8 @@ export function LoginPage() {
                       </span>
                     </button>
                   </div>
-                  {(showFullStrength || showFaintStrength) && (
-                    <PasswordStrength password={password} compact={mode === 'signin'} />
+                  {mode === 'signup' && (
+                    <PasswordStrength password={password} />
                   )}
                   {(mode === 'signup' || mode === 'recovery') && password.length === 0 && (
                     <p className="mt-2 text-[10px] leading-relaxed text-[#71847a]">Use pelo menos 12 caracteres. Prefira uma senha única e um gerenciador confiável.</p>
@@ -471,118 +463,28 @@ export function LoginPage() {
         </div>
       </main>
 
-      {/* RIGHT — premium visual showcase */}
-      <aside className="group relative hidden h-full min-h-0 flex-col justify-between overflow-hidden border-l border-white/[.06] bg-[#0d0e14] lg:flex" aria-hidden="true">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=1200&auto=format&fit=crop"
-            alt=""
-            loading="eager"
-            referrerPolicy="no-referrer"
-            className="size-full object-cover opacity-45 grayscale transition duration-700 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0e14]/70 via-[#0d0e14]/35 to-[#0d0e14]/92" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_10%,rgba(167,139,250,.22),transparent_55%),radial-gradient(ellipse_at_85%_75%,rgba(103,223,243,.12),transparent_50%),radial-gradient(ellipse_at_60%_45%,rgba(232,188,118,.08),transparent_45%)]" />
-          <div className="absolute -left-24 top-[12%] size-[380px] rounded-full bg-[#a78bfa]/[.16] blur-[110px]" />
-          <div className="absolute bottom-[-120px] right-[-100px] size-[420px] rounded-full bg-[#67dff3]/[.1] blur-[120px]" />
-          <div
-            className="absolute inset-0 opacity-[.14] mix-blend-screen"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")` }}
-          />
-          <div
-            className="absolute inset-0 opacity-[.1]"
-            style={{ backgroundImage: 'linear-gradient(rgba(199,180,255,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(199,180,255,.14) 1px, transparent 1px)', backgroundSize: '56px 56px', maskImage: 'radial-gradient(ellipse at 50% 40%, black, transparent 78%)' }}
-          />
+      {/* RIGHT — quiet brand panel */}
+      <aside className="relative hidden min-h-[100dvh] overflow-hidden border-l border-white/[.07] bg-[#111512] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16" aria-hidden="true">
+        <div className="absolute inset-0 opacity-[.12]" style={{ backgroundImage: 'linear-gradient(rgba(174,194,174,.16) 1px, transparent 1px), linear-gradient(90deg, rgba(174,194,174,.16) 1px, transparent 1px)', backgroundSize: '72px 72px', maskImage: 'linear-gradient(to bottom, transparent, black 35%, transparent)' }} />
+        <div className="absolute -right-24 top-[18%] size-[420px] rounded-full border border-[#a7b8a9]/10" />
+        <div className="absolute -right-8 top-[27%] size-[300px] rounded-full border border-[#a7b8a9]/10" />
+        <div className="absolute right-10 top-[37%] size-[180px] rounded-full border border-[#a7b8a9]/10" />
+
+        <div className="omega-auth-art" aria-hidden="true"><OmegaSymbol /></div>
+        <div className="relative flex items-center gap-3 text-xs text-[#9aa89b]">
+          <span className="size-1.5 rounded-full bg-[#9bb49b]" />
+          Ômega
         </div>
-
-        <div className="relative flex items-center justify-between p-8 xl:p-10">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/[.12] bg-black/40 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[.14em] text-[#d6c9f3] backdrop-blur-xl">
-            <span className="size-1.5 animate-pulse rounded-full bg-[#8ed7b7]" />
-            Turma aberta
-          </span>
-          <span className="rounded-full border border-white/[.1] bg-black/40 px-3.5 py-2 font-mono text-[10px] text-[#9aa8c7] backdrop-blur-xl">
-            método antes do mercado
-          </span>
-        </div>
-
-        <div className="relative px-8 xl:px-10">
-          <div className="relative mx-auto w-full max-w-[420px]">
-            <div className="login-float overflow-hidden rounded-3xl border border-white/[.12] bg-white/[.06] shadow-[0_30px_80px_rgba(0,0,0,.5)] backdrop-blur-2xl transition duration-700 group-hover:scale-[1.015]">
-              <div className="relative h-44 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1642790106117-e829e14a795f?q=80&w=800&auto=format&fit=crop" alt="" loading="lazy" referrerPolicy="no-referrer" className="size-full object-cover opacity-70 grayscale-[.35] transition duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0d0e14] via-transparent to-transparent" />
-                <span className="absolute left-4 top-4 rounded-full border border-white/[.16] bg-black/55 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[.14em] text-[#e4d8ff] backdrop-blur-md">
-                  Aula 04
-                </span>
-                <span className="absolute bottom-3 right-4 grid size-11 place-items-center rounded-full bg-[#b49cff] text-[#100c19] shadow-[0_0_28px_rgba(180,156,255,.5)]">
-                  <Play size={16} className="ml-0.5" fill="currentColor" />
-                </span>
-              </div>
-              <div className="p-5">
-                <p className="font-display text-[17px] font-medium tracking-[-.02em] text-white">Leitura de ciclos sem pressa</p>
-                <p className="mt-1 text-[11px] text-[#9aa39c]">Entenda o contexto antes de qualquer decisão.</p>
-                <div className="mt-4 flex items-center justify-between text-[10px] font-semibold text-[#b9aee0]">
-                  <span>Seu progresso</span><span className="font-mono text-[#e8ddff]">68%</span>
-                </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[.09]">
-                  <div className="h-full w-[68%] rounded-full bg-gradient-to-r from-[#a78bfa] to-[#67dff3] shadow-[0_0_14px_rgba(167,139,250,.6)]" />
-                </div>
-              </div>
-            </div>
-
-            <div className="login-float-soft login-float-delay absolute -left-10 top-16 w-52 rounded-2xl border border-white/[.12] bg-[#12121a]/85 p-3.5 shadow-[0_20px_60px_rgba(0,0,0,.5)] backdrop-blur-2xl sm:-left-16">
-              <div className="flex items-center gap-2">
-                <span className="grid size-8 place-items-center rounded-xl bg-[#8ed7b7]/[.12] text-[#8ed7b7]"><Link2 size={14} /></span>
-                <p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#9fe3c2]">Seu link</p>
-              </div>
-              <p className="mt-2.5 truncate rounded-lg border border-white/[.08] bg-black/40 px-2.5 py-2 font-mono text-[10px] text-[#c9b8f5]">
-                {typeof window !== 'undefined' ? window.location.origin.replace('https://', '') : 'cursoai'}/{displayHandle}
-              </p>
-              <p className="mt-2 flex items-center gap-1.5 text-[10px] font-medium text-[#8ed7b7]">
-                <Check size={11} strokeWidth={3} /> {usernameStatus === 'available' ? 'ID disponível' : 'Pronto para compartilhar'}
-              </p>
-            </div>
-
-            <div className="login-float absolute -bottom-8 -right-4 w-56 overflow-hidden rounded-2xl border border-white/[.12] bg-[#12121a]/85 shadow-[0_20px_60px_rgba(0,0,0,.5)] backdrop-blur-2xl sm:-right-10" style={{ animationDelay: '.7s' }}>
-              <img src="https://images.unsplash.com/photo-1518546305927-5a555bb7020d?q=80&w=800&auto=format&fit=crop" alt="" loading="lazy" referrerPolicy="no-referrer" className="h-24 w-full object-cover opacity-60 grayscale-[.3] transition duration-700 group-hover:scale-105" />
-              <div className="p-3.5">
-                <div className="flex items-center">
-                  {[
-                    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=64&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=64&auto=format&fit=crop',
-                    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=64&auto=format&fit=crop',
-                  ].map((avatarSrc, index) => (
-                    <img key={avatarSrc} src={avatarSrc} alt="" loading="lazy" referrerPolicy="no-referrer" className="size-7 rounded-full border-2 border-[#12121a] object-cover" style={{ marginLeft: index === 0 ? 0 : -10 }} />
-                  ))}
-                  <span className="ml-2 rounded-full bg-white/[.07] px-2 py-1 font-mono text-[9px] text-[#cfc6ec]">+2,4 mil</span>
-                </div>
-                <p className="mt-2.5 text-[10px] leading-relaxed text-[#9aa39c]">Estudando no próprio ritmo, <span className="text-[#e6efe9]">sem aposta</span>.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative p-8 xl:p-10">
-          <figure className="max-w-[46ch] rounded-3xl border border-white/[.09] bg-black/35 p-6 backdrop-blur-2xl">
-            <blockquote className="font-display text-[19px] font-medium leading-snug tracking-[-.02em] text-[#eef3ee]">
-              “Finalmente entendi o mercado sem medo de errar. Processo antes de pressa.”
-            </blockquote>
-            <figcaption className="mt-4 flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=80&auto=format&fit=crop" alt="" loading="lazy" referrerPolicy="no-referrer" className="size-9 rounded-full border border-white/[.15] object-cover" />
-              <span>
-                <span className="block text-[11px] font-semibold text-white">Mariana L.</span>
-                <span className="block text-[10px] text-[#8fa197]">Aluna da primeira turma</span>
-              </span>
-              <span className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-white/[.1] bg-white/[.05] px-2.5 py-1.5 text-[9px] font-semibold text-[#b9c6ff]">
-                <ShieldCheck size={11} /> acesso protegido
-              </span>
-            </figcaption>
-          </figure>
-          <p className="mt-5 flex items-center justify-between text-[10px] text-[#6f857a]">
-            <span>© 2026 Cripto do Zero — todos os direitos reservados.</span>
-            <span className="font-mono">v2.4</span>
+        <div className="relative max-w-[540px] pb-8">
+          <div className="mb-7 h-px w-12 bg-[#9bb49b]/70" />
+          <p className="font-display text-4xl font-medium leading-[1.15] tracking-[-.045em] text-[#e7ece6] xl:text-5xl">
+            Aprenda a entender o mercado com mais clareza.
+          </p>
+          <p className="mt-5 max-w-[38ch] text-sm leading-7 text-[#9aa69b]">
+            Conteúdo organizado para você estudar no seu ritmo e construir uma base sólida.
           </p>
         </div>
+        <p className="relative text-[11px] text-[#68766b]">Entre na sua conta para continuar de onde parou.</p>
       </aside>
     </div>
   )
