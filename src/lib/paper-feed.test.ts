@@ -47,3 +47,15 @@ test('backs off after failures, then restores normal automatic updates', async (
   await h.advance(5000); assert.equal(count, 4)
   stop()
 })
+
+test('slow successful responses do not add their duration to the polling cadence', async () => {
+  const h = harness(); let count = 0, finish = () => {}
+  const stop = startPaperPolling(async () => {
+    count++
+    if (count === 1) await new Promise<void>((resolve) => { finish = resolve })
+  }, 5000, h.runtime)
+  await h.advance(3000); finish(); await h.flush()
+  await h.advance(1999); assert.equal(count, 1)
+  await h.advance(1); assert.equal(count, 2)
+  stop()
+})

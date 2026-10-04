@@ -17,7 +17,10 @@ export function startPaperPolling(task: (signal: AbortSignal) => Promise<void>, 
     catch { failures++ }
     finally {
       pending = false
-      if (!controller.signal.aborted && runtime.visible()) timer = runtime.schedule(() => { void run() }, failures ? Math.min(60_000, delay * 2 ** failures) : delay)
+      const cadence = failures ? Math.min(60_000, delay * 2 ** failures) : delay
+      // Request latency must not be added to every successful polling interval.
+      const wait = failures ? cadence : Math.max(0, cadence - (runtime.now() - attemptedAt))
+      if (!controller.signal.aborted && runtime.visible()) timer = runtime.schedule(() => { void run() }, wait)
     }
   }
   const unsubscribe = runtime.subscribe(() => {

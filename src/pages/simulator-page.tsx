@@ -18,6 +18,7 @@ const priceUSD = (value: number) => `$${priceText(value)}`
 const compactUSD = (value: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', notation: 'compact', maximumFractionDigits: 1 }).format(value)
 const shortAddress = (value: string) => `${value.slice(0, 6)}…${value.slice(-5)}`
 const timeText = (value: number) => new Date(value).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+const ageText = (now: number, time: number) => { const seconds = Math.max(0, Math.floor((now - time) / 1000)); return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}min ${seconds % 60}s` }
 const numberInput = (value: string) => value.trim() === '' ? NaN : Number(value.replace(',', '.'))
 const errorText = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível concluir. Tente novamente.'
 const chainName: Record<PaperChain, string> = { solana: 'Solana', ethereum: 'Ethereum', base: 'Base' }
@@ -57,6 +58,7 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
   const [storageError, setStorageError] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
   const [clock, setClock] = useState(Date.now())
+  const [demoPlaying, setDemoPlaying] = useState(false)
   const requestRef = useRef<AbortController | null>(null)
   const orderRequestRef = useRef<AbortController | null>(null)
   const walletRef = useRef(wallet)
@@ -71,7 +73,16 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet)); setStorageError(false) }
     catch { setStorageError(true) }
   }, [wallet])
-  useEffect(() => { const timer = window.setInterval(() => setClock(Date.now()), 15_000); return () => window.clearInterval(timer) }, [])
+  useEffect(() => { const timer = window.setInterval(() => setClock(Date.now()), 1000); return () => window.clearInterval(timer) }, [])
+  useEffect(() => {
+    if (!market.demo || !demoPlaying) return
+    const timer = window.setInterval(() => {
+      if (document.hidden) return
+      if (demoStep.current >= 500) { setDemoPlaying(false); return }
+      advanceDemo()
+    }, 2000)
+    return () => window.clearInterval(timer)
+  }, [market.demo, demoPlaying])
   useEffect(() => () => { requestRef.current?.abort(); orderRequestRef.current?.abort() }, [])
   useEffect(() => {
     const ca = searchParams.get('ca'), requestedChain = searchParams.get('rede')
@@ -96,23 +107,25 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
   useEffect(() => {
     if (market.demo) return
     const epoch = selectionEpoch.current
-    let historical: PaperPoint[] = [], historyAt = 0
+    let historical: PaperPoint[] = [], historyAt = 0, historyWarning = ''
     return startPaperPolling(async (signal) => {
       setHistoryLoading(true)
       try {
         const target = selectedRef.current
         const needHistory = !interval.endsWith('s') && Date.now() - historyAt >= 60_000
+        if (needHistory) historyAt = Date.now()
         const [historyResult, tradesResult] = await Promise.allSettled([
           needHistory ? paperHistory(target, interval, signal) : Promise.resolve(historical),
           recentPaperTrades(target, signal),
         ])
         if (signal.aborted || epoch !== selectionEpoch.current) return
-        if (historyResult.status === 'fulfilled') { historical = historyResult.value; if (needHistory) historyAt = Date.now() }
+        if (historyResult.status === 'fulfilled') historical = historyResult.value
+        if (needHistory) historyWarning = historyResult.status === 'rejected' ? 'Sem histórico atualizado; exibindo os negócios disponíveis.' : ''
         const ticks = tradesResult.status === 'fulfilled' ? tradesResult.value : []
         const data = interval.endsWith('s') ? aggregatePaperTrades(ticks, paperIntervalDuration(interval)) : mergePaperSeries(historical, ticks, paperIntervalDuration(interval))
         if (!data.length) throw tradesResult.status === 'rejected' ? tradesResult.reason : historyResult.status === 'rejected' ? historyResult.reason : new Error('Aguardando negócios desta pool.')
         setPoints(data); setLastChartQuery(Date.now()); setLastTradeAt(ticks.at(-1)?.time ?? null)
-        const warning = tradesResult.status === 'rejected' ? errorText(tradesResult.reason) : historyResult.status === 'rejected' ? 'Sem histórico anterior; exibindo os negócios disponíveis.' : ''
+        const warning = tradesResult.status === 'rejected' ? errorText(tradesResult.reason) : historyWarning
         setChartError(warning)
         if (tradesResult.status === 'rejected') throw tradesResult.reason
       } catch (error) { if (!signal.aborted && epoch === selectionEpoch.current) setChartError(errorText(error)); throw error }
@@ -154,6 +167,7 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
     finally { if (!controller.signal.aborted) setLoading(false) }
   }
   function chooseMarket(next: PaperMarket) {
+    setDemoPlaying(false)
     const previous = selectedRef.current
     if (previous.chain !== next.chain || previous.address !== next.address || previous.demo !== next.demo) setIntervalValue(defaultPaperInterval(next.marketCap))
     selectionEpoch.current++
@@ -230,13 +244,14 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
         <section className="paper-chart-panel" aria-label="Preço e gráfico do token">
           <div className="paper-market-top"><div className="paper-token-heading"><div className="paper-token-name"><span className="paper-token-avatar">{market.imageUrl && failedImage !== market.imageUrl ? <img src={market.imageUrl} alt={`Logo de ${market.name}`} referrerPolicy="no-referrer" onError={() => setFailedImage(market.imageUrl ?? '')}/> : market.symbol.slice(0, 1)}</span><div><h2>{market.name}<span>{market.symbol}</span></h2><p>{market.demo ? 'Token fictício · exemplo didático' : `${chainName[market.chain]} · ${shortAddress(market.address)}`}</p></div></div><span className={`paper-source ${market.demo ? 'is-demo' : ''}`}>{market.demo ? 'DEMONSTRAÇÃO' : 'DADOS DE MERCADO'}</span></div>
           <div className="paper-quote"><div className="paper-main-cap"><span>Market cap</span><strong title={market.marketCap === null ? 'Market cap não informado pela fonte' : money(market.marketCap)}>{market.marketCap === null ? '—' : compactUSD(market.marketCap)}</strong></div><div className="paper-secondary-price"><span>Preço</span><strong>{priceUSD(market.price)}</strong>{market.change24h !== null && <small className={market.change24h >= 0 ? 'paper-positive' : 'paper-negative'}>{market.change24h > 0 ? '+' : ''}{market.change24h.toFixed(2)}% · 24h</small>}</div></div></div>
-          <div className="paper-chart-toolbar"><div className="paper-chart-view"><button aria-pressed={chartMetric === 'price'} onClick={() => setChartMetric('price')}>Preço</button><button aria-pressed={chartMetric === 'mcap'} disabled={!chartSupply} title="Capitalização estimada usando a oferta implícita na consulta inicial" onClick={() => setChartMetric('mcap')}>MCap</button></div><span>USD · {market.demo ? 'cenário sintético' : interval.endsWith('s') ? 'velas de negócios recentes' : 'velas históricas'}</span>{market.demo ? <button className="paper-ghost" onClick={advanceDemo} disabled={demoStep.current >= 500}>Avançar cenário <SkipForward size={14}/></button> : <div className="paper-timeframes">{paperIntervals.map((frame) => <button key={frame} aria-pressed={interval === frame} onClick={() => { if (frame !== interval) { setPoints([]); setChartError(''); setIntervalValue(frame) } }}>{frame}</button>)}</div>}</div>
+          <div className="paper-chart-toolbar"><div className="paper-chart-view"><button aria-pressed={chartMetric === 'price'} onClick={() => setChartMetric('price')}>Preço</button><button aria-pressed={chartMetric === 'mcap'} disabled={!chartSupply} title="Capitalização estimada usando a oferta implícita na consulta inicial" onClick={() => setChartMetric('mcap')}>MCap</button></div><span>USD · {market.demo ? 'cenário sintético' : interval.endsWith('s') ? 'velas de negócios recentes' : 'velas históricas'}</span>{market.demo ? <div className="paper-timeframes"><button aria-pressed={demoPlaying} onClick={() => setDemoPlaying((playing) => !playing)} disabled={demoStep.current >= 500}>{demoPlaying ? 'Pausar exemplo' : 'Reproduzir exemplo'}</button><button className="paper-ghost" onClick={advanceDemo} disabled={demoStep.current >= 500}>Avançar <SkipForward size={14}/></button></div> : <div className="paper-timeframes">{paperIntervals.map((frame) => <button key={frame} aria-pressed={interval === frame} onClick={() => { if (frame !== interval) { setPoints([]); setChartError(''); setIntervalValue(frame) } }}>{frame}</button>)}</div>}</div>
           <div className="paper-chart" role="group" aria-label={`Gráfico de ${market.symbol}, preço atual ${priceUSD(market.price)}. ${market.demo ? 'Dados fictícios.' : 'Atualizações periódicas.'}`}>
             {visiblePoints.length > 0 ? <PaperChart key={`${market.id}:${interval}`} points={visiblePoints} livePrice={market.demo ? undefined : market.price} basis={position ? position.cost / position.quantity : undefined} seconds={interval.endsWith('s')} demo={market.demo} symbol={market.symbol} metric={chartMetric} multiplier={chartMetric === 'mcap' ? chartSupply ?? 1 : 1}/> : <div className="paper-chart-empty"><Search size={24}/><h3>{historyLoading ? 'Carregando velas…' : 'Sem negócios disponíveis neste intervalo'}</h3><p>A cotação e as ordens continuam disponíveis. O gráfico aguarda negócios reais desta pool.</p></div>}
             {historyLoading && <span className="paper-chart-loading" role="status">Consultando negócios…</span>}
           </div>
           {chartMetric === 'mcap' && <p className="paper-chart-note">MCap estimado: preço de cada vela × oferta implícita na consulta inicial. Não é histórico verificado da oferta.</p>}
-          {!market.demo && <div className={`paper-feed-bar ${marketError || chartError || quietPool ? 'is-delayed' : ''}`} role="status"><span><i/>{marketError ? 'Reconectando cotação' : quietPool ? 'Fonte sem negócios recentes' : 'Atualização automática · REST'}</span><span>Consulta de preço {market.observedAt > 0 ? timeText(market.observedAt) : 'aguardando…'} · gráfico {lastChartQuery ? timeText(lastChartQuery) : 'consultando…'} · último negócio {lastTradeAt ? timeText(lastTradeAt) : 'não informado'}</span></div>}
+          {!market.demo && <div className={`paper-feed-bar ${marketError || chartError || quietPool || stale ? 'is-delayed' : ''}`} aria-label="Estado da atualização"><span><i/>{marketError || stale ? 'Reconectando cotação' : chartError ? 'Gráfico com atualização limitada' : quietPool ? 'Fonte sem negócios recentes' : 'Consultas automáticas ativas'}</span><span>Preço consultado há {market.observedAt > 0 ? ageText(clock, market.observedAt) : '—'} · gráfico consultado há {lastChartQuery ? ageText(clock, lastChartQuery) : '—'} · último negócio há {lastTradeAt ? ageText(clock, lastTradeAt) : '—'}</span></div>}
+          {quietPool && <p className="paper-chart-note">O último negócio recebido da fonte foi às {lastTradeAt ? timeText(lastTradeAt) : '—'}. As consultas continuam; sem novos negócios retornados, os candles permanecem iguais. Isso pode indicar pouca atividade ou atraso da fonte.</p>}
           {marketError && <p className="paper-chart-note">{marketError} A próxima ordem tentará consultar a cotação novamente.</p>}
           {chartError && <p className="paper-chart-note">{chartError}</p>}
           <div className="paper-market-stats"><div><span>Liquidez</span><strong>{market.liquidity === null ? 'Não disponível' : money(market.liquidity)}</strong></div><div><span>Volume 24h</span><strong>{market.volume === null ? 'Não disponível' : money(market.volume)}</strong></div><div><span>Valor de mercado</span><strong>{market.marketCap === null ? 'Não informado' : money(market.marketCap)}</strong></div><div><span>FDV</span><strong>{market.fdv === null ? 'Não informado' : money(market.fdv)}</strong></div></div>

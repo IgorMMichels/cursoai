@@ -7,7 +7,7 @@ const numeric = (value: unknown): number | null => value === null || value === u
 const label = (value: unknown, fallback: string) => typeof value === 'string' ? value.slice(0, 120) : fallback
 
 async function request(url: string, signal: AbortSignal): Promise<unknown> {
-  const response = await fetch(url, { signal: AbortSignal.any([signal, AbortSignal.timeout(12_000)]) })
+  const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(12_000)]) })
   if (response.status === 429) throw new Error('A fonte de dados atingiu o limite. Aguarde um minuto para tentar novamente.')
   if (!response.ok) throw new Error('A fonte de mercado está indisponível. Tente novamente em instantes.')
   return response.json()
