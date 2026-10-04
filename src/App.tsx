@@ -25,6 +25,7 @@ const PlatformsPage = lazy(() => import('@/pages/platforms-page').then((module) 
 const PlansPage = lazy(() => import('@/pages/plans-page').then((module) => ({ default: module.PlansPage })))
 const PreviewPage = lazy(() => import('@/pages/preview-page').then((module) => ({ default: module.PreviewPage })))
 const ToolsPage = lazy(() => import('@/pages/tools-page').then((module) => ({ default: module.ToolsPage })))
+const SimulatorPage = lazy(() => import('@/pages/simulator-page').then((module) => ({ default: module.SimulatorPage })))
 const ToolArticlesPage = lazy(() => import('@/pages/tool-articles-page').then((module) => ({ default: module.ToolArticlesPage })))
 
 function AffiliateReferralRedirect() {
@@ -48,6 +49,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/ferramentas" element={<ToolsPage />} />
       <Route path="/ferramentas/:slug" element={<ToolsPage />} />
+      <Route path="/simulador" element={<SimulatorPage />} />
       <Route path="/artigos" element={<ToolArticlesPage />} />
       <Route path="/artigos/:articleSlug" element={<ToolArticlesPage />} />
       <Route path="/:affiliateId" element={<AffiliateReferralRedirect />} />
@@ -69,6 +71,7 @@ function AppRoutes() {
           <Route path="seguranca" element={<SecurityPage />} />
           <Route path="ferramentas" element={<ToolsPage insideCourse />} />
           <Route path="ferramentas/:slug" element={<ToolsPage insideCourse />} />
+          <Route path="simulador" element={<SimulatorPage insideCourse />} />
           <Route element={<RequireCourseAccess />}>
             <Route index element={<CourseDashboard />} />
             <Route path="aula/:moduleId/:lessonId" element={<LessonPage />} />

@@ -20,7 +20,7 @@ export function CourseLayout() {
   const isPreview = !hasActivePlan(user)
   const inJourneys = location.pathname.startsWith('/jornadas')
   const inPlatforms = location.pathname.startsWith('/plataformas')
-  const inTools = location.pathname.startsWith('/curso/ferramentas')
+  const inTools = location.pathname.startsWith('/curso/ferramentas') || location.pathname.startsWith('/curso/simulador')
   const legacyCompleted = allLessons.filter((lesson) => completedLessons.includes(lesson.id)).length
   const progress = Math.round((legacyCompleted / allLessons.length) * 100)
   const links = [
@@ -29,6 +29,7 @@ export function CourseLayout() {
     { to: '/curso#modulos', label: 'Minha trilha', icon: BookOpen },
     { to: '/plataformas', label: 'Plataformas', icon: LayoutGrid },
     { to: '/curso/ferramentas', label: 'Ferramentas', icon: SlidersHorizontal },
+    { to: '/curso/simulador', label: 'Simulador de trade', icon: SlidersHorizontal },
     { to: '/acesso', label: 'Como pagar', icon: WalletCards },
     { to: '/curso/seguranca', label: 'Central de segurança', icon: ShieldCheck },
   ]

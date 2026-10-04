@@ -294,6 +294,7 @@ export function SiteHeader() {
       <div className="page-shell header-dock flex h-16 items-center justify-between gap-3 px-3 sm:gap-5 sm:px-5 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <Brand className="min-w-0 justify-self-start whitespace-nowrap" />
         <nav className="dock-navigation hidden items-center gap-1 xl:flex" aria-label="Navegação principal">
+          <Link to="/simulador" aria-current={location.pathname === '/simulador' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">Simulador</Link>
           <Link to="/ferramentas" aria-current={location.pathname.startsWith('/ferramentas') ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">Ferramentas</Link>
           {links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3.5 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{item.label}</a>)}
           <StudentAreaDropdown />
@@ -318,6 +319,7 @@ export function SiteHeader() {
         <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white xl:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} aria-expanded={open} aria-controls="site-mobile-navigation" onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
       {open && <nav id="site-mobile-navigation" className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] max-h-[calc(100dvh-130px)] overflow-y-auto rounded-2xl p-2 shadow-2xl xl:hidden" aria-label="Navegação móvel">
+        <Link to="/simulador" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Simulador de trade</Link>
         <Link to="/ferramentas" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Ferramentas gratuitas</Link>
         <Link to="/artigos" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Artigos e conceitos</Link>
         <div className="mx-auto flex max-w-xl flex-col gap-1">{links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{item.label}</a>)}
