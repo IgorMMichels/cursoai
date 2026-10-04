@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight, Check, CircleHelp, Clock3, Lightbulb, RotateCcw, ShieldAlert, Volume2, VolumeX } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CircleHelp, Clock3, Headphones, Lightbulb, RotateCcw, ShieldAlert, Volume2, VolumeX } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -110,6 +110,7 @@ function LessonPageContent({ moduleId, lessonId, journeyId, journeyModules }: { 
       {contentLoading && <p className="mt-7 rounded-xl border border-white/[.07] bg-black/15 p-4 text-xs text-[#aab7ae]" role="status">Carregando conteúdo seguro da aula…</p>}
       {contentError && <div className="mt-7 rounded-xl border border-amber-200/15 bg-amber-100/[.04] p-4"><p className="text-xs text-amber-100">{contentError}</p><button type="button" onClick={() => { setContent(null); setContentError(''); setContentLoading(true); setRetryContent((value) => value + 1) }} className="mt-3 text-xs text-[#c1acff] underline underline-offset-4">Tentar novamente</button></div>}
       {content?.narration.src && <AudioNarration title={lesson.title} track={content.narration} transcript={content.narration.transcript} summary={content.takeaway} />}
+      <Link to="/curso/audios-extras" className="mt-4 inline-flex items-center gap-2 rounded-full border border-violet-200/15 bg-violet-200/[.04] px-3 py-2 text-[10px] text-violet-100/80 transition hover:border-violet-200/30 hover:text-white"><Headphones size={13} />Biblioteca de áudios extras com voz de IA</Link>
 
       {content && <div className="mt-8 space-y-5">{content.paragraphs.map((paragraph, index) => <p key={index} className="max-w-[760px] text-[14px] leading-[1.9] text-[#c0ccc4]">{paragraph}</p>)}</div>}
       <LessonVisual moduleId={module.id} lessonId={lesson.id} />

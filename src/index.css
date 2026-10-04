@@ -200,6 +200,13 @@ details[open] > :not(summary) { animation: reveal .3s ease both; }
 .audio-seek::-webkit-slider-thumb { appearance: none; width: 11px; height: 11px; border: 2px solid #100c19; border-radius: 50%; background: #d6c6ff; box-shadow: 0 0 12px rgba(183,155,255,.7); }
 .audio-seek::-moz-range-thumb { width: 9px; height: 9px; border: 2px solid #100c19; border-radius: 50%; background: #d6c6ff; box-shadow: 0 0 12px rgba(183,155,255,.7); }
 .audio-transcript { scrollbar-width: thin; scrollbar-color: #554878 transparent; }
+.audio-transcript-word, .extra-audio-transcript-word { border: 0; border-radius: 3px; padding: 0; color: inherit; background: transparent; cursor: pointer; font: inherit; line-height: inherit; text-align: inherit; transition: color .16s ease, background-color .16s ease; }
+.audio-transcript-word:hover, .extra-audio-transcript-word:hover { color: #fff; background: rgba(169,138,248,.13); }
+.audio-transcript-word:focus-visible, .extra-audio-transcript-word:focus-visible { outline: 2px solid #b49cff; outline-offset: 2px; }
+.extra-audio-control { display: grid; min-width: 34px; height: 34px; place-items: center; border: 1px solid rgba(255,255,255,.1); border-radius: 9px; padding-inline: 8px; color: #ccc3df; font-size: 10px; transition: background-color .16s ease, color .16s ease; }
+.extra-audio-control:hover:not(:disabled) { background: rgba(255,255,255,.07); color: white; }
+.extra-audio-control:disabled { cursor: not-allowed; opacity: .35; }
+.extra-audio-transcript-word-active { border-radius: 3px; color: #fff; background: linear-gradient(100deg, rgba(162,133,244,.48), rgba(92,187,210,.34)); box-shadow: 0 0 12px rgba(149,116,235,.2); }
 .audio-word-active { position: relative; border-radius: 4px; color: #fbf9ff; background: linear-gradient(100deg, rgba(162,133,244,.58), rgba(92,187,210,.44)); box-shadow: 0 0 16px rgba(149,116,235,.28); animation: word-glow .4s ease both; }
 .futures-lab { box-shadow: inset 0 1px rgba(255,255,255,.025), 0 22px 50px rgba(0,0,0,.15); }
 .hero-photo img, .module-cover img, .dashboard-hero-image img { filter: saturate(.95) contrast(1.06); }

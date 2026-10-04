@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, ChevronRight, LayoutDashboard, LayoutGrid, LogOut, Map, PanelLeftClose, PanelLeftOpen, ShieldCheck, WalletCards, SlidersHorizontal } from 'lucide-react'
+import { BookOpen, ChevronRight, Headphones, LayoutDashboard, LayoutGrid, LogOut, Map, PanelLeftClose, PanelLeftOpen, ShieldCheck, WalletCards, SlidersHorizontal } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Brand } from '@/components/brand'
 import { ProfileSettings } from '@/components/profile-settings'
@@ -21,6 +21,7 @@ export function CourseLayout() {
   const inJourneys = location.pathname.startsWith('/jornadas')
   const inPlatforms = location.pathname.startsWith('/plataformas')
   const inTools = location.pathname.startsWith('/curso/ferramentas') || location.pathname.startsWith('/curso/simulador')
+  const inExtraAudio = location.pathname.startsWith('/curso/audios-extras')
   const legacyCompleted = allLessons.filter((lesson) => completedLessons.includes(lesson.id)).length
   const progress = Math.round((legacyCompleted / allLessons.length) * 100)
   const links = [
@@ -29,6 +30,7 @@ export function CourseLayout() {
     { to: '/curso#modulos', label: 'Minha trilha', icon: BookOpen },
     { to: '/plataformas', label: 'Plataformas', icon: LayoutGrid },
     { to: '/curso/ferramentas', label: 'Ferramentas', icon: SlidersHorizontal },
+    { to: '/curso/audios-extras', label: 'Áudios extras', icon: Headphones },
     { to: '/curso/simulador', label: 'Simulador de trade', icon: SlidersHorizontal },
     { to: '/acesso', label: 'Como pagar', icon: WalletCards },
     { to: '/curso/seguranca', label: 'Central de segurança', icon: ShieldCheck },
@@ -70,8 +72,9 @@ export function CourseLayout() {
     <div data-course-scroll className="min-w-0 lg:col-start-2 lg:h-[calc(100dvh-40px)] lg:overflow-y-auto lg:overscroll-y-contain">
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-white/[.07] bg-[#09090d]/85 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
         <div className="lg:hidden"><Brand compact /></div>
-        <div className="hidden items-center gap-2 text-xs text-[#7f9287] lg:flex"><span>Seu espaço de estudo</span><ChevronRight size={13} /><span className="text-[#c6d4cb]">{inTools ? 'Ferramentas' : inJourneys ? 'Jornadas' : inPlatforms ? 'Plataformas' : `${modules.length} módulos`}</span></div>
+        <div className="hidden items-center gap-2 text-xs text-[#7f9287] lg:flex"><span>Seu espaço de estudo</span><ChevronRight size={13} /><span className="text-[#c6d4cb]">{inExtraAudio ? 'Áudios extras' : inTools ? 'Ferramentas' : inJourneys ? 'Jornadas' : inPlatforms ? 'Plataformas' : `${modules.length} módulos`}</span></div>
         <Link to="/curso/ferramentas" className="ml-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/[.08] px-2.5 text-[10px] text-[#c1acff] lg:hidden" aria-label="Ferramentas do curso"><SlidersHorizontal size={14} /><span className="hidden sm:inline">Ferramentas</span></Link>
+        <Link to="/curso/audios-extras" className="ml-1 grid size-9 shrink-0 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label="Áudios extras" title="Áudios extras"><Headphones size={15} /></Link>
         <div className="ml-auto flex items-center gap-3">{isPreview && <Link to="/planos" className="button-motion inline-flex min-h-9 items-center justify-center rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]">Começar agora</Link>}<Link to="/jornadas" className="inline-flex min-h-9 items-center gap-1 rounded-full border border-white/[.08] px-3 text-[10px] text-[#c1acff] hover:bg-white/[.04] lg:hidden"><Map size={14} />Jornadas</Link><Link to="/plataformas" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label="Plataformas"><LayoutGrid size={16} /></Link><Link to="/acesso" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04]" aria-label="Como pagar"><WalletCards size={16} /></Link><ProfileSettings compact /></div>
       </header>
       <main className="mx-auto w-full max-w-[1450px] px-4 pb-20 pt-7 sm:px-7 sm:pt-9 lg:px-10"><Outlet /></main>

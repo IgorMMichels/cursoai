@@ -96,6 +96,13 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
     setRateIndex(next)
     if (audioRef.current) audioRef.current.playbackRate = rates[next]
   }
+  const seekToWord = (word: AudioWord) => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = word.start
+    setTime(word.start)
+    if (audio.paused) void play()
+  }
   const restart = () => {
     if (!audioRef.current) return
     audioRef.current.currentTime = 0
@@ -144,7 +151,7 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
       {showTranscript && track && captionStatus === 'loading' && <p className="mt-2 text-[10px] text-[#aaa6b7]">Carregando marcações da narração…</p>}
       {showTranscript && track && captionStatus === 'error' && <p className="mt-2 text-[10px] text-amber-200">Sincronização indisponível. Você pode ouvir e ler o texto. <button type="button" className="underline" onClick={() => { setCaptionStatus('loading'); setCaptionAttempt(value => value + 1) }}>Tentar novamente</button></p>}
       {showTranscript && <p ref={transcriptRef} className="audio-transcript mt-3 max-h-60 overflow-y-auto whitespace-pre-wrap rounded-xl border border-white/[.07] bg-black/20 p-4 text-[13px] leading-[2] text-[#b9b5c4]" aria-label="Transcrição da narração" aria-live="off">
-        {words.length ? <>{words.map((word, index) => <Fragment key={index}>{transcript.slice(index ? words[index - 1].charEnd : 0, word.charStart)}<span data-active={index === activeWord ? 'true' : undefined} className={index === activeWord ? 'audio-word-active' : word.end <= time ? 'text-[#e0dbe9]' : undefined}>{transcript.slice(word.charStart, word.charEnd)}</span></Fragment>)}{transcript.slice(words[words.length - 1].charEnd)}</> : transcript}
+        {words.length ? <>{words.map((word, index) => <Fragment key={index}>{transcript.slice(index ? words[index - 1].charEnd : 0, word.charStart)}<button type="button" onClick={() => seekToWord(word)} aria-label={`Ouvir a partir da palavra ${transcript.slice(word.charStart, word.charEnd)}`} data-active={index === activeWord ? 'true' : undefined} className={`audio-transcript-word ${index === activeWord ? 'audio-word-active' : word.end <= time ? 'text-[#e0dbe9]' : ''}`}>{transcript.slice(word.charStart, word.charEnd)}</button></Fragment>)}{transcript.slice(words[words.length - 1].charEnd)}</> : transcript}
       </p>}
       {error && <p role="alert" className="mt-3 text-xs text-amber-200">{error}</p>}
       {!track && <p className="mt-3 text-xs text-amber-200">A narração desta versão da aula ainda não está disponível. O roteiro completo está acima.</p>}

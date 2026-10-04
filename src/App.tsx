@@ -11,6 +11,7 @@ const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => (
 const LoginPage = lazy(() => import('@/pages/login-page').then((module) => ({ default: module.LoginPage })))
 const CourseDashboard = lazy(() => import('@/pages/course-dashboard').then((module) => ({ default: module.CourseDashboard })))
 const CourseAccessPage = lazy(() => import('@/components/wallet-guides').then((module) => ({ default: module.CourseAccessPage })))
+const ExtraAudioPage = lazy(() => import('@/pages/extra-audio-page').then((module) => ({ default: module.ExtraAudioPage })))
 const LessonPage = lazy(() => import('@/pages/lesson-page').then((module) => ({ default: module.LessonPage })))
 const ModuleQuizPage = lazy(() => import('@/pages/module-quiz-page').then((module) => ({ default: module.ModuleQuizPage })))
 const SecurityPage = lazy(() => import('@/pages/security-page').then((module) => ({ default: module.SecurityPage })))
@@ -74,6 +75,7 @@ function AppRoutes() {
           <Route path="simulador" element={<SimulatorPage insideCourse />} />
           <Route element={<RequireCourseAccess />}>
             <Route index element={<CourseDashboard />} />
+            <Route path="audios-extras" element={<ExtraAudioPage />} />
             <Route path="aula/:moduleId/:lessonId" element={<LessonPage />} />
             <Route path="modulo/:moduleId" element={<ModuleQuizPage />} />
             <Route path="certificado" element={<CertificatePage />} />
