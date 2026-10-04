@@ -5,7 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, ChevronRight, FlaskConical, RefreshCw, Sea
 import { SiteHeader } from '@/components/site-header'
 import { PageMeta } from '@/components/tools/page-meta'
 import { demoPaperMarket, markPaperWallet, newPaperWallet, paperFill, paperPositionFor, restorePaperWallet, PAPER_INITIAL_CASH, type PaperChain, type PaperMarket, type PaperPoint, type PaperCosts } from '@/lib/paper-trading'
-import { aggregatePaperTrades, mergePaperSeries, paperIntervalDuration, recentPaperTrades, paperHistory, paperTokenImage, paperIntervals, refreshPaperMarket, refreshPaperPortfolio, resolvePaperToken, type PaperInterval } from '@/lib/paper-market'
+import { aggregatePaperTrades, defaultPaperInterval, mergePaperSeries, paperIntervalDuration, recentPaperTrades, paperHistory, paperTokenImage, paperIntervals, refreshPaperMarket, refreshPaperPortfolio, resolvePaperToken, type PaperInterval } from '@/lib/paper-market'
 import { browserPaperRuntime, startPaperPolling } from '@/lib/paper-feed'
 import { preparePaperOrder } from '@/lib/paper-order'
 import '@/styles/landing.css'
@@ -154,6 +154,8 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
     finally { if (!controller.signal.aborted) setLoading(false) }
   }
   function chooseMarket(next: PaperMarket) {
+    const previous = selectedRef.current
+    if (previous.chain !== next.chain || previous.address !== next.address || previous.demo !== next.demo) setIntervalValue(defaultPaperInterval(next.marketCap))
     selectionEpoch.current++
     orderRequestRef.current?.abort(); orderRequestRef.current = null; setExecuting(false)
     selectedRef.current = next

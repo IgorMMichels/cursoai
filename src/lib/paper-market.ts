@@ -54,8 +54,16 @@ export async function refreshPaperMarket(market: PaperMarket, signal: AbortSigna
   return updated
 }
 
-export type PaperInterval = '1s' | '5s' | '10s' | '15s' | '1m' | '5m' | '15m' | '1h'
-export const paperIntervals: PaperInterval[] = ['1s', '5s', '10s', '15s', '1m', '5m', '15m', '1h']
+export type PaperInterval = '1s' | '5s' | '10s' | '15s' | '30s' | '1m' | '5m' | '15m' | '1h'
+export const paperIntervals: PaperInterval[] = ['1s', '5s', '10s', '15s', '30s', '1m', '5m', '15m', '1h']
+export function defaultPaperInterval(marketCap: number | null): PaperInterval {
+  if (marketCap === null || !Number.isFinite(marketCap) || marketCap <= 0) return '1m'
+  if (marketCap < 1_000_000) return '1s'
+  if (marketCap < 2_000_000) return '5s'
+  if (marketCap < 50_000_000) return '15s'
+  if (marketCap < 100_000_000) return '30s'
+  return '1m'
+}
 export async function paperHistory(market: PaperMarket, interval: PaperInterval, signal: AbortSignal): Promise<PaperPoint[]> {
   if (interval.endsWith('s')) return aggregatePaperTrades(await recentPaperTrades(market, signal), Number.parseInt(interval) * 1000)
   const frame = interval === '1h' ? 'hour' : 'minute'

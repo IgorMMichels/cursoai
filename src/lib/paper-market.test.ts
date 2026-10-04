@@ -1,7 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { aggregatePaperTrades, mergePaperSeries, paperHistory, paperTokenImage, refreshPaperPortfolio } from './paper-market.ts'
+import { aggregatePaperTrades, defaultPaperInterval, mergePaperSeries, paperHistory, paperIntervalDuration, paperTokenImage, refreshPaperPortfolio } from './paper-market.ts'
 import { demoPaperMarket } from './paper-trading.ts'
+
+test('default candle intervals follow capitalization thresholds and handle missing data', () => {
+  for (const [cap, expected] of [[999_999, '1s'], [1_000_000, '5s'], [1_999_999, '5s'], [2_000_000, '15s'], [49_999_999, '15s'], [50_000_000, '30s'], [99_999_999, '30s'], [100_000_000, '1m']] as const) {
+    assert.equal(defaultPaperInterval(cap), expected)
+  }
+  for (const cap of [null, 0, -1, NaN, Infinity]) assert.equal(defaultPaperInterval(cap), '1m')
+  assert.equal(paperIntervalDuration('30s'), 30_000)
+})
 
 test('portfolio refresh batches multiple pools into one request per network', async () => {
   const original = globalThis.fetch, urls: string[] = []
