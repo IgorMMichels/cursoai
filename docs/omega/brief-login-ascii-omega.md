@@ -1,6 +1,6 @@
 # Omega: login com ASCII 3D e ajustes de marca
 
-> Atualização de escopo: em pedido posterior, o usuário solicitou o mesmo ASCII 3D de Omega também na landing e na loading screen. Esse pedido substitui as instruções abaixo que preservavam Bitcoin nesses locais. A implementação atual usa um renderer compartilhado nas três aplicações.
+> Escopo atual após a última correção do usuário: a landing mantém seu Bitcoin ASCII 3D original. Loading screen e login usam o renderer compartilhado de Omega. Esse pedido substitui as instruções abaixo que preservavam Bitcoin na loading screen.
 
 ## Pedido
 

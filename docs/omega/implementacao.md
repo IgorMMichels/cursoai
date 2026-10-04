@@ -2,7 +2,7 @@
 
 A marca da plataforma agora é **Omega**, sem acento. O símbolo aparece sem moldura, arredondamento, fundo de placa ou sombra no componente compartilhado e no footer. Metadados, navegação e assinaturas SVG usam o mesmo nome. O título do curso Cripto do Zero foi preservado onde identifica o curso.
 
-Landing, tela de entrada e login usam o mesmo renderer em `src/components/ui/omega-ascii-model-viewer.tsx`. A geometria extrudada vem dos paths do símbolo Trajetória, e `AsciiEffect` converte sua renderização em caracteres. Login e landing permitem pausar/retomar. No celular, uma cena compacta aparece acima do formulário; apenas o canvas visível é montado. Com movimento reduzido, mostra o símbolo estático; o login oferece “Ativar animação” por escolha explícita. Sem WebGL, permanece estático. O renderer de Bitcoin antigo não é mais usado nessas três aplicações.
+Tela de entrada e login usam o mesmo renderer em `src/components/ui/omega-ascii-model-viewer.tsx`. A geometria extrudada vem dos paths do símbolo Trajetória, e `AsciiEffect` converte sua renderização em caracteres. O login permite pausar/retomar. No celular, uma cena compacta aparece acima do formulário; apenas o canvas visível é montado. Com movimento reduzido, mostra o símbolo estático; o login oferece “Ativar animação” por escolha explícita. Sem WebGL, permanece estático. A landing voltou a usar seu renderer original de Bitcoin, conforme a última correção do usuário.
 
 A correção de visibilidade ajustou a iluminação para que a conversão ASCII não transforme a superfície em espaços, aumentou a oscilação e usa caracteres `#`, `+`, `:` e `.`. Não há bloqueio automático da animação apenas por largura de tela ou número de núcleos.
 
@@ -11,8 +11,7 @@ A seção de comparação da landing foi substituída por quatro diferenciais li
 Verificações no navegador:
 
 - Canvas e tabela ASCII visíveis no desktop e no celular, com caracteres não vazios.
-- O mesmo renderer Omega usado na landing, no login e na tela de entrada.
-- Landing animada, pausa funcional e ativação explícita com movimento reduzido.
+- O mesmo renderer Omega usado no login e na tela de entrada; Bitcoin restaurado na landing.
 - Tela de entrada capturada com caracteres visíveis, rótulo Omega e sem símbolo de Bitcoin.
 - Comparação de quadros confirma caracteres mudando durante a animação nos dois tamanhos.
 - Comparação de quadros confirma que a pausa mantém os caracteres parados.
