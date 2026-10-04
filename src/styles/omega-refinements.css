@@ -6,6 +6,11 @@
 .omega-login-model .ascii-viewer { position:absolute; inset:0; }
 .omega-login-static,.omega-ascii-static { width:100%; height:100%; display:grid; place-items:center; }
 .omega-login-static svg,.omega-ascii-static svg { width:78%; height:85%; }
+.omega-ascii-static { color:#bca5f6; }
+.platform-ascii-pending svg { width:min(65%,300px); height:80%; }
+.omega-loader-symbol svg { width:38px; height:38px; }
+.omega-hero-pause { display:grid; place-items:center; width:40px; height:40px; border-radius:8px; color:#d5c6fa; background:rgba(16,16,21,.65); cursor:pointer; }
+.omega-hero-pause:focus-visible { outline:2px solid #bca5f6; outline-offset:3px; }
 .omega-login-pause { display:flex; align-items:center; justify-content:center; gap:8px; margin:16px auto 0; min-height:40px; padding:8px 12px; background:none; color:#aaa3bc; font-size:11px; cursor:pointer; }
 .omega-login-pause:hover { color:#eee8ff; }
 .omega-login-pause:focus-visible { outline:2px solid #a58bf4; outline-offset:4px; }

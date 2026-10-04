@@ -1,5 +1,7 @@
 # Omega: login com ASCII 3D e ajustes de marca
 
+> Atualização de escopo: em pedido posterior, o usuário solicitou o mesmo ASCII 3D de Omega também na landing e na loading screen. Esse pedido substitui as instruções abaixo que preservavam Bitcoin nesses locais. A implementação atual usa um renderer compartilhado nas três aplicações.
+
 ## Pedido
 
 Implemente este briefing no projeto existente. A marca passa a se chamar **Omega**, sem acento. A tela de login recebe o símbolo Trajetória em ASCII 3D. Retire a moldura da logo em todas as aplicações e substitua a seção de comparação genérica por diferenciais verificáveis do produto.

@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Brand } from '@/components/brand'
+import { Brand, OmegaSymbol } from '@/components/brand'
 import { markPlatformEntrySeen, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
 import { rememberReferral } from '@/lib/storage'
 import { recordReferralClick } from '@/lib/affiliate-service'
 
-const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
+const AsciiModelViewer = lazy(() => import('@/components/ui/omega-ascii-model-viewer'))
 const trackedReferralClicks = new Set<string>()
 
 export function ReferralTracker() {
@@ -81,8 +81,8 @@ export function PlatformEntryAnimation({ onVisibilityChange }: { onVisibilityCha
   return visible && <div className={`platform-entry fixed inset-0 z-[100] grid place-items-center ${closing ? 'platform-entry-closing' : ''}`}>
     <div className="platform-loader-content">
       <div className="platform-loader-brand"><Brand compact /><span>Omega</span></div>
-      <div className="platform-ascii-stage" role="img" aria-label="Moeda de Bitcoin em arte ASCII">
-        <Suspense fallback={<div className="platform-ascii-pending" role="img" aria-label="Carregando esfera de Bitcoin em ASCII"><pre>{'       .,:;-=+*#*=-:,.\n    .-+*#%@@@@@@@@@%#*+-.\n  :+#%@@@@@@@₿@@@@@@@%#+:\n  :+#%@@@@@@@@@@@@@@@@@%#+:\n    .-+*#%@@@@@@@@@%#*+-.\n       .,:;-=+*#*=-:,.'}</pre></div>}>
+      <div className="platform-ascii-stage" role="img" aria-label="Símbolo Omega em arte ASCII 3D">
+        <Suspense fallback={<div className="platform-ascii-pending"><OmegaSymbol /></div>}>
           <AsciiModelViewer className="absolute inset-0" baseScale={1.12} showLoadingOverlay={false} />
         </Suspense>
       </div>

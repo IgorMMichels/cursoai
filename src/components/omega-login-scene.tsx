@@ -4,7 +4,7 @@ import { Pause, Play } from 'lucide-react'
 import { OmegaSymbol } from '@/components/brand'
 import { omegaCopy } from '@/lib/omega-copy'
 
-const OmegaAscii = lazy(() => import('@/components/ui/omega-login-ascii'))
+const OmegaAscii = lazy(() => import('@/components/ui/omega-ascii-model-viewer'))
 function StaticSymbol() { return <div className="omega-login-static"><OmegaSymbol /></div> }
 function subscribeViewport(notify: () => void) {
   const query = matchMedia('(min-width: 1024px)')

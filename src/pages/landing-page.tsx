@@ -1,10 +1,11 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
-import { motion, type Variants } from 'framer-motion'
+import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
 import { GlowCard } from '@/components/ui/spotlight-card'
 import { usePlatformEntryActive } from '@/contexts/platform-entry-context'
-import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Plus, Shield } from 'lucide-react'
+import { Activity, ArrowDown, ArrowRight, ArrowUpRight, AudioLines, BookOpen, Check, FingerprintPattern, KeyRound, Pause, Play, Plus, Shield } from 'lucide-react'
+import { OmegaSymbol } from '@/components/brand'
 import { Link, useLocation } from 'react-router-dom'
 import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
@@ -15,7 +16,7 @@ import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
 
-const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
+const AsciiModelViewer = lazy(() => import('@/components/ui/omega-ascii-model-viewer'))
 const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
 
 const journeyModuleCount = localJourneys.reduce((total, journey) => total + journey.modules.length, 0)
@@ -292,10 +293,15 @@ export function LandingPage() {
 
 function HeroVisual() {
   const entryActive = usePlatformEntryActive()
+  const [paused, setPaused] = useState(false)
+  const reducedMotion = useReducedMotion()
+  const [motionRequested, setMotionRequested] = useState(false)
+  const animated = !reducedMotion || motionRequested
   return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
-        {!entryActive && <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
+        {!entryActive && <div className="absolute inset-x-0 bottom-28 top-0"><Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" paused={paused} motionEnabled={motionRequested} /></Suspense></div>}
+        <button type="button" className="omega-hero-pause absolute right-4 top-4 z-20" aria-pressed={animated ? paused : undefined} aria-label={!animated ? 'Ativar animação Omega' : paused ? 'Retomar animação Omega' : 'Pausar animação Omega'} onClick={() => { if (!animated) setMotionRequested(true); else setPaused(value => !value) }}>{!animated || paused ? <Play size={15} /> : <Pause size={15} />}</button>
         <div className="absolute bottom-5 left-5 right-5 z-10 flex items-end justify-between gap-4">
           <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">pergunta antes da entrada</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">O que faria você mudar de ideia?</p></div>
         </div>
@@ -307,7 +313,7 @@ function HeroVisual() {
 
 function AsciiHeroLoading() {
   return <div className="ascii-loader" role="status" aria-live="polite">
-    <div className="ascii-loader-mark"><span>₿</span><i /><i /><i /></div>
+    <div className="ascii-loader-mark"><span className="omega-loader-symbol"><OmegaSymbol /></span><i /><i /><i /></div>
     <p>CARREGANDO VISUALIZAÇÃO</p>
     <div className="ascii-loader-track"><span /></div>
   </div>
