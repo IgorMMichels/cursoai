@@ -1,6 +1,6 @@
 import type { PaperPoint } from './paper-trading'
 
-export type ChartBar = { time: number; open: number; high: number; low: number; close: number; volume: number }
+export type ChartBar = { time: number; open: number; high: number; low: number; close: number; volume: number; estimated?: boolean }
 export type ChartRange = { from: number; to: number }
 
 export function chartBars(points: PaperPoint[], multiplier = 1): ChartBar[] {
@@ -16,13 +16,32 @@ export function chartBars(points: PaperPoint[], multiplier = 1): ChartBar[] {
 }
 
 export function sameChartBar(a: ChartBar, b: ChartBar) {
-  return a.time === b.time && a.open === b.open && a.high === b.high && a.low === b.low && a.close === b.close && a.volume === b.volume
+  return a.time === b.time && a.open === b.open && a.high === b.high && a.low === b.low && a.close === b.close && a.volume === b.volume && a.estimated === b.estimated
+}
+
+/** Overlay only the current quote bucket. It is an estimate, not an executed swap.
+ * Never persist it into trade history, fill gaps, or invent traded volume. */
+export function formingQuoteCandle(bars: ChartBar[], previous: ChartBar | null, quote: { price: number; observedAt: number; lastTradeAt?: number | null }, duration: number): ChartBar | null {
+  if (!Number.isFinite(quote.price) || quote.price <= 0 || !Number.isFinite(quote.observedAt) || quote.observedAt <= 0 || !Number.isFinite(duration) || duration < 1000) return null
+  if (quote.lastTradeAt && quote.lastTradeAt > quote.observedAt) return null
+  const time = Math.floor(quote.observedAt / duration) * duration / 1000
+  const last = bars.at(-1)
+  if (last && last.time > time) return null
+  const actual = last?.time === time ? last : undefined
+  const prior = previous?.time === time ? previous : undefined
+  return {
+    time, open: actual?.open ?? prior?.open ?? quote.price,
+    high: Math.max(actual?.high ?? quote.price, prior?.high ?? quote.price, quote.price),
+    low: Math.min(actual?.low ?? quote.price, prior?.low ?? quote.price, quote.price),
+    close: quote.price, volume: actual?.volume ?? 0, estimated: true,
+  }
 }
 
 /** Keep zoom span and anchor through append, prepend and rolling-window removal. */
 export function nextChartRange(previous: ChartBar[], next: ChartBar[], range: ChartRange | null): ChartRange {
   const last = next.length - 1
-  if (!range || !previous.length) return { from: Math.max(-2, last - 90), to: last + 7 }
+  const initialQuoteOnly = previous.length === 1 && previous[0].estimated && range?.from === -2 && range.to === 7 && next.length > 1
+  if (!range || !previous.length || initialQuoteOnly) return { from: Math.max(-2, last - 90), to: last + 7 }
   const span = range.to - range.from
   if (range.to >= previous.length - 1) return { from: last + 7 - span, to: last + 7 }
   const anchor = Math.max(0, Math.min(previous.length - 1, Math.floor(range.from)))
