@@ -7,6 +7,7 @@ import { omegaContours } from '@/lib/omega-copy'
 
 export interface AsciiModelViewerProps {
   className?: string; paused?: boolean; baseScale?: number; userScale?: number
+  motionEnabled?: boolean
   resolution?: number; characters?: string; fgColor?: string; bgColor?: string
   invert?: boolean; autoRotateSpeed?: number; position?: [number, number, number]
   showLoadingOverlay?: boolean
@@ -31,8 +32,8 @@ function Trajectory({ scale, paused, speed }: { scale: number; paused: boolean; 
   const geometries = useMemo(() => {
     const svg = `<svg xmlns="http://www.w3.org/2000/svg">${omegaContours.map(d => `<path d="${d}"/>`).join('')}</svg>`
     return new SVGLoader().parse(svg).paths.flatMap(path => SVGLoader.createShapes(path as unknown as Parameters<typeof SVGLoader.createShapes>[0]).map(shape => {
-      const geometry = new ExtrudeGeometry(shape, { depth: 12, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 1, bevelThickness: 1, curveSegments: 24 })
-      geometry.translate(-120, -110, -6)
+      const geometry = new ExtrudeGeometry(shape, { depth: 20, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 1, bevelThickness: 1, curveSegments: 24 })
+      geometry.translate(-120, -110, -10)
       return geometry
     }))
   }, [])
@@ -40,10 +41,12 @@ function Trajectory({ scale, paused, speed }: { scale: number; paused: boolean; 
   useFrame((_, delta) => {
     if (!group.current || paused) return
     phase.current += Math.min(delta, .1) * speed
-    group.current.rotation.y = Math.sin(phase.current) * .21
-    group.current.rotation.x = Math.sin(phase.current * .65) * .06
+    group.current.rotation.y = Math.sin(phase.current) * .55
+    group.current.rotation.x = Math.sin(phase.current * .65) * .1
   })
-  return <group ref={group} scale={[.01 * scale, -.01 * scale, .01 * scale]}>{geometries.map((geometry, i) => <mesh key={i} geometry={geometry}><meshStandardMaterial color="#bca5f6" roughness={.55} metalness={.15} /></mesh>)}</group>
+  // AsciiEffect maps bright pixels to spaces; keep the material dark enough
+  // to retain the silhouette while lighting reveals the extruded edges.
+  return <group ref={group} scale={[.01 * scale, -.01 * scale, .01 * scale]}>{geometries.map((geometry, i) => <mesh key={i} geometry={geometry}><meshStandardMaterial color="#302638" roughness={.7} metalness={0} /></mesh>)}</group>
 }
 
 function AsciiRenderer({ resolution, characters, fgColor, bgColor, invert, paused }: Required<Pick<AsciiModelViewerProps, 'resolution' | 'characters' | 'fgColor' | 'bgColor' | 'invert' | 'paused'>>) {
@@ -73,11 +76,11 @@ function AsciiRenderer({ resolution, characters, fgColor, bgColor, invert, pause
   return null
 }
 
-export default function AsciiModelViewer({ className = '', paused = false, baseScale = 1, userScale = 1, resolution = .14, characters = ' .,:;irsXA253hMHGS#9B&@', fgColor = 'var(--omega-accent)', bgColor = 'transparent', invert = false, autoRotateSpeed = .5 }: AsciiModelViewerProps) {
-  const [staticMode, ready] = useStaticMode()
+export default function AsciiModelViewer({ className = '', paused = false, motionEnabled = false, baseScale = 1, userScale = 1, resolution = .14, characters = ' .:+###', fgColor = '#bca5f6', bgColor = 'transparent', invert = false, autoRotateSpeed = .85 }: AsciiModelViewerProps) {
+  const [staticMode, ready] = useStaticMode(motionEnabled)
   return <div className={`ascii-viewer ${className}`} aria-hidden="true">
     {!ready || staticMode ? <StaticMark /> : <SceneBoundary><Canvas frameloop="demand" dpr={1} camera={{ position: [0, 0, 3.4], fov: 43 }} gl={{ alpha: true, antialias: false, powerPreference: 'low-power' }} fallback={<StaticMark />}>
-      <ambientLight intensity={1.7} /><directionalLight position={[2, 3, 5]} intensity={3} color="#e2d7fa" />
+      <ambientLight intensity={.8} /><directionalLight position={[2, 3, 5]} intensity={1.5} color="#e2d7fa" />
       <Trajectory scale={baseScale * userScale} paused={paused} speed={autoRotateSpeed} />
       <AsciiRenderer resolution={resolution} characters={characters} fgColor={fgColor} bgColor={bgColor} invert={invert} paused={paused} />
     </Canvas></SceneBoundary>}
@@ -85,18 +88,15 @@ export default function AsciiModelViewer({ className = '', paused = false, baseS
 }
 
 // Render a deterministic flat fallback first, including SSR and reduced-motion devices.
-function useStaticMode() {
+function useStaticMode(motionEnabled: boolean) {
   const [value, setValue] = useState<[boolean, boolean]>([true, false])
   useEffect(() => {
     const query = matchMedia('(prefers-reduced-motion: reduce)')
-    const mobile = matchMedia('(max-width: 1023px)')
     const update = () => {
-      const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
-      const constrained = (memory !== undefined && memory <= 2) || (navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 2)
-      setValue([query.matches || mobile.matches || constrained, true])
+      setValue([query.matches && !motionEnabled, true])
     }
-    update(); query.addEventListener('change', update); mobile.addEventListener('change', update)
-    return () => { query.removeEventListener('change', update); mobile.removeEventListener('change', update) }
-  }, [])
+    update(); query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [motionEnabled])
   return value
 }

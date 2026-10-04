@@ -9,6 +9,12 @@
 .omega-login-pause { display:flex; align-items:center; justify-content:center; gap:8px; margin:16px auto 0; min-height:40px; padding:8px 12px; background:none; color:#aaa3bc; font-size:11px; cursor:pointer; }
 .omega-login-pause:hover { color:#eee8ff; }
 .omega-login-pause:focus-visible { outline:2px solid #a58bf4; outline-offset:4px; }
+.omega-login-scene-compact { margin:-24px auto 24px; }
+.omega-login-scene-compact .omega-login-model { height:160px; }
+.omega-login-scene-compact .omega-login-pause { margin-top:0; }
+@media(max-width:1023px) {
+  .omega-login .login-enter > div:first-child { display:none; }
+}
 .omega-feature { display:grid; grid-template-columns:50px minmax(0,1fr) auto; align-items:center; gap:24px; padding:28px 0; border-bottom:1px solid rgba(255,255,255,.08); }
 .omega-feature:first-child { border-top:1px solid rgba(255,255,255,.08); }
 .omega-feature-number { color:#a58bf4; font-size:13px; font-variant-numeric:tabular-nums; }

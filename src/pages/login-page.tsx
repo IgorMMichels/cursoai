@@ -277,6 +277,7 @@ export function LoginPage() {
             </Link>
           </div>
 
+          <OmegaLoginScene compact />
           <div className="login-enter mb-8">
             <div className="mb-5 grid size-10 place-items-center rounded-xl border border-[#a7b8a9]/20 bg-[#a7b8a9]/[.07] text-[#b7c8b7]">
               <BadgeCheck size={19} />
