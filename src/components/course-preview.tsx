@@ -1,168 +1,90 @@
-import { ArrowRight, Lock, Play } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowRight, BookOpen, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { modules } from '@/lib/course'
+import { loadJourneys, type Journey } from '@/lib/journeys'
+import { previewCatalog, previewTotals } from '@/lib/course-preview-catalog'
 import { moduleCovers } from '@/lib/course-media'
+import { tools } from '@/lib/tools'
+import { platformGuidesByJourney } from '@/lib/platform-guides'
+import '@/styles/course-preview.css'
 
-export function CoursePreviewHero() {
+const levels = { iniciante: 'Iniciante', intermediario: 'Intermediário', avancado: 'Avançado' }
+const resources: Record<string, { title: string; description: string; items: string[]; href?: string }> = {
+  plataformas: { title: 'Plataformas', description: 'Guias de uso das plataformas que aparecem nas jornadas.', items: ['Passo a passo para navegar nas plataformas', 'Carteiras, redes e operações', 'Cuidados antes de conectar ou assinar'] },
+  ferramentas: { title: 'Ferramentas', description: 'Calculadoras gratuitas para estudar cenários e risco, como na área do curso.', items: tools.map((tool) => `${tool.title}: ${tool.description}`), href: '/ferramentas' },
+  radar: { title: 'Radar de mercado', description: 'Radar educacional em piloto, como na área de ferramentas do curso.', items: ['Market Pulse: notícias com fontes e filtros por tema e ativo', 'Funding Monitor: taxas de BTC, ETH e SOL', 'War Room: em planejamento'], href: '/radar' },
+  audios: { title: 'Áudios extras', description: 'Biblioteca opcional de narrações organizada por jornada e aula.', items: ['Cripto do Zero, Memecoins, Futuros e Trading', 'Seleção de aulas e blocos de áudio', 'Conteúdo complementar ao material escrito'] },
+  simulador: { title: 'Simulador de trade', description: 'Pratique decisões em um ambiente de simulação.', items: ['Simulação para estudo', 'Planejamento de operações', 'Sem executar ordens reais'], href: '/simulador' },
+  pagamento: { title: 'Como pagar', description: 'Escolha o período de acesso na página de planos e siga as instruções de pagamento.', items: ['Períodos de acesso e valores atuais', 'Instruções para concluir o pagamento', 'Liberação após confirmação'], href: '/planos' },
+  seguranca: { title: 'Central de segurança', description: 'Orientações para cuidar de suas contas, carteiras e operações.', items: ['Chaves e custódia', 'Atenção a links e permissões', 'Verificações antes de operar'] },
+}
+
+export function CoursePreview({ area = 'visao-geral', journeyId }: { area?: string; journeyId?: string }) {
+  const [catalog, setCatalog] = useState(() => previewCatalog())
+  const [status, setStatus] = useState<'loading' | 'ready' | 'fallback'>('loading')
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    let active = true
+    loadJourneys().then((journeys) => {
+      if (active) { setCatalog(previewCatalog(journeys)); setStatus('ready') }
+    }).catch(() => { if (active) setStatus('fallback') })
+    return () => { active = false }
+  }, [attempt])
+  const totals = previewTotals(catalog)
+  const selected = catalog.find((journey) => journey.id === journeyId)
+  const resource = resources[area]
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-white/[.08] bg-[#0f1017]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(520px circle at 18% 0%, rgba(167,139,250,.14), transparent 65%), radial-gradient(420px circle at 90% 20%, rgba(112,217,239,.07), transparent 60%)',
-        }}
-      />
-      <div className="hero-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden />
-      <div className="relative grid gap-8 p-6 sm:p-9 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
-        <div>
-          <p className="eyebrow">visão geral · acesso de visitante</p>
-          <h1 className="display-lg mt-4 text-[#eef3ee]">Olá, futuro aluno.</h1>
-          <p className="body-lg mt-4 max-w-xl text-[15px]">
-            Esta é uma amostra da área do curso: nove módulos curtos, com aulas, exercícios e revisões.
-            O conteúdo completo é liberado após a confirmação do plano.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              to="/planos"
-              className="button-motion inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] hover:bg-[#c1acff]"
-            >
-              Ver planos de acesso <ArrowRight size={15} />
-            </Link>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-2 text-[11px] text-[#9aa39d]">
-              <Lock size={12} className="text-[#a78bfa]" /> Amostra bloqueada
-            </span>
+    <div className="course-preview space-y-8">
+      <div className="preview-notice" role="status"><Lock size={14} /><span>Prévia do curso · aulas, exercícios e progresso disponíveis com acesso ativo.</span></div>
+      {status === 'loading' && <p className="text-xs text-[#9aa39d]" role="status">Atualizando o catálogo do curso…</p>}
+      {status === 'fallback' && <div className="preview-notice" role="status"><span>Não foi possível consultar o catálogo publicado. Exibindo a versão incluída no site.</span><button type="button" onClick={() => { setStatus('loading'); setAttempt((value) => value + 1) }}>Tentar novamente</button></div>}
+      {resource ? <section className="preview-panel p-6 sm:p-8">
+        <p className="eyebrow">área do curso</p><h1 className="mt-3 font-display text-3xl text-white">{resource.title}</h1>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-[#aaa7b5]">{resource.description}</p>
+        <ul className="mt-6 space-y-3 text-sm text-[#d2ccd9]">{resource.items.map((item) => <li key={item} className="flex items-center gap-3"><BookOpen size={16} className="text-[#b49cff]" />{item}</li>)}</ul>
+        {area === 'plataformas' && <div className="mt-7 grid gap-4 sm:grid-cols-2">{Object.entries(platformGuidesByJourney).map(([id, guide]) => <article key={id} className="preview-panel p-4"><h2 className="text-sm font-medium text-white">{catalog.find((journey) => journey.id === id)?.title ?? id}</h2><p className="mt-2 text-xs leading-6 text-[#aaa7b5]">{guide.groups.flatMap((group) => group.guides.map((platform) => platform.name)).join(' · ')}</p></article>)}</div>}
+        <Link className="preview-button mt-7" to={resource.href ?? '/planos'}>{resource.href ? 'Abrir ' + resource.title.toLowerCase() : 'Ver planos de acesso'}<ArrowRight size={15} /></Link>
+      </section> : <>
+        {area === 'visao-geral' && <section className="preview-panel grid overflow-hidden lg:grid-cols-[1.2fr_1fr]">
+          <div className="p-6 sm:p-8">
+            <p className="eyebrow">Omega · área do curso</p>
+            <h1 className="mt-4 font-display text-3xl font-medium tracking-tight text-white sm:text-4xl">Conheça o caminho de estudo.</h1>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-[#aaa7b5]">Comece pelos fundamentos de Cripto do Zero e explore as jornadas de Memecoins, Futuros e Trading. Esta prévia mostra a organização e o conteúdo do catálogo oficial.</p>
+            <Link className="preview-button mt-6" to="/planos">Ver planos de acesso<ArrowRight size={15} /></Link>
           </div>
-          <p className="mt-4 max-w-md text-[11px] leading-relaxed text-[#708279]">
-            Material educacional sobre conceitos e rotina de estudo. Sem promessa de resultado financeiro.
-          </p>
-        </div>
-
-        <div className="relative overflow-hidden rounded-xl border border-white/[.09] bg-[#14151d]">
-          <div className="relative p-5 sm:p-6" aria-hidden>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#8d839f]">Continuar estudando</p>
-                <p className="mt-2 font-display text-lg font-medium tracking-[-.03em] text-[#e8e4ee]">
-                  Entenda o terreno
-                </p>
-              </div>
-              <span className="rounded-full bg-[#a78bfa]/[.12] px-3 py-1 text-[10px] font-semibold text-[#c1acff]">
-                Módulo 01
-              </span>
-            </div>
-            <div className="mt-4 space-y-2.5 select-none" style={{ filter: 'blur(5px)', opacity: 0.75 }}>
-              {['Uma rede que mantém o próprio livro-caixa', 'Bitcoin, ether e tokens: ativos diferentes', 'Carteiras, chaves e custódia'].map((lesson) => (
-                <div key={lesson} className="flex items-center gap-3 rounded-lg border border-white/[.06] bg-white/[.02] px-3 py-2.5">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[#a78bfa]/[.14] text-[#c1acff]">
-                    <Play size={12} />
-                  </span>
-                  <span className="truncate text-xs text-[#c8c1d1]">{lesson}</span>
-                  <span className="ml-auto text-[10px] text-[#777180]">7 min</span>
-                </div>
-              ))}
-            </div>
+          <div className="relative flex min-h-64 items-end bg-[#13131c] p-6 sm:p-8">
+            <img src={moduleCovers.m1} alt="" className="absolute inset-0 size-full object-cover opacity-40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#101018] to-transparent" />
+            <div className="relative"><p className="eyebrow">primeiro módulo · Cripto do Zero</p><h2 className="mt-3 font-display text-2xl text-white">{catalog[0]?.modules[0]?.title}</h2><p className="mt-2 text-sm text-[#c2bdcc]">{catalog[0]?.modules[0]?.subtitle}</p></div>
           </div>
-          <div className="absolute inset-0 grid place-items-center bg-[#09090d]/55 p-6 backdrop-blur-[2px]">
-            <div className="flex max-w-xs flex-col items-center text-center">
-              <span className="grid size-11 place-items-center rounded-full border border-[#a78bfa]/30 bg-[#a78bfa]/[.12] text-[#c1acff] shadow-[0_0_28px_rgba(167,139,250,.25)]">
-                <Lock size={18} />
-              </span>
-              <p className="mt-3 font-display text-base font-medium tracking-[-.03em] text-white">Continue de onde parou</p>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-[#a5a1b3]">
-                Seu progresso, aulas e exercícios ficam disponíveis com um plano ativo.
-              </p>
-              <Link
-                to="/planos"
-                className="button-motion mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] hover:bg-[#c1acff]"
-              >
-                Acessar conteúdo <ArrowRight size={14} />
-              </Link>
+        </section>}
+        <dl className="preview-stats">{[[totals.journeys, 'Jornadas'], [totals.modules, 'Módulos'], [totals.lessons, 'Aulas'], [totals.minutes + ' min', 'Conteúdo no catálogo']].map(([value, label]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+        <section id="modulos">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3"><div><p className="eyebrow">catálogo do curso</p>{area === 'visao-geral' ? <h2 className="mt-3 font-display text-2xl text-white">Jornadas de estudo</h2> : <h1 className="mt-3 font-display text-2xl text-white">{selected ? selected.title : area === 'trilha' ? 'Sua trilha começa pelos fundamentos' : 'Jornadas de estudo'}</h1>}</div>{selected && <Link to="/explorar?area=jornadas" className="text-sm text-[#c1acff]">Todas as jornadas</Link>}</div>
+          {journeyId && !selected && status !== 'loading' && <p className="preview-notice mb-5">Esta jornada não está no catálogo publicado. Escolha uma das jornadas abaixo.</p>}
+          {selected ? <JourneyModules journey={selected} /> : <div className="grid gap-5 md:grid-cols-2">{catalog.map((journey) => <article className="preview-panel overflow-hidden" key={journey.id}>
+            <img src={journey.coverUrl ?? moduleCovers.m1} alt="" loading="lazy" className="aspect-video w-full object-cover" />
+            <div className="p-5"><div className="flex justify-between gap-3 text-xs text-[#a39bab]"><span>{levels[journey.level]}</span><span className="flex items-center gap-1"><Lock size={12} />Prévia</span></div>
+              <h2 className="mt-3 font-display text-xl text-white">{journey.title}</h2><p className="mt-2 text-sm leading-6 text-[#aaa7b5]">{journey.shortDesc}</p>
+              <p className="mt-4 text-xs text-[#aaa7b5]">{journey.modules.length} módulos · {journey.modules.reduce((sum, module) => sum + module.lessons.length, 0)} aulas</p>
+              <Link className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[#c1acff]" to={`/explorar?area=jornadas&jornada=${journey.id}`}>Ver módulos e aulas<ArrowRight size={15} /></Link>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
+          </article>)}</div>}
+          {area === 'trilha' && !selected && <div className="mt-6"><JourneyModules journey={catalog[0]} /></div>}
+        </section>
+      </>}
+      <p className="text-xs leading-6 text-[#9aa39d]">O catálogo apresenta títulos e duração das aulas. Seu progresso é registrado somente na área do aluno. As jornadas em modo catálogo seguem a disponibilidade indicada no curso oficial.</p>
+    </div>
   )
 }
 
-export function LockedJourneysPreview() {
-  return (
-    <section aria-label="Módulos da trilha (amostra bloqueada)" className="mt-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="eyebrow">a trilha completa</p>
-          <h2 className="mt-3 font-display text-2xl font-medium tracking-[-.04em] text-[#e8ece7] sm:text-3xl">
-            Nove módulos para estudar no seu ritmo
-          </h2>
-        </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-2 text-[11px] text-[#9aa39d]">
-          <Lock size={12} className="text-[#a78bfa]" /> Prévia · conteúdo bloqueado
-        </span>
-      </div>
-
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {modules.map((module) => {
-          const cover = moduleCovers[module.id]
-          return (
-            <article
-              key={module.id}
-              className="group relative flex min-h-[240px] flex-col justify-end overflow-hidden rounded-xl border border-white/[.08] bg-[#12121a]"
-            >
-              {cover && (
-                <img
-                  src={cover}
-                  alt=""
-                  aria-hidden
-                  loading="lazy"
-                  className="absolute inset-0 h-full w-full object-cover opacity-45 saturate-[.9] contrast-[1.05] transition-transform duration-700 group-hover:scale-[1.03]"
-                />
-              )}
-              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#09090d] via-[#09090d]/72 to-[#09090d]/25" />
-              <div className="image-grain pointer-events-none absolute inset-0" aria-hidden />
-
-              <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-[#09090d]/60 px-2.5 py-1.5 text-[10px] font-semibold text-[#d6c9f3] backdrop-blur-md">
-                <Lock size={11} className="text-[#a78bfa]" /> Bloqueado
-              </span>
-
-              <div className="relative p-5">
-                <p className="text-[10px] font-bold uppercase tracking-[.14em] text-[#b49cff]">Módulo {module.number}</p>
-                <h3 className="mt-2 font-display text-lg font-medium leading-tight tracking-[-.03em] text-white">
-                  {module.title}
-                </h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#b9b5c1]" style={{ textShadow: '0 1px 12px rgba(0,0,0,.7)' }}>
-                  {module.subtitle}
-                </p>
-                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] text-[#9aa39d]">
-                  <span>{module.lessons.length} aulas · {module.duration}</span>
-                  <Link
-                    to="/planos"
-                    className="inline-flex items-center gap-1.5 font-semibold text-[#c1acff] transition-colors hover:text-white"
-                    aria-label={`Desbloquear módulo ${module.title} — ver planos`}
-                  >
-                    Desbloquear <ArrowRight size={13} />
-                  </Link>
-                </div>
-              </div>
-
-              <div aria-hidden className="absolute inset-x-0 top-0 h-10 bg-white/[.02] backdrop-blur-[1px]" style={{ maskImage: 'linear-gradient(to bottom, black, transparent)' }} />
-            </article>
-          )
-        })}
-      </div>
-
-      <div className="mt-6 flex flex-col items-center gap-3 rounded-xl border border-[#a78bfa]/20 bg-[#a78bfa]/[.05] p-6 text-center">
-        <p className="max-w-xl text-xs leading-relaxed text-[#a5a1b3]">
-          Gostou da amostra? Escolha um tempo de acesso e estude a trilha completa, com progresso salvo e revisões.
-        </p>
-        <Link
-          to="/planos"
-          className="button-motion inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-5 text-xs font-semibold text-[#09090d] hover:bg-[#c1acff]"
-        >
-          Acessar conteúdo <ArrowRight size={15} />
-        </Link>
-      </div>
-    </section>
-  )
+function JourneyModules({ journey }: { journey: Journey }) {
+  return <div><p className="mb-5 max-w-3xl text-sm leading-7 text-[#aaa7b5]">{journey.longDesc}</p>
+    {journey.catalogOnly && <p className="preview-notice mb-5">No curso oficial, esta jornada está em modo catálogo. Aulas e progresso serão liberados conforme a publicação do conteúdo.</p>}
+    <div className="space-y-3">{journey.modules.map((module) => <details key={module.id} className="preview-panel p-5">
+      <summary className="cursor-pointer text-[#eeeaf4]"><span className="mr-3 text-xs text-[#b49cff]">{module.number}</span>{module.title}<span className="mt-2 block text-xs text-[#a39bab]">{module.lessons.length} aulas · {module.duration}</span></summary>
+      {module.subtitle && <p className="mt-4 text-sm text-[#aaa7b5]">{module.subtitle}</p>}
+      <ol className="mt-4 divide-y divide-white/5">{module.lessons.map((lesson) => <li key={lesson.id} className="flex items-start gap-3 py-3 text-sm text-[#c2bdcc]"><Lock size={13} className="mt-1 shrink-0 text-[#a39bab]" /><span className="flex-1">{lesson.title}</span><span className="shrink-0 text-xs text-[#a39bab]">{lesson.duration}</span></li>)}</ol>
+      <Link to="/planos" className="mt-3 inline-flex items-center gap-2 text-xs text-[#c1acff]">Ver acesso ao curso<ArrowRight size={13} /></Link>
+    </details>)}</div></div>
 }

@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession, type AppSession } from '@/contexts/session-context'
 import type { UserRole } from '@/lib/storage'
-import { CoursePreviewHero, LockedJourneysPreview } from '@/components/course-preview'
+import { CoursePreview } from '@/components/course-preview'
 
 export function hasActivePlan(user: Pick<AppSession, 'plan' | 'planStartedAt' | 'expiresAt'> | null | undefined) {
   if (!user || user.plan === null) return false
@@ -44,8 +44,10 @@ export function RequireCourseAccess() {
   if (loading) return <div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]" role="status">Verificando sua sessão…</div>
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
 
-  // Sem plano ativo: preview bloqueado direto na rota (sem redirect para /acesso
-  // e sem montar páginas que disparam fetch de dados).
-  if (!hasActivePlan(user)) return <div className="space-y-10"><CoursePreviewHero /><LockedJourneysPreview /></div>
+  // Preview queries only catalogue metadata, never protected lesson/account data.
+  if (!hasActivePlan(user)) return <CoursePreview
+    area={location.pathname.includes('audios-extras') ? 'audios' : location.pathname.startsWith('/jornadas') ? 'jornadas' : 'visao-geral'}
+    journeyId={location.pathname.startsWith('/jornadas/') ? location.pathname.split('/')[2] : undefined}
+  />
   return <Outlet />
 }
