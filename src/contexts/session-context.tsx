@@ -30,7 +30,7 @@ type SessionContextValue = {
   authError: string | null
   completedLessons: string[]
   signInWithPassword: (email: string, password: string) => Promise<AppSession>
-  signUpWithPassword: (name: string, username: string, email: string, password: string) => Promise<AppSession | null>
+  signUpWithPassword: (name: string, username: string, email: string, password: string, marketingOptIn?: boolean) => Promise<AppSession | null>
   joinAffiliateProgram: () => Promise<string>
   sendPasswordReset: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -173,14 +173,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return syncSupabaseUser(data.user)
   }, [syncSupabaseUser])
 
-  const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string) => {
+  const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string, marketingOptIn = false) => {
     if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const referralCode = getReferralCode()
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { name: name.trim(), username, ...(referralCode ? { referral_code: referralCode } : {}) },
+        data: { name: name.trim(), username, marketing_opt_in: marketingOptIn, ...(referralCode ? { referral_code: referralCode } : {}) },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     })

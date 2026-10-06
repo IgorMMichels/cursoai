@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'r
 import { Camera, Check, ImagePlus, LoaderCircle, MapPin, Pencil, UserRound, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession, planTitle } from '@/contexts/session-context'
+import { loadMarketingPreference, saveMarketingPreference } from '@/lib/email-preferences'
 
 type ProfileSettingsProps = { compact?: boolean }
 
@@ -47,6 +48,10 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
   const [photoError, setPhotoError] = useState('')
   const [notice, setNotice] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [marketingOptIn, setMarketingOptIn] = useState(false)
+  const [isLoadingPreference, setIsLoadingPreference] = useState(false)
+  const [isSavingPreference, setIsSavingPreference] = useState(false)
+  const [preferenceNotice, setPreferenceNotice] = useState('')
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -64,7 +69,30 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
     setAvatarBlob(undefined)
     setPhotoError('')
     setNotice('')
+    setPreferenceNotice('')
+    if (user?.id) {
+      setIsLoadingPreference(true)
+      void loadMarketingPreference(user.id)
+        .then(setMarketingOptIn)
+        .catch(() => setPreferenceNotice('Não foi possível carregar sua preferência. Tente novamente.'))
+        .finally(() => setIsLoadingPreference(false))
+    }
   }, [open, user?.id])
+
+  const savePreference = async (value: boolean) => {
+    if (!user?.id) return
+    setIsSavingPreference(true)
+    setPreferenceNotice('')
+    try {
+      await saveMarketingPreference(user.id, value)
+      setMarketingOptIn(value)
+      setPreferenceNotice('Preferência de e-mail atualizada.')
+    } catch (error) {
+      setPreferenceNotice(error instanceof Error ? error.message : 'Não foi possível salvar sua preferência.')
+    } finally {
+      setIsSavingPreference(false)
+    }
+  }
 
   const pickPhoto = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0]
@@ -164,6 +192,16 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
             <label htmlFor="profile-location" className="mb-2 block text-xs font-medium text-[#ccd5ce]">Cidade ou região</label>
             <div className="relative"><MapPin size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74847a]" /><input id="profile-location" value={location} onChange={(event) => setLocation(event.target.value)} maxLength={80} autoComplete="address-level2" placeholder="Opcional" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#0e0e14] pl-10 pr-3.5 text-sm text-[#e6eee8] outline-none transition placeholder:text-[#65736a] focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>
           </div>
+
+          <section aria-labelledby="email-preferences-title" className="rounded-xl border border-white/[.07] bg-white/[.02] p-4">
+            <h3 id="email-preferences-title" className="text-xs font-semibold text-[#e4ece6]">E-mails da Omega</h3>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-[#89968d]">Mensagens necessárias à conta, como confirmação e recuperação de senha, continuam sendo enviadas.</p>
+            <label htmlFor="profile-marketing-opt-in" className="mt-4 flex items-start gap-3 text-[11px] leading-relaxed text-[#aab6ad]">
+              <input id="profile-marketing-opt-in" type="checkbox" checked={marketingOptIn} disabled={isLoadingPreference || isSavingPreference} onChange={(event) => void savePreference(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#b49cff]" />
+              <span>Receber conteúdos gratuitos, novidades e convites por e-mail.</span>
+            </label>
+            {preferenceNotice && <p role="status" className="mt-2 text-[10px] text-[#b7a8e8]">{preferenceNotice}</p>}
+          </section>
 
           {notice && <p role="status" className={`rounded-xl border px-3.5 py-3 text-xs leading-relaxed ${notice.startsWith('Perfil atualizado') || notice.startsWith('Perfil salvo') ? 'border-[#8bd8b1]/15 bg-[#8bd8b1]/[.05] text-[#a7e2c1]' : 'border-[#e8bc76]/20 bg-[#e8bc76]/[.05] text-[#e3c78f]'}`}>{notice}</p>}
         </div>

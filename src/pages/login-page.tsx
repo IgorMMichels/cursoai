@@ -153,6 +153,7 @@ export function LoginPage() {
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken' | 'error'>('idle')
   const [email, setEmail] = useState('')
+  const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -228,7 +229,7 @@ export function LoginPage() {
       } else if (mode === 'signup') {
         const available = await isAffiliateHandleAvailable(username)
         if (!available) throw new Error('Este ID já está em uso ou reservado. Escolha outro.')
-        const signedIn = await signUpWithPassword(name, username, email, password)
+        const signedIn = await signUpWithPassword(name, username, email, password, marketingOptIn)
         if (signedIn) goToSession(signedIn)
         else setMessage(`Conta criada. Confirme seu e-mail para entrar. Seu link de afiliado: ${window.location.origin}/${username}`)
       } else if (mode === 'reset') {
@@ -426,6 +427,19 @@ export function LoginPage() {
                     <p className="mt-2 text-[10px] leading-relaxed text-[#71847a]">Use pelo menos 12 caracteres. Prefira uma senha única e um gerenciador confiável.</p>
                   )}
                 </div>
+              )}
+
+              {authConfigured && mode === 'signup' && (
+                <label htmlFor="marketing-opt-in" className="flex cursor-pointer items-start gap-3 rounded-xl border border-white/[.07] bg-white/[.02] px-3.5 py-3 text-[11px] leading-relaxed text-[#aab6ad]">
+                  <input
+                    id="marketing-opt-in"
+                    type="checkbox"
+                    checked={marketingOptIn}
+                    onChange={(event) => setMarketingOptIn(event.target.checked)}
+                    className="mt-0.5 size-4 shrink-0 accent-[#b49cff]"
+                  />
+                  <span>Quero receber por e-mail conteúdos gratuitos, novidades e convites da Omega. Posso cancelar quando quiser.</span>
+                </label>
               )}
 
               {mode === 'signin' && authConfigured && (
