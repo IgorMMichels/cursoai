@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
+import { useLocalization } from '@/contexts/localization-context'
+import { localizedPath } from '@/lib/localization'
 import { omegaCopy } from '@/lib/omega-copy'
 
 export function PageMeta({ title, description, path, privatePage = false }: { title: string; description: string; path: string; privatePage?: boolean }) {
+  const { locale } = useLocalization()
   useEffect(() => {
     document.title = `${title} | ${omegaCopy.name}`
     const configuredOrigin = import.meta.env.VITE_SITE_URL
@@ -12,7 +15,7 @@ export function PageMeta({ title, description, path, privatePage = false }: { ti
     const changes = [
       { selector: 'meta[name="description"]', tag: 'meta', attrs: { name: 'description', content: description } },
       { selector: 'meta[name="robots"]', tag: 'meta', attrs: { name: 'robots', content: privatePage ? 'noindex, follow' : 'index, follow' } },
-      { selector: 'link[rel="canonical"]', tag: 'link', attrs: { rel: 'canonical', href: `${origin}${path}` } },
+      { selector: 'link[rel="canonical"]', tag: 'link', attrs: { rel: 'canonical', href: `${origin}${localizedPath(path, locale)}` } },
     ]
     const cleanups = changes.map(({ selector, tag, attrs }) => {
       const existing = document.head.querySelector(selector)
@@ -27,6 +30,6 @@ export function PageMeta({ title, description, path, privatePage = false }: { ti
       }
     })
     return () => { document.title = omegaCopy.title; cleanups.forEach((cleanup) => cleanup()) }
-  }, [title, description, path, privatePage])
+  }, [title, description, path, privatePage, locale])
   return null
 }

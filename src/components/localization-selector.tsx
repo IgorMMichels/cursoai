@@ -6,9 +6,7 @@ export function LocalizationSelector({ compact = false }: { compact?: boolean })
   const { locale, market, setLocale, setMarket } = useLocalization()
   const { t } = useTranslation('common')
   const label = { language: t('language'), region: t('region') }
-  const regions: Record<MarketId, string> = locale === 'pt-BR'
-    ? { BR: 'Brasil', US: 'Estados Unidos', ES: 'Espanha', FR: 'França', OTHER: 'Outro país' }
-    : locale === 'es'
+  const regions: Record<MarketId, string> = locale === 'es'
       ? { BR: 'Brasil', US: 'Estados Unidos', ES: 'España', FR: 'Francia', OTHER: 'Otro país' }
       : locale === 'fr'
         ? { BR: 'Brésil', US: 'États-Unis', ES: 'Espagne', FR: 'France', OTHER: 'Autre pays' }

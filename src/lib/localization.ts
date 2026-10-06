@@ -1,10 +1,9 @@
-export const uiLocales = ['pt-BR', 'en', 'es', 'fr'] as const
+export const uiLocales = ['en', 'es', 'fr'] as const
 export type UiLocale = (typeof uiLocales)[number]
 export const marketIds = ['BR', 'US', 'ES', 'FR', 'OTHER'] as const
 export type MarketId = (typeof marketIds)[number]
 
 export const localeNames: Record<UiLocale, string> = {
-  'pt-BR': 'Português',
   en: 'English',
   es: 'Español',
   fr: 'Français',
@@ -26,7 +25,7 @@ export const localeFromPath = (pathname: string): UiLocale | null => {
 export function normalizeLocale(value?: string | null): UiLocale | null {
   if (!value) return null
   const normalized = value.toLowerCase()
-  if (normalized === 'pt' || normalized.startsWith('pt-')) return 'pt-BR'
+  if (normalized === 'pt' || normalized.startsWith('pt-')) return null
   if (normalized === 'en' || normalized.startsWith('en-')) return 'en'
   if (normalized === 'es' || normalized.startsWith('es-')) return 'es'
   if (normalized === 'fr' || normalized.startsWith('fr-')) return 'fr'
@@ -46,8 +45,17 @@ export function formatCurrency(amount: number, currency: string, locale: UiLocal
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount)
 }
 
+export function normalizePathname(pathname: string) {
+  const withLeadingSlash = pathname.startsWith('/') ? pathname : `/${pathname}`
+  return withLeadingSlash.replace(/\/{2,}/g, '/') || '/'
+}
+
+export function unlocalizedPath(pathname: string) {
+  return normalizePathname(pathname).replace(/^\/(?:pt-BR|en|es|fr)(?=\/|$)/, '') || '/'
+}
+
 export function localizedPath(pathname: string, locale: UiLocale) {
-  const pathWithoutLocale = pathname.replace(/^\/(pt-BR|en|es|fr)(?=\/|$)/, '')
+  const pathWithoutLocale = unlocalizedPath(pathname)
   return `/${locale}${pathWithoutLocale.startsWith('/') ? pathWithoutLocale : `/${pathWithoutLocale}`}`
 }
 

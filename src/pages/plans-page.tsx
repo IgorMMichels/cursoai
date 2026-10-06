@@ -6,6 +6,7 @@ import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { useLocalization } from '@/contexts/localization-context'
 import { LocalizationSelector } from '@/components/localization-selector'
 import { getOfferAmount, getRegionalOffer } from '@/lib/regional-offers'
+import { PageMeta } from '@/components/tools/page-meta'
 
 const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
 
@@ -24,6 +25,7 @@ export function PlansPage() {
     fr: { signIn: 'Connexion', back: 'Retour', eyebrow: 'choisissez votre rythme d’étude', title: 'Un cours complet. Trois façons d’y accéder.', intro: 'Choisissez la durée qui convient à votre rythme.', notAvailable: 'Prix pas encore disponible dans cette région.', proposed: 'Prix proposé ; paiement indisponible.', oneTime: 'paiement unique', sol: 'paiement en SOL', alternative: 'ou', checkout: 'Le paiement n’est pas encore disponible ; aucun paiement ne sera traité ici.' },
   }[locale]
   return <div className="min-h-screen bg-[#09090d] pb-16 text-[#e6eee9]">
+    <PageMeta title="Planos do curso Omega" description="Compare os períodos de acesso ao curso Omega e escolha o tempo que combina com seu ritmo de estudo." path="/planos" />
     <section className="relative isolate overflow-hidden border-b border-white/[.04]">
       <Suspense fallback={null}>
         <HeroWebGLShader />
