@@ -33,3 +33,9 @@ supabase/.temp/
 *.sw?
 
 .vercel
+
+# Estado local do oh-my-codex (logs, sessões e métricas)
+.omx/
+
+# Pacotes portáveis gerados para deploy dos bots
+artifacts/
