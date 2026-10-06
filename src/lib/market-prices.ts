@@ -1,6 +1,7 @@
 export type CoinSymbol = 'BTC' | 'ETH' | 'SOL'
 export type Period = '1H' | '24H' | '1W' | '1M'
 export type Quote = { symbol: CoinSymbol; price: number; change24h: number; updatedAt: number }
+export type StablecoinBrlQuote = { price: number; change24h: number; updatedAt: number }
 export type PricePoint = { time: number; price: number }
 
 const symbols: CoinSymbol[] = ['BTC', 'ETH', 'SOL']
@@ -16,8 +17,12 @@ const seriesCache = new Map<string, { at: number; points: PricePoint[] }>()
 const pendingSeries = new Map<string, Promise<PricePoint[]>>()
 const fallbackSeriesCache = new Map<string, { at: number; points: PricePoint[] }>()
 const pendingFallbackSeries = new Map<string, Promise<PricePoint[]>>()
+let stablecoinBrlSeriesCache: Partial<Record<Period, { at: number; points: PricePoint[] }>> = {}
+let pendingStablecoinBrlSeries: Partial<Record<Period, Promise<PricePoint[]>>> = {}
 let quoteCache: { at: number; quotes: Quote[] } | undefined
 let pendingQuotes: Promise<Quote[]> | undefined
+let stablecoinBrlCache: { at: number; quote: StablecoinBrlQuote } | undefined
+let pendingStablecoinBrl: Promise<StablecoinBrlQuote> | undefined
 
 async function json(url: string) {
   const response = await fetch(url, { signal: AbortSignal.timeout(8000) })
@@ -65,6 +70,32 @@ export async function getQuotes(): Promise<Quote[]> {
 
 export function previousQuotes() { return quoteCache?.quotes ?? [] }
 
+export function previousStablecoinBrlQuote() { return stablecoinBrlCache?.quote }
+
+export async function getStablecoinBrlQuote(): Promise<StablecoinBrlQuote> {
+  if (stablecoinBrlCache && Date.now() - stablecoinBrlCache.at < 30_000) return stablecoinBrlCache.quote
+  if (pendingStablecoinBrl) return pendingStablecoinBrl
+  pendingStablecoinBrl = (async () => {
+    let price: number
+    let change24h: number
+    try {
+      const row = await binance('/api/v3/ticker/24hr?symbol=USDTBRL') as { symbol?: string; lastPrice?: string; priceChangePercent?: string }
+      if (row.symbol !== 'USDTBRL') throw new Error('Cotação USDT/BRL ausente.')
+      price = valid(row.lastPrice)
+      change24h = Number(row.priceChangePercent)
+    } catch {
+      const fallback = await json('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=brl&include_24hr_change=true') as Record<string, { brl?: number; brl_24h_change?: number }>
+      price = valid(fallback.tether?.brl)
+      change24h = Number(fallback.tether?.brl_24h_change)
+    }
+    if (!Number.isFinite(change24h)) throw new Error('Variação USDT/BRL inválida.')
+    const quote = { price, change24h, updatedAt: Date.now() }
+    stablecoinBrlCache = { at: quote.updatedAt, quote }
+    return quote
+  })().finally(() => { pendingStablecoinBrl = undefined })
+  return pendingStablecoinBrl
+}
+
 async function fallbackSeries(symbol: CoinSymbol, period: Period): Promise<PricePoint[]> {
   const days = period === '1H' || period === '24H' ? 1 : 30
   const key = `${symbol}:${days}`
@@ -102,5 +133,33 @@ export async function getSeries(symbol: CoinSymbol, period: Period): Promise<Pri
     return points
   })().finally(() => { pendingSeries.delete(key) })
   pendingSeries.set(key, request)
+  return request
+}
+
+async function fallbackStablecoinBrlSeries(period: Period): Promise<PricePoint[]> {
+  const days = period === '1H' || period === '24H' ? 1 : period === '1W' ? 7 : 30
+  const data = await json(`https://api.coingecko.com/api/v3/coins/tether/market_chart?vs_currency=brl&days=${days}`) as { prices: [number, number][] }
+  return data.prices.map(([time, price]) => ({ time, price: valid(price) }))
+}
+
+export async function getStablecoinBrlSeries(period: Period): Promise<PricePoint[]> {
+  const cached = stablecoinBrlSeriesCache[period]
+  if (cached && Date.now() - cached.at < 60_000) return cached.points
+  const pending = pendingStablecoinBrlSeries[period]
+  if (pending) return pending
+  const request = (async () => {
+    const config = periods[period]
+    let points: PricePoint[]
+    try {
+      const rows = await binance(`/api/v3/klines?symbol=USDTBRL&interval=${config.interval}&limit=${config.limit}`) as [number, string, string, string, string][]
+      points = rows.map((row) => ({ time: Number(row[0]), price: valid(row[4]) }))
+    } catch {
+      points = (await fallbackStablecoinBrlSeries(period)).filter(({ time }) => time >= Date.now() - config.duration)
+    }
+    if (points.length < 2) throw new Error('Histórico USDT/BRL indisponível.')
+    stablecoinBrlSeriesCache[period] = { at: Date.now(), points }
+    return points
+  })().finally(() => { delete pendingStablecoinBrlSeries[period] })
+  pendingStablecoinBrlSeries[period] = request
   return request
 }

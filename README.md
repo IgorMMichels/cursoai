@@ -44,6 +44,19 @@ SOL não é convertido em tempo real. Comissão prevista é de 20% na mesma moed
 
 ## Estrutura
 
+### Radar e bots locais
+
+O piloto em `/radar` e `/curso/radar` reúne Market Pulse (RSS real), Funding Monitor (BTC/ETH/SOL) e um resumo. O serviço em `bots/` é independente e pode ser levado para outra pasta ou VM.
+
+```bash
+npm run bots:install
+npm run bots:start
+```
+
+Em outro terminal, rode `npm run dev`. As fontes são coletadas a cada 60 segundos; a página recebe SSE e consulta a API a cada 15 segundos. Discord e Telegram são opcionais, configurados somente em `bots/.env.local`.
+
+Veja [instalação, canais e VM](bots/README.md) e [avaliação de todos os bots do pacote](docs/bots-avaliacao.md). `npm run bots:export` cria um ZIP portátil sem segredos. Para o site publicado, configure `VITE_BOTS_API_URL` com a URL HTTPS do serviço remoto e publique um novo build.
+
 ```text
 src/
   components/       Layouts, identidade visual, controles e componentes shadcn/ui
@@ -144,3 +157,7 @@ O conteúdo evita promessa de rendimento e alerta para riscos e fraude, seguindo
 ## Tecnologias de UI
 
 O setup segue a instalação oficial de [shadcn/ui para Vite](https://ui.shadcn.com/docs/installation/vite), com tokens de tema escuro próprios, componentes locais e Tailwind CSS v4. Login e perfil usam Supabase quando configurado; pagamentos, autorização de assinaturas e transferências de saque ainda precisam de serviços de backend.
+
+## Loading Omega 3D
+
+A entrada usa a logo ASCII em GLB, com Three.js e transições GSAP. Para rever localmente, execute `npm run dev` e abra `/loading-preview` (somente em desenvolvimento). Preparação do modelo, fontes técnicas e verificações em [docs/omega-loading-glb.md](docs/omega-loading-glb.md).
