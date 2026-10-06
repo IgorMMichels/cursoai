@@ -1,5 +1,10 @@
 import type { AudioWord } from './narration-script'
 
+// Keep closing punctuation with its word when a transcript wraps onto a new line.
+export function wordDisplayEnd(transcript: string, word: AudioWord): number {
+  return word.charEnd + (transcript.slice(word.charEnd).match(/^[.,!?;:…)\]}»”’]+/u)?.[0].length ?? 0)
+}
+
 export function activeWordAt(words: AudioWord[], time: number): number {
   let low = 0
   let high = words.length - 1

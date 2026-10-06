@@ -37,3 +37,16 @@ for journey in CATALOG["journeys"]:
             checked += 1
 
 print(f"Validado: {checked} clipes, roteiros, arquivos de áudio e marcações de palavra.")
+
+mapping = json.loads((ROOT / "src/lib/generated/lesson-audio-map.json").read_text(encoding="utf-8"))
+journeys = json.loads((ROOT / "src/lib/generated/journeys.json").read_text(encoding="utf-8"))
+legacy_ids = set(re.findall(r'"id": "(m\d+l\d+)"', (ROOT / "src/lib/course.ts").read_text(encoding="utf-8")))
+lesson_ids = legacy_ids | {lesson["id"] for journey in journeys for module in journey["modules"] for lesson in module["lessons"]}
+audio_by_id = {lesson["id"]: lesson for journey in CATALOG["journeys"] for lesson in journey["lessons"]}
+assert set(mapping) <= lesson_ids, "O vínculo contém aulas que não existem."
+for lesson_id, audio_id in mapping.items():
+    assert audio_id in audio_by_id, f"Áudio atualizado ausente: {lesson_id} -> {audio_id}"
+    assert audio_by_id[audio_id]["blocks"], f"Narração sem clipes: {audio_id}"
+missing = lesson_ids - set(mapping)
+assert missing == {"m1l1", "m1l2", "m4l3"}, f"Revise os vínculos das novas aulas: {sorted(missing)}"
+print(f"Vínculos validados: {len(mapping)} aulas; sem áudio atualizado: {', '.join(sorted(missing))}.")
