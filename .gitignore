@@ -39,3 +39,13 @@ supabase/.temp/
 
 # Pacotes portáveis gerados para deploy dos bots
 artifacts/
+
+# Notas de trabalho geradas localmente, não são documentação do produto
+/DESIGN.md
+/docs/audios-atualizados-nas-aulas.md
+/docs/auditoria-completa-site.md
+/docs/bots-avaliacao.md
+/docs/bots-validacao.md
+/docs/omega-loading-glb.md
+/docs/plano-email-e-relacionamento.md
+/docs/radar-fontes-e-avaliacao.md
