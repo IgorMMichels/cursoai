@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 import { useGSAP } from '@gsap/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, ExternalLink, Link2, LogOut, MousePointerClick, Quote, Save, Share2, ShieldCheck, Sparkles, UserRound, Wallet, WalletCards } from 'lucide-react'
+import { ArrowDownRight, ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, ExternalLink, Link2, MousePointerClick, Quote, Save, Share2, ShieldCheck, Sparkles, UserRound, Wallet, WalletCards } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Brand } from '@/components/brand'
-import { ProfileSettings } from '@/components/profile-settings'
+import { SiteFooter, SiteHeader } from '@/components/site-header'
 import { useSession } from '@/contexts/session-context'
 import { loadPublishedReviews, type StudentReview } from '@/lib/community-service'
 import { loadAffiliateDashboard, requestAffiliatePayout, saveAffiliatePayoutDestinations } from '@/lib/affiliate-service'
@@ -17,7 +16,7 @@ type DashboardData = Awaited<ReturnType<typeof loadAffiliateDashboard>>
 type Totals = Record<Currency, { available: number; requested: number; earned: number; paid: number }>
 
 export function AffiliatePage() {
-  const { user, signOut } = useSession()
+  const { user } = useSession()
   const activityRef = useRef<HTMLElement>(null)
   const [data, setData] = useState<DashboardData | null>(null)
   const [reviews, setReviews] = useState<StudentReview[]>([])
@@ -132,25 +131,19 @@ export function AffiliatePage() {
   }
 
   return <main className="affiliate-page min-h-screen w-full max-w-full overflow-x-hidden text-[#eceaf2]">
-    <header className="sticky top-0 z-30 border-b border-white/[.06] bg-[#09090d]/85 backdrop-blur-2xl">
-      <div className="mx-auto flex h-[72px] max-w-[1450px] items-center justify-between gap-4 px-4 sm:px-7 lg:px-10">
-        <div className="flex min-w-0 items-center gap-5"><Brand /><span className="hidden h-7 w-px bg-white/10 sm:block" /><span className="hidden text-xs text-[#898395] sm:block">Central de parcerias</span></div>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Navegação do painel"><a href="#desempenho" className="affiliate-nav-link">Desempenho</a><a href="#recebimentos" className="affiliate-nav-link">Recebimentos</a><a href="#atividade" className="affiliate-nav-link">Atividade</a></nav>
-        <div className="flex items-center gap-2"><ProfileSettings compact /><button type="button" onClick={() => { signOut(); location.assign('/login') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white" aria-label="Sair da conta" title="Sair"><LogOut size={15} /></button></div>
-      </div>
-    </header>
+    <SiteHeader mode="affiliate" />
 
     <div className="affiliate-shell mx-auto max-w-[1320px] px-4 pb-24 sm:px-7 lg:px-10">
       {loading && <p role="status" className="py-24 text-center text-sm text-[#918b9d]">Preparando seu painel…</p>}
       {error && <p role="alert" className="mb-5 mt-7 rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-sm text-[#f2a8b2]">{error}</p>}
       {!loading && data && <>
         <section className="affiliate-hero relative isolate mt-8 overflow-hidden rounded-2xl border border-white/[.09] sm:mt-10" aria-labelledby="affiliate-title">
-          <img className="affiliate-hero-image" src="https://picsum.photos/seed/crypto-partnership/1920/1080" alt="" />
+          <img className="affiliate-hero-image" src="/affiliate/bitcoin-hero.png" alt="" />
           <div className="affiliate-hero-wash" />
           <div className="affiliate-hero-copy relative z-10 grid min-h-[440px] items-center gap-10 px-6 py-10 sm:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(300px,.7fr)] lg:px-14 lg:py-14">
             <div>
               <p className="eyebrow">Uma parceria com transparência</p>
-              <h1 id="affiliate-title" className="affiliate-title mt-5 max-w-6xl font-display">Sua comunidade aprende. <span className="inline-image-word" aria-label="evolui"><img src="https://picsum.photos/seed/crypto-learning/320/180" alt="" /></span> Você cresce junto.</h1>
+              <h1 id="affiliate-title" className="affiliate-title mt-5 max-w-6xl font-display">Sua comunidade aprende. <span className="affiliate-title-accent">Evolui.</span> Você cresce junto.</h1>
               <p className="mt-5 max-w-xl text-sm leading-7 text-[#c0bacb] sm:text-base">Indique uma formação feita para decisões melhores no mercado cripto. Acompanhe cada etapa, do primeiro clique à comissão disponível.</p>
               <div className="mt-8 flex flex-wrap gap-3"><a href="#seu-link" className="button-motion inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#c1acff] px-5 text-sm font-semibold text-[#100c19] hover:bg-[#d1c2ff]">Compartilhar meu link <ArrowDownRight size={16} /></a><a href="#recebimentos" className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-black/20 px-5 text-sm font-medium text-white transition hover:border-white/40 hover:bg-black/35">Ver saldo <Wallet size={15} /></a></div>
             </div>
@@ -164,7 +157,7 @@ export function AffiliatePage() {
           <div className="affiliate-orbit" aria-hidden="true" />
         </section>
 
-        <section id="desempenho" className="affiliate-performance py-20 sm:py-28" aria-labelledby="performance-title">
+        <section id="desempenho" className="affiliate-performance scroll-mt-28 py-20 sm:py-28" aria-labelledby="performance-title">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Seu alcance em números</p><h2 id="performance-title" className="mt-3 font-display text-3xl tracking-[-.05em] text-[#f0edf5] sm:text-4xl">Cada indicação conta.</h2></div><p className="max-w-sm text-xs leading-6 text-[#8f899b]">Dados reais do seu código. Atualizados a partir dos eventos registrados na plataforma.</p></div>
           <div className="affiliate-data-grid grid grid-flow-dense grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12">
             <MetricCard className="lg:col-span-4" icon={<MousePointerClick size={17} />} label="Cliques" value={String(clicks)} note="Visitas únicas atribuídas" accent="violet" />
@@ -201,11 +194,12 @@ export function AffiliatePage() {
         <section className="affiliate-how rounded-2xl border border-white/[.08] bg-[radial-gradient(ellipse_at_90%_0%,rgba(167,139,250,.1),transparent_42%),linear-gradient(125deg,#15131d,#0f1016)] p-6 sm:p-9" aria-labelledby="how-title">
           <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-end"><div><p className="eyebrow">Programa de afiliados</p><h2 id="how-title" className="mt-3 max-w-xl font-display text-3xl tracking-[-.05em] text-[#f0edf5]">Uma parceria simples, do jeito certo.</h2><p className="mt-3 max-w-lg text-xs leading-6 text-[#90899a]">O saldo reflete pedidos pagos e comissões efetivamente lançadas. O checkout ainda está em integração, então novas comissões dependem da confirmação do provedor.</p></div><div className="affiliate-steps flex gap-2">{[['Compartilhe', 'Seu link identifica a origem do cadastro.'], ['Acompanhe', 'Eventos e pedidos aparecem com status real.'], ['Receba', 'Solicite o saque no destino cadastrado.']].map(([title, description], index) => <details key={title} className="affiliate-step min-w-0 flex-1 rounded-xl border border-white/[.07] bg-black/20 p-4" open={index === 0}><summary className="cursor-pointer list-none text-[10px] font-semibold uppercase tracking-[.14em] text-[#bba7f4]">{title}</summary><p className="mt-3 text-[11px] leading-5 text-[#9c96a6]">{description}</p></details>)}</div></div>
           {reviews.length > 0 && <section className="affiliate-testimonial mt-8 border-t border-white/[.07] pt-6" aria-label="Avaliações de alunos"><div className="flex flex-wrap items-center justify-between gap-4"><div className="flex min-w-0 items-start gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#a78bfa]/[.09] text-[#c1acff]"><Quote size={16} /></span><div className="min-w-0"><p className="text-xs font-medium text-[#d9d3e2]">O que os alunos dizem</p><blockquote className="mt-2 max-w-3xl text-sm leading-6 text-[#aaa4b3]">“{reviews[reviewIndex % reviews.length].text}”</blockquote><p className="mt-2 text-[10px] text-[#817b8b]">{reviews[reviewIndex % reviews.length].name} · avaliação publicada</p></div></div><div className="flex shrink-0 gap-2"><button type="button" aria-label="Avaliação anterior" onClick={() => setReviewIndex((index) => (index - 1 + reviews.length) % reviews.length)} className="grid size-9 place-items-center rounded-lg border border-white/[.1] text-[#aaa4b3] hover:text-white"><ArrowLeft size={14} /></button><button type="button" aria-label="Próxima avaliação" onClick={() => setReviewIndex((index) => (index + 1) % reviews.length)} className="grid size-9 place-items-center rounded-lg border border-white/[.1] text-[#aaa4b3] hover:text-white"><ArrowRight size={14} /></button></div></div></section>}
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-white/[.07] pt-5"><p className="flex items-center gap-2 text-[10px] text-[#7e7889]"><ExternalLink size={13} />Seu código pessoal <span className="font-mono text-[#bdb3d0]">/{affiliateCode}</span></p><button type="button" onClick={() => { signOut(); location.assign('/login') }} className="inline-flex items-center gap-2 text-[10px] text-[#8b8495] transition hover:text-white">Encerrar sessão <LogOut size={13} /></button></div>
+          <div className="mt-7 flex flex-wrap items-center justify-between gap-4 border-t border-white/[.07] pt-5"><p className="flex items-center gap-2 text-[10px] text-[#7e7889]"><ExternalLink size={13} />Seu código pessoal <span className="font-mono text-[#bdb3d0]">/{affiliateCode}</span></p><Link to="/landing" className="inline-flex items-center gap-2 text-[10px] text-[#8b8495] transition hover:text-white">Voltar ao site <ArrowUpRight size={13} /></Link></div>
         </section>
       </>}
       {!loading && !data && !error && <div className="grid min-h-52 place-items-center text-sm text-[#918b9d]">Perfil de afiliado não encontrado.</div>}
     </div>
+    <SiteFooter />
   </main>
 }
 
