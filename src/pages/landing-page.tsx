@@ -13,6 +13,7 @@ import { CourseOutline } from '@/components/course-outline'
 import { omegaCopy } from '@/lib/omega-copy'
 import { useLocalization } from '@/contexts/localization-context'
 import { getOfferAmount, getRegionalOffer } from '@/lib/regional-offers'
+import { PageMeta } from '@/components/tools/page-meta'
 import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
@@ -52,6 +53,7 @@ const methodSteps = [
 ]
 
 export function LandingPage() {
+  const entryActive = usePlatformEntryActive()
   const { locale, market } = useLocalization()
   const [currency, setCurrency] = useState<Currency>('SOL')
   const [selectedPlan, setSelectedPlan] = useState<PlanId | null>(null)
@@ -87,12 +89,13 @@ export function LandingPage() {
   }
 
   return <div className="min-h-screen overflow-x-clip bg-[#09090d] pb-10 text-[#e6eee9]">
+    <PageMeta title="Curso de criptoativos e ferramentas gratuitas" description="Aprenda criptoativos com jornadas práticas, aulas narradas e ferramentas gratuitas para estudar risco, Bitcoin, DeFi e mercado." path="/landing" />
     <SiteHeader />
     <main className="w-full max-w-full overflow-x-hidden">
       <section className="relative isolate overflow-hidden border-b border-white/[.04]">
-        <Suspense fallback={null}>
+        {!entryActive && <Suspense fallback={null}>
           <HeroWebGLShader />
-        </Suspense>
+        </Suspense>}
         <div className="hero-grid pointer-events-none absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(9,9,13,.18)_0%,rgba(9,9,13,0)_32%,rgba(9,9,13,0)_62%,rgba(9,9,13,.82)_100%),linear-gradient(90deg,rgba(9,9,13,.62)_0%,rgba(9,9,13,.18)_46%,rgba(9,9,13,0)_72%)]" aria-hidden="true" />
         <div className="page-shell relative z-10 grid min-h-[660px] items-center gap-12 pb-16 pt-14 lg:grid-cols-[1.06fr_.94fr] lg:pb-24 lg:pt-24">

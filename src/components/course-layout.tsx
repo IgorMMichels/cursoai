@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, ChevronRight, Headphones, LayoutDashboard, LayoutGrid, LogOut, Map, PanelLeftClose, PanelLeftOpen, ShieldCheck, WalletCards, SlidersHorizontal } from 'lucide-react'
+import { BookOpen, ChevronRight, Headphones, LayoutDashboard, LayoutGrid, LogOut, Map, PanelLeftClose, PanelLeftOpen, ShieldCheck, WalletCards, SlidersHorizontal, Radio } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Brand } from '@/components/brand'
 import { ProfileSettings } from '@/components/profile-settings'
@@ -8,6 +8,23 @@ import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
 import { allLessons, modules } from '@/lib/course'
 import { LocalizationSelector } from '@/components/localization-selector'
+import { PageMeta } from '@/components/tools/page-meta'
+
+function routeMetadata(pathname: string) {
+  if (pathname.startsWith('/jornadas/')) return { title: pathname.includes('/aula/') ? 'Aula da jornada' : pathname.includes('/modulo/') ? 'Revisão da jornada' : 'Jornada cripto', description: 'Estude uma jornada de criptoativos com aulas, exercícios e progresso pessoal.' }
+  if (pathname === '/jornadas') return { title: 'Jornadas de criptoativos', description: 'Explore jornadas de estudo em criptoativos, acompanhe seu progresso e continue de onde parou.' }
+  if (pathname === '/plataformas') return { title: 'Plataformas e carteiras', description: 'Consulte guias de plataformas, carteiras e redes para estudar criptoativos com segurança.' }
+  if (pathname === '/acesso') return { title: 'Acesso ao curso', description: 'Veja como acessar e configurar as ferramentas necessárias para estudar no curso Omega.' }
+  if (pathname === '/curso/seguranca') return { title: 'Central de segurança', description: 'Revise práticas de segurança para proteger contas, carteiras e operações com criptoativos.' }
+  if (pathname === '/curso/audios-extras') return { title: 'Áudios extras', description: 'Ouça narrações complementares para revisar conceitos do curso de criptoativos.' }
+  if (pathname === '/curso/certificado') return { title: 'Certificado do curso', description: 'Consulte seu certificado de conclusão do curso Omega.' }
+  if (pathname.includes('/curso/aula/')) return { title: 'Aula do curso', description: 'Acompanhe a aula, narração e exercício do curso Omega.' }
+  if (pathname.includes('/modulo/')) return { title: 'Revisão do módulo', description: 'Pratique os conceitos do módulo com uma revisão interativa.' }
+  if (pathname.startsWith('/curso/ferramentas')) return { title: 'Ferramentas do curso', description: 'Use simuladores educativos de criptoativos dentro da área do aluno.' }
+  if (pathname === '/curso/simulador') return { title: 'Simulador de trade', description: 'Pratique paper trading com carteira fictícia e dados de mercado.' }
+  if (pathname === '/curso/radar') return { title: 'Radar de mercado', description: 'Acompanhe fontes e indicadores de mercado para estudar o contexto cripto.' }
+  return { title: 'Área do aluno', description: 'Acompanhe suas aulas, jornadas e progresso de estudo na Omega.' }
+}
 
 export function CourseLayout() {
   const { user, completedLessons, signOut } = useSession()
@@ -21,16 +38,23 @@ export function CourseLayout() {
   const isPreview = !hasActivePlan(user)
   const inJourneys = location.pathname.startsWith('/jornadas')
   const inPlatforms = location.pathname.startsWith('/plataformas')
-  const inTools = location.pathname.startsWith('/curso/ferramentas') || location.pathname.startsWith('/curso/simulador')
+  const inTools = location.pathname.startsWith('/curso/ferramentas') || location.pathname.startsWith('/curso/simulador') || location.pathname.startsWith('/curso/radar')
   const inExtraAudio = location.pathname.startsWith('/curso/audios-extras')
+  const metadata = routeMetadata(location.pathname)
   const legacyCompleted = allLessons.filter((lesson) => completedLessons.includes(lesson.id)).length
   const progress = Math.round((legacyCompleted / allLessons.length) * 100)
+  const isCurrentLink = (label: string, isActive: boolean) => {
+    if (label === 'Minha trilha') return location.pathname === '/curso' && location.hash === '#modulos'
+    if (label === 'Visão geral' && location.pathname === '/curso' && location.hash === '#modulos') return false
+    return isActive
+  }
   const links = [
     { to: '/curso', label: 'Visão geral', icon: LayoutDashboard, end: true },
     { to: '/jornadas', label: 'Jornadas', icon: Map },
-    { to: '/curso#modulos', label: 'Minha trilha', icon: BookOpen },
+    { to: '/curso#modulos', label: 'Minha trilha', icon: BookOpen, end: true },
     { to: '/plataformas', label: 'Plataformas', icon: LayoutGrid },
     { to: '/curso/ferramentas', label: 'Ferramentas', icon: SlidersHorizontal },
+    { to: '/curso/radar', label: 'Radar de mercado', icon: Radio },
     { to: '/curso/audios-extras', label: 'Áudios extras', icon: Headphones },
     { to: '/curso/simulador', label: 'Simulador de trade', icon: SlidersHorizontal },
     { to: '/acesso', label: 'Como pagar', icon: WalletCards },
@@ -38,6 +62,7 @@ export function CourseLayout() {
   ]
 
   return <div className={`min-h-screen bg-[#09090d] lg:grid lg:h-[calc(100dvh-40px)] lg:min-h-0 lg:overflow-hidden ${pinned ? 'lg:grid-cols-[252px_minmax(0,1fr)]' : 'lg:grid-cols-[76px_minmax(0,1fr)]'}`}>
+    <PageMeta {...metadata} path={location.pathname} privatePage />
     <aside
       onMouseEnter={() => { if (!pinned) setHovered(true) }}
       onMouseLeave={() => setHovered(false)}
@@ -61,7 +86,7 @@ export function CourseLayout() {
           ? <p className="px-3 pb-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#687b70]">Aprender</p>
           : <div aria-hidden="true" className="mx-auto mb-3 h-px w-8 bg-white/10" />}
         <nav className="space-y-1" aria-label="Área do aluno">
-          {links.map(({ to, label, icon: Icon, end }) => <NavLink key={label} to={to} end={end} title={!expanded ? label : undefined} aria-label={label} className={({ isActive }) => `group flex items-center gap-3 rounded-xl py-3 text-[13px] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] ${expanded ? 'px-3' : 'justify-center px-0'} ${isActive ? 'bg-[#a78bfa]/[.12] text-white ring-1 ring-[#a78bfa]/25' : 'text-[#8ea197] hover:bg-white/[.05] hover:text-white'}`}><Icon size={17} strokeWidth={1.7} />{expanded && <span className="truncate">{label}</span>}</NavLink>)}
+          {links.map(({ to, label, icon: Icon, end }) => <NavLink key={label} to={to} end={end} title={!expanded ? label : undefined} aria-label={label} className={({ isActive }) => `group flex items-center gap-3 rounded-xl py-3 text-[13px] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] ${expanded ? 'px-3' : 'justify-center px-0'} ${isCurrentLink(label, isActive) ? 'bg-[#a78bfa]/[.12] text-white ring-1 ring-[#a78bfa]/25' : 'text-[#8ea197] hover:bg-white/[.05] hover:text-white'}`}><Icon size={17} strokeWidth={1.7} />{expanded && <span className="truncate">{label}</span>}</NavLink>)}
         </nav>
       </div>
       <div className={`mt-auto ${expanded ? 'p-4' : 'p-2'}`}>

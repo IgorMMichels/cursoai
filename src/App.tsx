@@ -1,13 +1,13 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
-import { SessionProvider } from '@/contexts/session-context'
+import { SessionProvider, useSession } from '@/contexts/session-context'
 import { RequireAffiliate, RequireAuth, RequireCourseAccess, RequireRole } from '@/components/guards'
 import { ReferralTracker, PlatformEntryAnimation } from '@/components/app-utilities'
 import { PlatformEntryContext, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
 import { PriceTicker } from '@/components/price-ticker'
 import { LocalizationProvider, useLocalization } from '@/contexts/localization-context'
-import { localeFromPath, localizedPath } from '@/lib/localization'
+import { localeFromPath, localizedPath, normalizePathname, unlocalizedPath } from '@/lib/localization'
 
 const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => ({ default: module.LandingPage })))
 const LoginPage = lazy(() => import('@/pages/login-page').then((module) => ({ default: module.LoginPage })))
@@ -30,6 +30,13 @@ const PreviewPage = lazy(() => import('@/pages/preview-page').then((module) => (
 const ToolsPage = lazy(() => import('@/pages/tools-page').then((module) => ({ default: module.ToolsPage })))
 const SimulatorPage = lazy(() => import('@/pages/simulator-page').then((module) => ({ default: module.SimulatorPage })))
 const ToolArticlesPage = lazy(() => import('@/pages/tool-articles-page').then((module) => ({ default: module.ToolArticlesPage })))
+const MarketPulsePage = lazy(() => import('@/pages/market-pulse-page').then((module) => ({ default: module.MarketPulsePage })))
+const LoadingPreviewPage = lazy(() => import('@/pages/loading-preview-page'))
+
+function RouteContentReady({ pathname, ready, onReady, children }: { pathname: string; ready: boolean; onReady: (pathname: string) => void; children: ReactNode }) {
+  useEffect(() => { if (ready) onReady(pathname) }, [onReady, pathname, ready])
+  return children
+}
 
 function AffiliateReferralRedirect() {
   const { affiliateId = '' } = useParams()
@@ -38,29 +45,33 @@ function AffiliateReferralRedirect() {
 
 function AppRoutes() {
   const location = useLocation()
-  const navigate = useNavigate()
   const { locale } = useLocalization()
+  const { loading: sessionLoading } = useSession()
   const [entryVisible, setEntryVisible] = useState(false)
-  const explicitLocale = localeFromPath(location.pathname)
-  const routePath = explicitLocale ? `/${location.pathname.slice(explicitLocale.length + 1)}` : location.pathname
+  const [readyPath, setReadyPath] = useState<string | null>(null)
+  const normalizedPathname = normalizePathname(location.pathname)
+  const explicitLocale = localeFromPath(normalizedPathname)
+  const routePath = unlocalizedPath(normalizedPathname)
   const routeLocation = { ...location, pathname: routePath }
-  useEffect(() => {
-    if (!explicitLocale) navigate(`${localizedPath(location.pathname, locale)}${location.search}${location.hash}`, { replace: true })
-  }, [explicitLocale, location.hash, location.pathname, location.search, locale, navigate])
+  const canonicalPath = explicitLocale ? normalizedPathname : localizedPath(normalizedPathname, locale)
+  // Normalize first: page-level redirects must not race the locale redirect.
+  if (location.pathname !== canonicalPath) return <Navigate to={`${canonicalPath}${location.search}${location.hash}`} replace state={location.state} />
   const entryActive = shouldShowPlatformEntry(routePath) || entryVisible
   return <PlatformEntryContext.Provider value={entryActive}>
     <ReferralTracker />
-    <PlatformEntryAnimation key={routePath} onVisibilityChange={setEntryVisible} />
-    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><div key={location.pathname} className="route-enter"><Routes location={routeLocation}>
-      <Route path="/" element={<Navigate to="/landing" replace />} />
-      <Route path="/quiz" element={<Navigate to="/landing" replace />} />
+    <PlatformEntryAnimation key={routePath} onVisibilityChange={setEntryVisible} contentReady={readyPath === routePath} />
+    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><RouteContentReady pathname={routePath} ready={!routePath.startsWith('/curso') || !sessionLoading} onReady={setReadyPath}><div key={routePath} className="route-enter" inert={entryActive || undefined} aria-hidden={entryActive || undefined}><Routes location={routeLocation}>
+      <Route path="/" element={<Navigate to={`${localizedPath('/landing', locale)}${location.search}${location.hash}`} replace />} />
+      <Route path="/quiz" element={<Navigate to={`${localizedPath('/landing', locale)}${location.search}${location.hash}`} replace />} />
       <Route path="/landing" element={<LandingPage />} />
+      {import.meta.env.DEV && <Route path="/loading-preview" element={<LoadingPreviewPage />} />}
       <Route path="/planos" element={<PlansPage />} />
       <Route path="/explorar" element={<PreviewPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/ferramentas" element={<ToolsPage />} />
       <Route path="/ferramentas/:slug" element={<ToolsPage />} />
       <Route path="/simulador" element={<SimulatorPage />} />
+      <Route path="/radar" element={<MarketPulsePage />} />
       <Route path="/artigos" element={<ToolArticlesPage />} />
       <Route path="/artigos/:articleSlug" element={<ToolArticlesPage />} />
       <Route path="/:affiliateId" element={<AffiliateReferralRedirect />} />
@@ -83,6 +94,7 @@ function AppRoutes() {
           <Route path="ferramentas" element={<ToolsPage insideCourse />} />
           <Route path="ferramentas/:slug" element={<ToolsPage insideCourse />} />
           <Route path="simulador" element={<SimulatorPage insideCourse />} />
+          <Route path="radar" element={<MarketPulsePage insideCourse />} />
           <Route element={<RequireCourseAccess />}>
             <Route index element={<CourseDashboard />} />
             <Route path="audios-extras" element={<ExtraAudioPage />} />
@@ -95,12 +107,11 @@ function AppRoutes() {
       <Route element={<RequireRole role="admin" />}><Route path="/admin" element={<AdminPage />} /></Route>
       <Route element={<RequireAffiliate />}><Route path="/afiliado" element={<AffiliatePage />} /></Route>
       <Route path="*" element={<NotFoundPage />} />
-    </Routes></div></Suspense>
-    {(routePath === '/landing' || routePath === '/planos' || routePath === '/explorar' || routePath === '/acesso' || routePath === '/plataformas' || routePath.startsWith('/curso') || routePath.startsWith('/jornadas') || routePath.startsWith('/ferramentas') || routePath.startsWith('/artigos')) && <PriceTicker />}
+    </Routes></div></RouteContentReady></Suspense>
+    {!entryActive && (routePath === '/landing' || routePath === '/planos' || routePath === '/explorar' || routePath === '/acesso' || routePath === '/plataformas' || routePath.startsWith('/curso') || routePath.startsWith('/jornadas') || routePath.startsWith('/ferramentas') || routePath.startsWith('/artigos')) && <PriceTicker />}
   </PlatformEntryContext.Provider>
 }
 
 export default function App() {
   return <MotionConfig reducedMotion="user"><BrowserRouter><LocalizationProvider><SessionProvider><AppRoutes /></SessionProvider></LocalizationProvider></BrowserRouter></MotionConfig>
 }
-

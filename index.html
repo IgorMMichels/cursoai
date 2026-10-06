@@ -7,11 +7,42 @@
     <meta name="description" content="Omega: aprenda sobre criptoativos, Bitcoin, Ethereum, carteiras, DeFi e futuros com aulas narradas e exercícios interativos." />
     <title>Omega — cripto, memecoins, futuros e trading</title>
     <link rel="icon" type="image/svg+xml" href="/brand/omega/favicon.svg" />
+    <script>
+      (() => {
+        const home = location.pathname === '/' || /^\/(?:pt-BR|en|es|fr)\/landing\/?$/.test(location.pathname)
+        if (!home) return
+        let seen = false
+        try {
+          seen = sessionStorage.getItem('cripto-mentoria:welcome-seen:landing') === '1'
+        } catch { /* Intro remains available when storage is blocked. */ }
+        if (seen) return
+        document.documentElement.classList.add('omega-home-intro')
+        const preload = (as, href, type) => {
+          const link = document.createElement('link')
+          link.rel = 'preload'; link.as = as; link.href = href
+          if (type) link.type = type
+          if (as === 'fetch') link.crossOrigin = 'anonymous'
+          if (as === 'image') link.setAttribute('fetchpriority', 'high')
+          document.head.append(link)
+        }
+        preload('image', '/brand/omega/symbol-accent.svg', 'image/svg+xml')
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) preload('fetch', '/brand/omega/loading-ascii.glb', 'model/gltf-binary')
+      })()
+    </script>
+    <style>
+      html, body { min-height: 100%; background: #09080e; }
+      .omega-boot-screen { display: none; position: fixed; z-index: 999; inset: 0; place-items: center; background: #09080e; }
+      .omega-boot-screen img { width: min(28vw, 180px); height: min(28vw, 180px); animation: omega-boot-turn 5s linear infinite; }
+      html.omega-home-intro .omega-boot-screen { display: grid; }
+      @keyframes omega-boot-turn { to { transform: rotateY(360deg) rotateZ(-6deg); } }
+      @media (prefers-reduced-motion: reduce) { .omega-boot-screen img { animation: none; } }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <div id="omega-boot-screen" class="omega-boot-screen" aria-hidden="true"><img src="/brand/omega/symbol-accent.svg" alt="" /></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

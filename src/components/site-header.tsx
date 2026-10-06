@@ -5,7 +5,7 @@ import { Brand } from '@/components/brand'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
-import { LocalizationSelector } from '@/components/localization-selector'
+import { ProfileSettings } from '@/components/profile-settings'
 
 function scrollToSection(id: string) {
   const target = document.getElementById(id)
@@ -257,13 +257,14 @@ function ProfileDropdown({ layout = 'desktop', onNavigate }: { layout?: 'desktop
   )
 }
 
-export function SiteHeader() {
+export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const { user, loading } = useSession()
+  const { user, loading, signOut } = useSession()
   const isLogged = !loading && !!user
   const activePlan = isLogged && hasActivePlan(user)
+  const affiliateMode = mode === 'affiliate'
   const landing = location.pathname === '/landing'
   const links = landing ? [{ label: 'O método', href: '#metodo' }, { label: 'A jornada', href: '#jornada' }, { label: 'Avaliações', href: '#avaliacoes' }, { label: 'Planos', href: '#planos' }, { label: 'Afiliados', href: '/afiliar' }] : [{ label: 'O método', href: '/landing#metodo' }, { label: 'A jornada', href: '/landing#jornada' }, { label: 'Avaliações', href: '/landing#avaliacoes' }, { label: 'Planos', href: '/landing#planos' }, { label: 'Afiliados', href: '/afiliar' }]
   const handleAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -290,19 +291,41 @@ export function SiteHeader() {
       navigate({ pathname: '/landing', hash: `#${id}` })
     }
   }
+  const affiliateLinks = [
+    { label: 'Desempenho', href: '#desempenho' },
+    { label: 'Recebimentos', href: '#recebimentos' },
+    { label: 'Atividade', href: '#atividade' },
+  ]
   return (
     <header className="site-header sticky top-0 z-40 px-3 pt-3">
-      <div className="page-shell header-dock flex h-16 items-center justify-between gap-3 px-3 sm:gap-5 sm:px-5 xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-        <Brand className="min-w-0 justify-self-start whitespace-nowrap" />
-        <nav className="dock-navigation hidden items-center gap-1 xl:flex" aria-label="Navegação principal">
-          <Link to="/simulador" aria-current={location.pathname === '/simulador' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">Simulador</Link>
-          <Link to="/ferramentas" aria-current={location.pathname.startsWith('/ferramentas') ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">Ferramentas</Link>
-          {links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3.5 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{item.label}</a>)}
-          <StudentAreaDropdown />
+      <div className={`page-shell header-dock flex h-16 items-center justify-between gap-3 px-3 sm:gap-5 sm:px-5 2xl:grid 2xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`}>
+        <div className="flex min-w-0 items-center gap-3 justify-self-start"><Brand className="min-w-0 whitespace-nowrap" />{affiliateMode && <span className="hidden border-l border-white/10 pl-3 text-[11px] text-[#898395] sm:block">Central de parcerias</span>}</div>
+        <nav className="dock-navigation hidden items-center gap-1 2xl:flex" aria-label={affiliateMode ? 'Navegação de afiliado' : 'Navegação principal'}>
+          {affiliateMode ? <>
+            {affiliateLinks.map((item) => <a key={item.href} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} aria-current={location.hash === item.href ? 'location' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{item.label}</a>)}
+            <Link to="/landing" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] transition-all hover:text-white">Voltar ao site</Link>
+          </> : <>
+            <Link to="/simulador" aria-current={location.pathname === '/simulador' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">Simulador</Link>
+            <Link to="/ferramentas" aria-current={location.pathname.startsWith('/ferramentas') ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">Ferramentas</Link>
+            <Link to="/radar" aria-current={location.pathname === '/radar' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">Radar</Link>
+            {links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{item.label}</a>)}
+            {!landing && <StudentAreaDropdown />}
+          </>}
         </nav>
-        <div className="hidden items-center justify-self-end gap-3 sm:flex">
-          <LocalizationSelector />
-          {isLogged ? (
+        <nav className="dock-navigation hidden min-w-0 items-center gap-1 xl:flex 2xl:hidden" aria-label={affiliateMode ? 'Navegação de afiliado' : 'Navegação resumida'}>
+          {affiliateMode ? <>
+            {affiliateLinks.map((item) => <a key={item.href} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] transition-colors hover:text-white">{item.label}</a>)}
+          </> : <>
+            <Link to="/simulador" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">Simulador</Link>
+            <Link to="/ferramentas" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">Ferramentas</Link>
+            <Link to={landing ? '#jornada' : '/landing#jornada'} onClick={(event) => handleAnchorClick(event, landing ? '#jornada' : '/landing#jornada')} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] hover:text-white">A jornada</Link>
+            <Link to={landing ? '#planos' : '/landing#planos'} onClick={(event) => handleAnchorClick(event, landing ? '#planos' : '/landing#planos')} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] hover:text-white">Planos</Link>
+          </>}
+        </nav>
+        <div className="hidden items-center justify-self-end gap-3 2xl:flex">
+          {affiliateMode ? <><ProfileSettings compact /><button type="button" onClick={() => { signOut(); navigate('/landing') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]" aria-label="Sair da conta" title="Sair"><LogOut size={15} /></button></> : landing ? (
+            <><Link to="/login" className="dock-login inline-flex h-10 items-center justify-center px-3 text-xs text-[#b1abbc] hover:text-white">Entrar</Link><Link to="/explorar" className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">Conhecer o curso<ArrowUpRight size={15} /></Link></>
+          ) : isLogged ? (
             <>
               {activePlan ? (
                 <Link to="/curso" className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">Continuar<ArrowUpRight size={15} /></Link>
@@ -318,14 +341,20 @@ export function SiteHeader() {
             </>
           )}
         </div>
-        <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white xl:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} aria-expanded={open} aria-controls="site-mobile-navigation" onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
+        <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white 2xl:hidden" aria-label={open ? 'Fechar menu' : 'Abrir menu'} aria-expanded={open} aria-controls="site-mobile-navigation" onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
-      {open && <nav id="site-mobile-navigation" className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] max-h-[calc(100dvh-130px)] overflow-y-auto rounded-2xl p-2 shadow-2xl xl:hidden" aria-label="Navegação móvel">
+      {open && <nav id="site-mobile-navigation" className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] max-h-[calc(100dvh-130px)] overflow-y-auto rounded-2xl p-2 shadow-2xl 2xl:hidden" aria-label={affiliateMode ? 'Navegação de afiliado' : 'Navegação móvel'}>
+        {affiliateMode ? <>
+          {affiliateLinks.map((item) => <a key={item.href} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{item.label}</a>)}
+          <Link to="/landing" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#b1abbc] hover:bg-white/[.06]">Voltar ao site</Link>
+          <div className="mt-2 border-t border-white/[.07] pt-2"><ProfileSettings compact /><button type="button" onClick={() => { setOpen(false); signOut(); navigate('/landing') }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#b1abbc] hover:bg-white/[.06] hover:text-white"><LogOut size={15} />Sair da conta</button></div>
+        </> : <>
         <Link to="/simulador" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Simulador de trade</Link>
         <Link to="/ferramentas" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Ferramentas gratuitas</Link>
+        <Link to="/radar" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Radar de mercado</Link>
         <Link to="/artigos" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">Artigos e conceitos</Link>
         <div className="mx-auto flex max-w-xl flex-col gap-1">{links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{item.label}</a>)}
-          <p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#8d839f]">Área do aluno</p>
+          {!landing && <><p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#8d839f]">Área do aluno</p>
           {studentAreaLinks.map((item) => <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[#a78bfa]/[.09] hover:text-white"><span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[.04] text-[#a78bfa]"><item.icon size={15} /></span><span><span className="block text-sm text-[#e8e4ee]">{item.label}</span><span className="block text-[11px] text-[#8b8793]">{item.description}</span></span></Link>)}
           {isLogged ? (
             <>
@@ -340,8 +369,8 @@ export function SiteHeader() {
             </>
           ) : (
             <Link to="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">Entrar na plataforma</Link>
-          )}</div>
-        <div className="border-t border-white/[.07] px-3 py-3 sm:hidden"><LocalizationSelector compact /></div>
+          )}</>}{landing && <div className="mt-2 flex gap-2 border-t border-white/[.07] pt-3"><Link to="/login" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[.1] text-sm text-[#c8c2d2]">Entrar</Link><Link to="/explorar" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#a78bfa] text-sm font-semibold text-[#09090d]">Conhecer o curso</Link></div>}</div>
+        </>}
       </nav>}
     </header>
   )
@@ -390,5 +419,4 @@ export function SiteFooter() {
     </div>
   </footer>
 }
-
 
