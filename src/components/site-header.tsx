@@ -5,6 +5,7 @@ import { Brand } from '@/components/brand'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
+import { LocalizationSelector } from '@/components/localization-selector'
 
 function scrollToSection(id: string) {
   const target = document.getElementById(id)
@@ -300,6 +301,7 @@ export function SiteHeader() {
           <StudentAreaDropdown />
         </nav>
         <div className="hidden items-center justify-self-end gap-3 sm:flex">
+          <LocalizationSelector />
           {isLogged ? (
             <>
               {activePlan ? (
@@ -339,6 +341,7 @@ export function SiteHeader() {
           ) : (
             <Link to="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">Entrar na plataforma</Link>
           )}</div>
+        <div className="border-t border-white/[.07] px-3 py-3 sm:hidden"><LocalizationSelector compact /></div>
       </nav>}
     </header>
   )

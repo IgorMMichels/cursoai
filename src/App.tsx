@@ -1,11 +1,13 @@
-import { lazy, Suspense, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { MotionConfig } from 'framer-motion'
 import { SessionProvider } from '@/contexts/session-context'
 import { RequireAffiliate, RequireAuth, RequireCourseAccess, RequireRole } from '@/components/guards'
 import { ReferralTracker, PlatformEntryAnimation } from '@/components/app-utilities'
 import { PlatformEntryContext, shouldShowPlatformEntry } from '@/contexts/platform-entry-context'
 import { PriceTicker } from '@/components/price-ticker'
+import { LocalizationProvider, useLocalization } from '@/contexts/localization-context'
+import { localeFromPath, localizedPath } from '@/lib/localization'
 
 const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => ({ default: module.LandingPage })))
 const LoginPage = lazy(() => import('@/pages/login-page').then((module) => ({ default: module.LoginPage })))
@@ -36,12 +38,20 @@ function AffiliateReferralRedirect() {
 
 function AppRoutes() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const { locale } = useLocalization()
   const [entryVisible, setEntryVisible] = useState(false)
-  const entryActive = shouldShowPlatformEntry(location.pathname) || entryVisible
+  const explicitLocale = localeFromPath(location.pathname)
+  const routePath = explicitLocale ? `/${location.pathname.slice(explicitLocale.length + 1)}` : location.pathname
+  const routeLocation = { ...location, pathname: routePath }
+  useEffect(() => {
+    if (!explicitLocale) navigate(`${localizedPath(location.pathname, locale)}${location.search}${location.hash}`, { replace: true })
+  }, [explicitLocale, location.hash, location.pathname, location.search, locale, navigate])
+  const entryActive = shouldShowPlatformEntry(routePath) || entryVisible
   return <PlatformEntryContext.Provider value={entryActive}>
     <ReferralTracker />
-    <PlatformEntryAnimation onVisibilityChange={setEntryVisible} />
-    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><div key={location.pathname} className="route-enter"><Routes location={location}>
+    <PlatformEntryAnimation key={routePath} onVisibilityChange={setEntryVisible} />
+    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><div key={location.pathname} className="route-enter"><Routes location={routeLocation}>
       <Route path="/" element={<Navigate to="/landing" replace />} />
       <Route path="/quiz" element={<Navigate to="/landing" replace />} />
       <Route path="/landing" element={<LandingPage />} />
@@ -86,11 +96,11 @@ function AppRoutes() {
       <Route element={<RequireAffiliate />}><Route path="/afiliado" element={<AffiliatePage />} /></Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes></div></Suspense>
-    {(location.pathname === '/landing' || location.pathname === '/planos' || location.pathname === '/explorar' || location.pathname === '/acesso' || location.pathname === '/plataformas' || location.pathname.startsWith('/curso') || location.pathname.startsWith('/jornadas') || location.pathname.startsWith('/ferramentas') || location.pathname.startsWith('/artigos')) && <PriceTicker />}
+    {(routePath === '/landing' || routePath === '/planos' || routePath === '/explorar' || routePath === '/acesso' || routePath === '/plataformas' || routePath.startsWith('/curso') || routePath.startsWith('/jornadas') || routePath.startsWith('/ferramentas') || routePath.startsWith('/artigos')) && <PriceTicker />}
   </PlatformEntryContext.Provider>
 }
 
 export default function App() {
-  return <MotionConfig reducedMotion="user"><BrowserRouter><SessionProvider><AppRoutes /></SessionProvider></BrowserRouter></MotionConfig>
+  return <MotionConfig reducedMotion="user"><BrowserRouter><LocalizationProvider><SessionProvider><AppRoutes /></SessionProvider></LocalizationProvider></BrowserRouter></MotionConfig>
 }
 

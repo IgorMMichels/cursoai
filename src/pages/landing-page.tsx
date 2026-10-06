@@ -11,6 +11,8 @@ import { plans, type Currency, type PlanId } from '@/lib/offers'
 import { WalletGuideSection } from '@/components/wallet-guides'
 import { CourseOutline } from '@/components/course-outline'
 import { omegaCopy } from '@/lib/omega-copy'
+import { useLocalization } from '@/contexts/localization-context'
+import { getOfferAmount, getRegionalOffer } from '@/lib/regional-offers'
 import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
@@ -50,6 +52,7 @@ const methodSteps = [
 ]
 
 export function LandingPage() {
+  const { locale, market } = useLocalization()
   const [currency, setCurrency] = useState<Currency>('SOL')
   const [selectedPlan, setSelectedPlan] = useState<PlanId | null>(null)
   const location = useLocation()
@@ -256,18 +259,20 @@ export function LandingPage() {
       <section id="planos" className="pricing-section scroll-mt-24 border-y border-white/[.06] bg-[#0f1017] py-20 sm:py-24">
         <AmbientShader className="pricing-shader" />
         <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">escolha seu tempo de estudo</p><h2 className="display-lg mt-4 text-[#eaf2ec]">Um curso completo. Três formas de acessar.</h2><p className="body-lg mt-4 text-[15px]">Escolha o período de acesso que combina com seu ritmo de estudo.</p></div>
-          <div className="mt-8 flex justify-center"><div className="inline-flex rounded-xl border border-white/[.08] bg-[#14151d] p-1" role="group" aria-label="Moeda de pagamento">{(['BRL', 'SOL'] as const).map((item) => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)} className={`focus-ring rounded-xl px-5 py-2 text-xs font-semibold transition-colors ${currency === item ? 'bg-[#b49cff] text-[#100c19] hover:bg-[#c6b4ff]' : 'text-[#b1abbc] hover:bg-white/[.05] hover:text-white'}`}>{item === 'BRL' ? 'Reais · BRL' : 'Solana · SOL'}</button>)}</div></div>
+          {market === 'BR' && <div className="mt-8 flex justify-center"><div className="inline-flex rounded-xl border border-white/[.08] bg-[#14151d] p-1" role="group" aria-label="Moeda de pagamento">{(['BRL', 'SOL'] as const).map((item) => <button type="button" key={item} aria-pressed={currency === item} onClick={() => setCurrency(item)} className={`focus-ring rounded-xl px-5 py-2 text-xs font-semibold transition-colors ${currency === item ? 'bg-[#b49cff] text-[#100c19] hover:bg-[#c6b4ff]' : 'text-[#b1abbc] hover:bg-white/[.05] hover:text-white'}`}>{item === 'BRL' ? 'Reais · BRL' : 'Solana · SOL'}</button>)}</div></div>}
           <div className="pricing-bento mx-auto mt-8">
             {(['month', 'quarter', 'lifetime'] as const).map((id) => {
               const plan = plans[id]
+              const regionalOffer = getRegionalOffer(market, id)
+              const price = market === 'BR' ? (currency === 'SOL' ? plan.prices.SOL : plan.prices.BRL) : regionalOffer ? new Intl.NumberFormat(locale, { style: 'currency', currency: regionalOffer.currency, maximumFractionDigits: 0 }).format(getOfferAmount(regionalOffer)) : null
               return <div key={id} className={`interactive-card pricing-card relative flex flex-col rounded-xl border p-6 ${plan.featured ? 'border-[#a78bfa]/35 bg-[linear-gradient(155deg,rgba(167,139,250,.105),rgba(20,17,30,.96)_48%)] shadow-[0_22px_70px_rgba(0,0,0,.22)] ' : 'border-white/[.08] bg-[#14151d]'}`}>
                 {plan.featured && <span className="mb-3 inline-flex w-fit rounded-xl bg-[#a78bfa] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.12em] text-[#09090d]">melhor valor</span>}
                 <div className="flex items-start justify-between gap-2"><div><p className="font-display text-xl font-medium tracking-[-.04em] text-[#e8f0ea]">{plan.name}</p><p className="mt-1 text-xs text-[#82958a]">{plan.term}</p></div></div>
-                <div className="mt-6"><p className="font-display text-[34px] font-medium tracking-[-.065em] text-[#f0f5f1]">{plan.prices[currency]}<span className="ml-2 font-sans text-xs font-normal tracking-normal text-[#778b80]">{currency === 'BRL' ? 'à vista' : 'pagamento em SOL'}</span></p><p className="mt-1 text-[11px] font-medium text-[#bca9e8]">ou {currency === 'SOL' ? plan.prices.BRL : plan.prices.SOL}</p></div>
+                <div className="mt-6">{price ? <><p className="font-display text-[34px] font-medium tracking-[-.065em] text-[#f0f5f1]">{price}<span className="ml-2 font-sans text-xs font-normal tracking-normal text-[#778b80]">{market === 'BR' ? (currency === 'BRL' ? 'à vista' : 'pagamento em SOL') : 'one-time · draft'}</span></p>{market === 'BR' && <p className="mt-1 text-[11px] font-medium text-[#bca9e8]">ou {currency === 'SOL' ? plan.prices.BRL : plan.prices.SOL}</p>}</> : <p className="font-display text-sm text-[#9b96a5]">Preço ainda não definido para esta região.</p>}</div>
                 <p className="mt-2 min-h-10 text-xs leading-relaxed text-[#93a69b]">{plan.description}</p>
                 <div className="my-5 h-px bg-white/[.08]" />
                 <ul className="space-y-3 text-xs text-[#b6c5bc]">{plan.features.map((feature) => <li key={feature} className="flex gap-2.5"><Check size={14} className="mt-0.5 shrink-0 text-[#a78bfa]" />{feature}</li>)}</ul>
-                <button type="button" onClick={() => choosePlan(id)} className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold transition-colors ${plan.featured ? 'bg-[#a78bfa] text-[#09090d] hover:bg-[#c1acff]' : 'border border-white/[.12] text-[#d9e3dc] hover:bg-white/[.04]'}`}>Assinar {plan.name.toLowerCase()}<ArrowUpRight size={14} /></button>
+                {price && <button type="button" onClick={() => choosePlan(id)} className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold transition-colors ${plan.featured ? 'bg-[#a78bfa] text-[#09090d] hover:bg-[#c1acff]' : 'border border-white/[.12] text-[#d9e3dc] hover:bg-white/[.04]'}`}>{market === 'US' ? 'Ver preço proposto' : `Assinar ${plan.name.toLowerCase()}`}<ArrowUpRight size={14} /></button>}
                 {selectedPlan === id && <p role="alert" className="mt-3 rounded-xl border border-[#a78bfa]/25 bg-[#a78bfa]/[.07] px-3 py-2 text-center text-xs text-[#d2c4ff]">Checkout indisponível no momento. Nenhum pagamento foi iniciado.</p>}
               </div>
             })}

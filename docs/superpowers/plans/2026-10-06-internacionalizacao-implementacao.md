@@ -1,7 +1,7 @@
 # Internacionalização completa da Omega — plano de implementação
 
 Data: 6 de outubro de 2026.
-Status: plano executável, ainda não implementado.
+Status: em andamento — fundação de idioma/região e preços regionais iniciadas; website ainda não está totalmente traduzido.
 Escopo e decisões comerciais: [Brainstorm](2026-10-06-internacionalizacao-brainstorm.md).
 
 ## Resultado esperado
@@ -173,6 +173,17 @@ SEO: `html[lang]`, títulos, description, Open Graph e canonical por variante; `
 Atualizar `prerender-learning.mjs` para gerar artigos/ferramentas traduzidos e navegação localizada. O HTML inicial e a aplicação React precisam apresentar a mesma versão textual. Páginas sem tradução editorial não entram como variantes completas em sitemap/hreflang. Testar rewrites e refresh de URLs profundas no host; assets continuam em seus caminhos reais.
 
 ## 9. Fases com critérios de saída
+
+### Entrega inicial registrada em 6 de outubro de 2026
+
+- Instalados `i18next` e `react-i18next`; códigos base suportados: `pt-BR`, `en`, `es`, `fr`.
+- URLs com prefixo de idioma são reconhecidas; rotas legadas sem prefixo recebem prefixo preservando query/hash. IDs e slugs existentes não mudam.
+- Preferência local versionada separa idioma e mercado; escolha manual de mercado sugere o idioma correspondente, mas usuário pode sobrescrevê-lo.
+- Seletor disponível no site, tela de planos, login e cabeçalho da área do aluno.
+- Preços brasileiros atuais permanecem; US$ 97/30 dias está registrado somente como oferta `draft`, sem ação de compra; mercados sem oferta aprovada mostram indisponibilidade.
+- Página de planos recebeu textos traduzidos nos quatro idiomas. Isso **não** significa tradução do curso ou do website completo.
+
+Ainda pendente antes de declarar conclusão da fase 1/2: catálogos reais por namespace, todas as rotas e links revisados, comportamento SSR/prerender e SEO, traduções completas de marketing/autenticação, sincronização com perfil, detecção confiável de país via servidor e smoke tests visuais. A fundação não traduz textos arbitrários automaticamente.
 
 | Fase | Trabalho | Critério de saída |
 | --- | --- | --- |

@@ -5,6 +5,7 @@ import { OmegaLoginScene } from '@/components/omega-login-scene'
 import { omegaCopy } from '@/lib/omega-copy'
 import { PageMeta } from '@/components/tools/page-meta'
 import { Brand } from '@/components/brand'
+import { LocalizationSelector } from '@/components/localization-selector'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { isAffiliateHandleAvailable, isValidAffiliateHandle } from '@/lib/affiliate-service'
 import { plans, type Currency, type PlanId } from '@/lib/offers'
@@ -272,6 +273,7 @@ export function LoginPage() {
         <div className="relative m-auto w-full max-w-[420px] py-5 sm:py-8">
           <div className="mb-12 flex items-center justify-between gap-4">
             <Brand />
+            <LocalizationSelector compact />
             <Link to="/landing" className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-[#a1aaa2] transition hover:text-white">
               <ArrowLeft size={13} /> Voltar ao curso
             </Link>
