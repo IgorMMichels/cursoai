@@ -5,7 +5,6 @@ import { LocalizedLink as Link } from '@/components/localized-router'
 import { ArrowRight, BookOpen, Headphones, LayoutDashboard, LayoutGrid, Map, Radio, ShieldCheck, SlidersHorizontal, WalletCards } from 'lucide-react'
 import { Brand } from '@/components/brand'
 import { CoursePreview } from '@/components/course-preview'
-import { LocalizationSelector } from '@/components/localization-selector'
 import { PageMeta } from '@/components/tools/page-meta'
 
 const previewNav = [
@@ -37,7 +36,7 @@ export function PreviewPage() {
     <div className="min-w-0">
       <header className="preview-header">
         <div className="lg:hidden"><Brand compact /></div><span className="hidden text-xs text-[#aaa7b5] lg:block">{translateUi("Prévia pública / ")}{translateUi(current.label)}</span>
-        <div className="ml-auto flex items-center gap-2 sm:gap-4"><LocalizationSelector compact showRegion={false} /><Link to="/login" className="text-xs text-[#c2bdcc]">{translateUi("Entrar")}</Link><Link className="preview-button" to="/planos">{translateUi("Ver planos")}</Link></div>
+        <div className="ml-auto flex items-center gap-2 sm:gap-4"><Link to="/login" className="text-xs text-[#c2bdcc]">{translateUi("Entrar")}</Link><Link className="preview-button" to="/planos">{translateUi("Ver planos")}</Link></div>
       </header>
       <nav className="preview-mobile-nav" aria-label={translateUi("Navegação da prévia")}>{previewNav.map(({ id, label }) => <Link key={id} to={`/explorar?area=${id}`} aria-current={area === id ? 'page' : undefined}>{translateUi(label)}</Link>)}</nav>
       <main className="mx-auto max-w-[1450px] px-4 py-7 sm:px-7 lg:px-10"><CoursePreview area={area} journeyId={area === 'jornadas' ? params.get('jornada') ?? undefined : undefined} /></main>
