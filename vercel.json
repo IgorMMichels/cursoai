@@ -5,6 +5,11 @@
   "crons": [
     { "path": "/api/email/cron", "schedule": "0 12 * * *" }
   ],
+  "functions": {
+    "api/email/**/*.ts": {
+      "includeFiles": "server/email/**/*.ts"
+    }
+  },
   "rewrites": [
     { "source": "/artigos", "destination": "/artigos/index.html" },
     { "source": "/artigos/:slug", "destination": "/artigos/:slug/index.html" },
