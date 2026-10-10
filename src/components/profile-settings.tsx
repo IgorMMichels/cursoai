@@ -1,8 +1,13 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { Camera, Check, ImagePlus, LoaderCircle, MapPin, Pencil, UserRound, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession, planTitle } from '@/contexts/session-context'
-import { loadMarketingPreference, saveMarketingPreference } from '@/lib/email-preferences'
+import { loadMarketingPreference, saveEmailLocale, saveMarketingPreference } from '@/lib/email-preferences'
+import { useLocalization } from '@/contexts/localization-context'
+import { LocalizationSelector } from '@/components/localization-selector'
+import { marketNames } from '@/lib/localization'
 
 type ProfileSettingsProps = { compact?: boolean }
 
@@ -36,7 +41,9 @@ async function prepareAvatar(file: File) {
 }
 
 export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
+  useUiTranslation();
   const { user, authConfigured, updateProfile } = useSession()
+  const { locale, market, marketLoading, regionalCatalog } = useLocalization()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [open, setOpen] = useState(false)
@@ -126,18 +133,30 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
   }
 
   const initials = user?.name?.trim().slice(0, 1).toUpperCase() || 'A'
+  const marketLabels = {
+    'pt-BR': { BR: 'Brasil', US: 'Estados Unidos', ES: 'Zona do euro', OTHER: 'Outras regiões' },
+    en: { BR: 'Brazil', US: 'United States', ES: 'Euro area', OTHER: 'Other regions' },
+    es: { BR: 'Brasil', US: 'Estados Unidos', ES: 'Zona del euro', OTHER: 'Otras regiones' },
+  } as const
+  const marketCopy = {
+    'pt-BR': { language: 'Idioma da plataforma', billing: 'Região de cobrança', loading: 'Detectando região…', unknown: 'Região não detectada', note: 'Os preços seguem a região detectada da sua conta. Alterar o idioma ou a cidade informada no perfil não muda a região nem o preço.' },
+    en: { language: 'Platform language', billing: 'Billing region', loading: 'Detecting region…', unknown: 'Region not detected', note: 'Prices follow the region detected for your account. Changing the language or the city in your profile does not change the region or price.' },
+    es: { language: 'Idioma de la plataforma', billing: 'Región de facturación', loading: 'Detectando región…', unknown: 'Región no detectada', note: 'Los precios siguen la región detectada para tu cuenta. Cambiar el idioma o la ciudad del perfil no cambia la región ni el precio.' },
+  } as const
+  const localizationCopy = marketCopy[locale]
+  const marketLabel = marketLoading ? localizationCopy.loading : regionalCatalog?.country ? marketLabels[locale][market] ?? marketNames[market] : localizationCopy.unknown
 
   return <>
-    <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label="Editar perfil" className={compact
+    <button type="button" onClick={() => setOpen(true)} aria-haspopup="dialog" aria-label={translateUi("Editar perfil")} className={compact
       ? 'grid size-9 place-items-center rounded-xl border border-white/[.08] bg-[#14151c] text-[#d2c4ff] transition hover:border-[#b49cff]/35 hover:bg-[#211f2b]'
       : 'group flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 text-left transition hover:bg-white/[.045] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]'}>
       <Avatar className={compact ? 'size-8 rounded-[10px] border border-white/10 bg-[#1c2c25] after:rounded-[10px]' : 'size-9 border border-[#a78bfa]/25 bg-[#a78bfa]/[.09]'}>
-        <AvatarImage src={user?.avatarUrl} alt="" className={compact ? 'rounded-[10px]' : undefined} />
-        <AvatarFallback className={`bg-[#211f2b] font-display text-xs font-semibold text-[#cbbaff] ${compact ? 'rounded-[10px]' : ''}`}>{initials}</AvatarFallback>
+        <AvatarImage src={user?.avatarUrl} alt={translateUi("")} className={compact ? 'rounded-[10px]' : undefined} />
+        <AvatarFallback className={`bg-[#211f2b] font-display text-xs font-semibold text-[#cbbaff] ${compact ? 'rounded-[10px]' : ''}`}>{translateUi(initials)}</AvatarFallback>
       </Avatar>
       {!compact && <span className="min-w-0 flex-1">
-        <span className="block truncate text-xs font-medium text-[#dae4dd]">{user?.name}</span>
-        <span className="mt-1 block truncate text-[10px] text-[#7f9287]">{planTitle(user?.plan ?? null)} · editar perfil</span>
+        <span className="block truncate text-xs font-medium text-[#dae4dd]">{translateUi(user?.name)}</span>
+        <span className="mt-1 block truncate text-[10px] text-[#7f9287]">{translateUi(planTitle(user?.plan ?? null))} {translateUi(" · editar perfil")}</span>
       </span>}
       {!compact && <Pencil size={13} className="shrink-0 text-[#77877f] transition group-hover:text-[#cbbaff]" />}
     </button>
@@ -152,65 +171,79 @@ export function ProfileSettings({ compact = false }: ProfileSettingsProps) {
       <form onSubmit={save} className="flex max-h-[min(760px,calc(100dvh-32px))] flex-col">
         <header className="flex items-start justify-between gap-5 border-b border-white/[.07] px-5 py-5 sm:px-7">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b49cff]">Sua conta</p>
-            <h2 id="profile-dialog-title" className="mt-2 font-display text-2xl font-medium tracking-[-.045em] text-[#edf3ee]">Perfil</h2>
-            <p className="mt-1 text-xs text-[#909c94]">Atualize como você aparece na plataforma.</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[.14em] text-[#b49cff]">{translateUi("Sua conta")}</p>
+            <h2 id="profile-dialog-title" className="mt-2 font-display text-2xl font-medium tracking-[-.045em] text-[#edf3ee]">{translateUi("Perfil")}</h2>
+            <p className="mt-1 text-xs text-[#909c94]">{translateUi("Atualize como você aparece na plataforma.")}</p>
           </div>
-          <button type="button" onClick={() => setOpen(false)} aria-label="Fechar edição de perfil" className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/[.09] text-[#a5ada7] hover:bg-white/[.06] hover:text-white"><X size={16} /></button>
+          <button type="button" onClick={() => setOpen(false)} aria-label={translateUi("Fechar edição de perfil")} className="grid size-9 shrink-0 place-items-center rounded-xl border border-white/[.09] text-[#a5ada7] hover:bg-white/[.06] hover:text-white"><X size={16} /></button>
         </header>
 
         <div className="min-h-0 space-y-5 overflow-y-auto px-5 py-5 sm:px-7">
           <div className="flex items-center gap-4 rounded-xl border border-white/[.07] bg-white/[.025] p-4">
             <Avatar className="size-16 border border-[#a78bfa]/25 bg-[#a78bfa]/[.09]">
-              <AvatarImage src={avatarUrl} alt="Prévia da foto do perfil" />
-              <AvatarFallback className="bg-[#211f2b] text-lg font-semibold text-[#cbbaff]">{initials}</AvatarFallback>
+              <AvatarImage src={avatarUrl} alt={translateUi("Prévia da foto do perfil")} />
+              <AvatarFallback className="bg-[#211f2b] text-lg font-semibold text-[#cbbaff]">{translateUi(initials)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-[#e4ece6]">Foto de perfil</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#849188]">JPG, PNG ou WebP. Ajustamos para um recorte quadrado.</p>
+              <p className="text-sm font-medium text-[#e4ece6]">{translateUi("Foto de perfil")}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#849188]">{translateUi("JPG, PNG ou WebP. Ajustamos para um recorte quadrado.")}</p>
             </div>
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void pickPhoto(event)} className="sr-only" />
-            <button type="button" onClick={() => fileRef.current?.click()} className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#a78bfa]/20 bg-[#a78bfa]/[.07] text-[#c8b8ff] transition hover:border-[#a78bfa]/45 hover:bg-[#a78bfa]/[.13]" aria-label="Escolher foto"><Camera size={17} /></button>
+            <button type="button" onClick={() => fileRef.current?.click()} className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#a78bfa]/20 bg-[#a78bfa]/[.07] text-[#c8b8ff] transition hover:border-[#a78bfa]/45 hover:bg-[#a78bfa]/[.13]" aria-label={translateUi("Escolher foto")}><Camera size={17} /></button>
           </div>
-          {photoError && <p role="alert" className="text-xs text-[#f2a8b2]">{photoError}</p>}
+          {photoError && <p role="alert" className="text-xs text-[#f2a8b2]">{translateUi(photoError)}</p>}
 
           <div>
-            <label htmlFor="profile-name" className="mb-2 block text-xs font-medium text-[#ccd5ce]">Nome</label>
+            <label htmlFor="profile-name" className="mb-2 block text-xs font-medium text-[#ccd5ce]">{translateUi("Nome")}</label>
             <input id="profile-name" value={name} onChange={(event) => setName(event.target.value)} maxLength={60} required autoComplete="name" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#0e0e14] px-3.5 text-sm text-[#e6eee8] outline-none transition focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" />
           </div>
           <div>
-            <label htmlFor="profile-email" className="mb-2 block text-xs font-medium text-[#ccd5ce]">E-mail</label>
+            <label htmlFor="profile-email" className="mb-2 block text-xs font-medium text-[#ccd5ce]">{translateUi("E-mail")}</label>
             <input id="profile-email" value={user?.email ?? ''} readOnly className="h-11 w-full cursor-not-allowed rounded-xl border border-white/[.06] bg-white/[.025] px-3.5 text-sm text-[#87938b] outline-none" />
-            <p className="mt-1.5 text-[10px] text-[#707e75]">E-mail da conta não pode ser alterado por aqui.</p>
+            <p className="mt-1.5 text-[10px] text-[#707e75]">{translateUi("E-mail da conta não pode ser alterado por aqui.")}</p>
           </div>
           <div>
-            <label htmlFor="profile-bio" className="mb-2 block text-xs font-medium text-[#ccd5ce]">Sobre você</label>
-            <textarea id="profile-bio" value={bio} onChange={(event) => setBio(event.target.value)} maxLength={160} rows={3} placeholder="Uma frase curta, se quiser." className="w-full resize-y rounded-xl border border-white/[.1] bg-[#0e0e14] px-3.5 py-3 text-sm leading-relaxed text-[#e6eee8] outline-none transition placeholder:text-[#65736a] focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" />
-            <p className="mt-1 text-right text-[10px] tabular-nums text-[#707e75]">{bio.length}/160</p>
+            <label htmlFor="profile-bio" className="mb-2 block text-xs font-medium text-[#ccd5ce]">{translateUi("Sobre você")}</label>
+            <textarea id="profile-bio" value={bio} onChange={(event) => setBio(event.target.value)} maxLength={160} rows={3} placeholder={translateUi("Uma frase curta, se quiser.")} className="w-full resize-y rounded-xl border border-white/[.1] bg-[#0e0e14] px-3.5 py-3 text-sm leading-relaxed text-[#e6eee8] outline-none transition placeholder:text-[#65736a] focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" />
+            <p className="mt-1 text-right text-[10px] tabular-nums text-[#707e75]">{translateUi(bio.length)}/160</p>
           </div>
           <div>
-            <label htmlFor="profile-location" className="mb-2 block text-xs font-medium text-[#ccd5ce]">Cidade ou região</label>
-            <div className="relative"><MapPin size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74847a]" /><input id="profile-location" value={location} onChange={(event) => setLocation(event.target.value)} maxLength={80} autoComplete="address-level2" placeholder="Opcional" className="h-11 w-full rounded-xl border border-white/[.1] bg-[#0e0e14] pl-10 pr-3.5 text-sm text-[#e6eee8] outline-none transition placeholder:text-[#65736a] focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>
+            <label htmlFor="profile-location" className="mb-2 block text-xs font-medium text-[#ccd5ce]">{translateUi("Cidade ou região")}</label>
+            <div className="relative"><MapPin size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74847a]" /><input id="profile-location" value={location} onChange={(event) => setLocation(event.target.value)} maxLength={80} autoComplete="address-level2" placeholder={translateUi("Opcional")} className="h-11 w-full rounded-xl border border-white/[.1] bg-[#0e0e14] pl-10 pr-3.5 text-sm text-[#e6eee8] outline-none transition placeholder:text-[#65736a] focus:border-[#a78bfa]/55 focus:ring-2 focus:ring-[#a78bfa]/10" /></div>
           </div>
 
-          <section aria-labelledby="email-preferences-title" className="rounded-xl border border-white/[.07] bg-white/[.02] p-4">
-            <h3 id="email-preferences-title" className="text-xs font-semibold text-[#e4ece6]">E-mails da Omega</h3>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-[#89968d]">Mensagens necessárias à conta, como confirmação e recuperação de senha, continuam sendo enviadas.</p>
-            <label htmlFor="profile-marketing-opt-in" className="mt-4 flex items-start gap-3 text-[11px] leading-relaxed text-[#aab6ad]">
-              <input id="profile-marketing-opt-in" type="checkbox" checked={marketingOptIn} disabled={isLoadingPreference || isSavingPreference} onChange={(event) => void savePreference(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#b49cff]" />
-              <span>Receber conteúdos gratuitos, novidades e convites por e-mail.</span>
-            </label>
-            {preferenceNotice && <p role="status" className="mt-2 text-[10px] text-[#b7a8e8]">{preferenceNotice}</p>}
+          <section aria-label={localizationCopy.language} className="space-y-4 rounded-xl border border-white/[.07] bg-white/[.02] p-4">
+            <LocalizationSelector onLocaleChange={(nextLocale) => {
+              if (!user?.id) return
+              void saveEmailLocale(user.id, nextLocale)
+                .then(() => setPreferenceNotice('Idioma dos e-mails atualizado.'))
+                .catch(() => setPreferenceNotice('Não foi possível salvar o idioma dos e-mails.'))
+            }} />
+            <div>
+              <p className="mb-2 text-xs font-medium text-[#ccd5ce]">{localizationCopy.billing}</p>
+              <div aria-live="polite" className="flex min-h-11 items-center rounded-xl border border-white/[.06] bg-white/[.025] px-3.5 text-sm text-[#9da9a0]">{marketLabel}</div>
+              <p className="mt-2 text-[11px] leading-relaxed text-[#89968d]">{localizationCopy.note}</p>
+            </div>
           </section>
 
-          {notice && <p role="status" className={`rounded-xl border px-3.5 py-3 text-xs leading-relaxed ${notice.startsWith('Perfil atualizado') || notice.startsWith('Perfil salvo') ? 'border-[#8bd8b1]/15 bg-[#8bd8b1]/[.05] text-[#a7e2c1]' : 'border-[#e8bc76]/20 bg-[#e8bc76]/[.05] text-[#e3c78f]'}`}>{notice}</p>}
+          <section aria-labelledby="email-preferences-title" className="rounded-xl border border-white/[.07] bg-white/[.02] p-4">
+            <h3 id="email-preferences-title" className="text-xs font-semibold text-[#e4ece6]">{translateUi("E-mails da Omega")}</h3>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-[#89968d]">{translateUi("Mensagens necessárias à conta, como confirmação e recuperação de senha, continuam sendo enviadas.")}</p>
+            <label htmlFor="profile-marketing-opt-in" className="mt-4 flex items-start gap-3 text-[11px] leading-relaxed text-[#aab6ad]">
+              <input id="profile-marketing-opt-in" type="checkbox" checked={marketingOptIn} disabled={isLoadingPreference || isSavingPreference} onChange={(event) => void savePreference(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[#b49cff]" />
+              <span>{translateUi("Receber conteúdos gratuitos, novidades e convites por e-mail.")}</span>
+            </label>
+            {preferenceNotice && <p role="status" className="mt-2 text-[10px] text-[#b7a8e8]">{translateUi(preferenceNotice)}</p>}
+          </section>
+
+          {notice && <p role="status" className={`rounded-xl border px-3.5 py-3 text-xs leading-relaxed ${notice.startsWith('Perfil atualizado') || notice.startsWith('Perfil salvo') ? 'border-[#8bd8b1]/15 bg-[#8bd8b1]/[.05] text-[#a7e2c1]' : 'border-[#e8bc76]/20 bg-[#e8bc76]/[.05] text-[#e3c78f]'}`}>{translateUi(notice)}</p>}
         </div>
 
         <footer className="flex items-center justify-between gap-4 border-t border-white/[.07] px-5 py-4 sm:px-7">
-          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{authConfigured ? 'Perfil salvo na conta' : 'Login indisponível'}</span>
+          <span className="hidden items-center gap-1.5 text-[10px] text-[#77877d] sm:flex"><UserRound size={12} />{translateUi(authConfigured ? 'Perfil salvo na conta' : 'Login indisponível')}</span>
           <div className="ml-auto flex gap-2">
-            <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl border border-white/[.1] px-4 text-xs font-medium text-[#aeb8b0] transition hover:bg-white/[.05]">Cancelar</button>
-            <button type="submit" disabled={isSaving} className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] transition hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSaving ? <LoaderCircle size={14} className="animate-spin" /> : notice.startsWith('Perfil atualizado') ? <Check size={14} /> : <ImagePlus size={14} />}{isSaving ? 'Salvando…' : 'Salvar perfil'}</button>
+            <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-xl border border-white/[.1] px-4 text-xs font-medium text-[#aeb8b0] transition hover:bg-white/[.05]">{translateUi("Cancelar")}</button>
+            <button type="submit" disabled={isSaving} className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] transition hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60">{isSaving ? <LoaderCircle size={14} className="animate-spin" /> : notice.startsWith('Perfil atualizado') ? <Check size={14} /> : <ImagePlus size={14} />}{translateUi(isSaving ? 'Salvando…' : 'Salvar perfil')}</button>
           </div>
         </footer>
       </form>

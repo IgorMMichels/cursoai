@@ -1,3 +1,5 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
@@ -23,6 +25,7 @@ interface LoadingProps {
 }
 
 export function PlatformLoadingScreen({ contentReady, onComplete, course = false, animatedLogo = false, minimumDuration = 1200 }: LoadingProps) {
+  useUiTranslation();
   const root = useRef<HTMLDivElement>(null)
   const progressBar = useRef<HTMLDivElement>(null)
   const progressFill = useRef<HTMLSpanElement>(null)
@@ -141,8 +144,8 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
     }}>
     <div className="omega-loading-atmosphere" aria-hidden="true" />
     <header className="omega-loading-header">
-      <div className="omega-loading-wordmark"><img src="/brand/omega/symbol-accent.svg" alt="" /><span>Omega</span></div>
-      <button type="button" className="omega-loading-skip" onClick={() => finish()}>Continuar <span aria-hidden="true">↗</span></button>
+      <div className="omega-loading-wordmark"><img src="/brand/omega/symbol-accent.svg" alt={translateUi("")} /><span>{translateUi("Omega")}</span></div>
+      <button type="button" className="omega-loading-skip" onClick={() => finish()}>{translateUi("Continuar ")}<span aria-hidden="true">↗</span></button>
     </header>
     <div className="omega-loading-orbit-anchor" aria-hidden="true">
       <div className="omega-loading-orbit">
@@ -155,21 +158,21 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
           <path d="M200 10v7M200 383v7M10 200h7M383 200h7" className="omega-loading-ring-ticks" />
         </svg>
         <div className={`omega-loading-model ${modelReady ? 'omega-loading-model-ready' : ''}`}>
-          <img className={`omega-loading-svg ${motion ? 'omega-loading-svg-spinning' : ''}`} src="/brand/omega/symbol-accent.svg" alt="" />
+          <img className={`omega-loading-svg ${motion ? 'omega-loading-svg-spinning' : ''}`} src="/brand/omega/symbol-accent.svg" alt={translateUi("")} />
           {animatedLogo && motion && !modelFailed && <ModelBoundary onFailure={sceneFailed}><Suspense fallback={null}>
             <OmegaGlbScene reducedMotion={false} onProgress={assetProgress} onReady={sceneReady} onFailure={sceneFailed} />
           </Suspense></ModelBoundary>}
         </div>
-        <span className="omega-loading-orbit-caption">método antes do mercado</span>
+        <span className="omega-loading-orbit-caption">{translateUi("método antes do mercado")}</span>
       </div>
     </div>
     <div className="omega-loading-copy">
-      <h1 id="omega-loading-title"><span className="omega-loading-line"><span>Clareza para</span></span><span className="omega-loading-line"><span>seu próximo passo.</span></span></h1>
-      <p>Conhecimento que transforma a sua forma de olhar.</p>
+      <h1 id="omega-loading-title"><span className="omega-loading-line"><span>{translateUi("Clareza para")}</span></span><span className="omega-loading-line"><span>{translateUi("seu próximo passo.")}</span></span></h1>
+      <p>{translateUi("Conhecimento que transforma a sua forma de olhar.")}</p>
     </div>
     <footer className="omega-loading-footer">
-      <div className="omega-loading-status"><span role="status">{visualReady && contentReady ? 'Pronto para começar' : course ? 'Preparando sua trilha' : 'Preparando sua jornada'}</span><span className="omega-loading-number" aria-hidden="true"><span ref={percentage}>00</span><small>%</small></span></div>
-      <div ref={progressBar} className="omega-loading-progress" role="progressbar" aria-label="Preparando a experiência" aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}><span ref={progressFill} /></div>
+      <div className="omega-loading-status"><span role="status">{translateUi(visualReady && contentReady ? 'Pronto para começar' : course ? 'Preparando sua trilha' : 'Preparando sua jornada')}</span><span className="omega-loading-number" aria-hidden="true"><span ref={percentage}>00</span><small>%</small></span></div>
+      <div ref={progressBar} className="omega-loading-progress" role="progressbar" aria-label={translateUi("Preparando a experiência")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={0}><span ref={progressFill} /></div>
     </footer>
   </div>
 }

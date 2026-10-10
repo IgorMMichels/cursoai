@@ -1,11 +1,14 @@
+import { translateUi, translateTemplate, getUiLocale } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import { CandlestickSeries, ColorType, CrosshairMode, HistogramSeries, LineStyle, PriceScaleMode, TickMarkType, createChart, type IChartApi, type IPriceLine, type ISeriesApi, type Time, type UTCTimestamp } from 'lightweight-charts'
 import { chartBars, formingQuoteCandle, nextChartRange, sameChartBar, type ChartBar } from '@/lib/paper-chart-data'
 import type { PaperPoint } from '@/lib/paper-trading'
 
-const priceLabel = (value: number) => new Intl.NumberFormat('pt-BR', { maximumSignificantDigits: 6 }).format(value)
+const priceLabel = (value: number) => new Intl.NumberFormat(getUiLocale(), { maximumSignificantDigits: 6 }).format(value)
 
 export function PaperChart({ points, basis, livePrice, quoteObservedAt, lastTradeAt, intervalMs = 60_000, seconds, demo, multiplier = 1, metric = 'price', symbol = 'TOKEN' }: { points: PaperPoint[]; basis?: number; livePrice?: number; quoteObservedAt?: number; lastTradeAt?: number | null; intervalMs?: number; seconds: boolean; demo: boolean; multiplier?: number; metric?: 'price' | 'mcap'; symbol?: string }) {
+  useUiTranslation();
   const [expanded, setExpanded] = useState(false)
   const host = useRef<HTMLDivElement>(null)
   const legend = useRef<HTMLDivElement>(null)
@@ -20,7 +23,7 @@ export function PaperChart({ points, basis, livePrice, quoteObservedAt, lastTrad
 
   useEffect(() => {
     if (!host.current) return
-    const formatTime = (time: number) => new Date(time * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), timeZone: demo ? 'UTC' : undefined })
+    const formatTime = (time: number) => new Date(time * 1000).toLocaleTimeString(getUiLocale(), { hour: '2-digit', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), timeZone: demo ? 'UTC' : undefined })
     const formatPrice = (value: number) => value < 0 ? '' : metric === 'mcap' ? new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 2 }).format(value) : priceLabel(value)
     const chart = createChart(host.current, {
       width: host.current.clientWidth, height: host.current.clientHeight, autoSize: false,
@@ -31,10 +34,10 @@ export function PaperChart({ points, basis, livePrice, quoteObservedAt, lastTrad
       timeScale: { borderColor: '#ffffff12', timeVisible: true, secondsVisible: seconds, rightOffset: 6, barSpacing: 8, minBarSpacing: 2, tickMarkFormatter: (time: Time, type: TickMarkType) => {
         if (typeof time !== 'number') return null
         const date = new Date(time * 1000), timeZone = demo ? 'UTC' : undefined
-        if (type === TickMarkType.Year) return date.toLocaleDateString('pt-BR', { year: 'numeric', timeZone })
-        if (type === TickMarkType.Month) return date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit', timeZone })
-        if (type === TickMarkType.DayOfMonth) return date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone })
-        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', ...(type === TickMarkType.TimeWithSeconds ? { second: '2-digit' } : {}), timeZone })
+        if (type === TickMarkType.Year) return date.toLocaleDateString(getUiLocale(), { year: 'numeric', timeZone })
+        if (type === TickMarkType.Month) return date.toLocaleDateString(getUiLocale(), { month: 'short', year: '2-digit', timeZone })
+        if (type === TickMarkType.DayOfMonth) return date.toLocaleDateString(getUiLocale(), { day: 'numeric', month: 'short', timeZone })
+        return date.toLocaleTimeString(getUiLocale(), { hour: '2-digit', minute: '2-digit', ...(type === TickMarkType.TimeWithSeconds ? { second: '2-digit' } : {}), timeZone })
       } },
       localization: { locale: 'pt-BR', timeFormatter: (time: Time) => typeof time === 'number' ? formatTime(time) : '' },
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
@@ -123,8 +126,8 @@ export function PaperChart({ points, basis, livePrice, quoteObservedAt, lastTrad
   }, [expanded])
   return <div className={`paper-candle-host ${expanded ? 'is-expanded' : ''}`}>
     <div ref={legend} className="paper-chart-legend" aria-hidden="true"/>
-    <div ref={host} className="paper-tradingview-canvas" role="img" aria-label={`Gráfico TradingView de ${symbol}, ${metric === 'mcap' ? 'capitalização estimada' : 'preço'}, com ${points.length} velas em USD, volume e cursor. Use arraste, rolagem ou botões para navegar.`}/>
-    <div className="paper-chart-controls"><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView Lightweight Charts™</a><div><button type="button" aria-label="Reduzir zoom do gráfico" onClick={() => zoom(1.25)}>−</button><button type="button" aria-label="Ampliar gráfico" onClick={() => zoom(.8)}>+</button><button type="button" onClick={() => { chartRef.current?.priceScale('right').applyOptions({ autoScale: true }); chartRef.current?.timeScale().fitContent() }}>Tudo</button><button type="button" onClick={resetView}>Auto</button><button type="button" onClick={() => { const scale = chartRef.current?.priceScale('right'); if (scale) scale.applyOptions({ mode: scale.options().mode === PriceScaleMode.Logarithmic ? PriceScaleMode.Normal : PriceScaleMode.Logarithmic, autoScale: true }) }}>Log / linear</button><button type="button" aria-pressed={expanded} onClick={toggleFullscreen}>{expanded ? 'Sair da tela cheia' : 'Tela cheia'}</button></div></div>
-    <span className="paper-chart-attribution">Copyright (с) 2025 TradingView, Inc.</span>
+    <div ref={host} className="paper-tradingview-canvas" role="img" aria-label={translateUi(translateTemplate("Gráfico TradingView de {{value0}}, {{value1}}, com {{value2}} velas em USD, volume e cursor. Use arraste, rolagem ou botões para navegar.", [symbol, metric === 'mcap' ? 'capitalização estimada' : 'preço', points.length]))}/>
+    <div className="paper-chart-controls"><a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">{translateUi("TradingView Lightweight Charts™")}</a><div><button type="button" aria-label={translateUi("Reduzir zoom do gráfico")} onClick={() => zoom(1.25)}>−</button><button type="button" aria-label={translateUi("Ampliar gráfico")} onClick={() => zoom(.8)}>+</button><button type="button" onClick={() => { chartRef.current?.priceScale('right').applyOptions({ autoScale: true }); chartRef.current?.timeScale().fitContent() }}>{translateUi("Tudo")}</button><button type="button" onClick={resetView}>{translateUi("Auto")}</button><button type="button" onClick={() => { const scale = chartRef.current?.priceScale('right'); if (scale) scale.applyOptions({ mode: scale.options().mode === PriceScaleMode.Logarithmic ? PriceScaleMode.Normal : PriceScaleMode.Logarithmic, autoScale: true }) }}>{translateUi("Log / linear")}</button><button type="button" aria-pressed={expanded} onClick={toggleFullscreen}>{translateUi(expanded ? 'Sair da tela cheia' : 'Tela cheia')}</button></div></div>
+    <span className="paper-chart-attribution">{translateUi("Copyright (с) 2025 TradingView, Inc.")}</span>
   </div>
 }

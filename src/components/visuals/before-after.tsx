@@ -1,3 +1,5 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import type { FlowStep } from '@/lib/visual-datasets'
 
 export function BeforeAfter({
@@ -9,6 +11,7 @@ export function BeforeAfter({
   desc: string
   steps: FlowStep[]
 }) {
+  useUiTranslation();
   const width = 560
   const height = 260
   const boxWidth = 140
@@ -25,8 +28,8 @@ export function BeforeAfter({
       aria-hidden="true"
       focusable="false"
     >
-      <title>{title}</title>
-      <desc>{desc}</desc>
+      <title>{translateUi(title)}</title>
+      <desc>{translateUi(desc)}</desc>
       {steps.map((step, index) => {
         const x = startX + index * (boxWidth + gap)
         const isLast = index === steps.length - 1
@@ -43,13 +46,13 @@ export function BeforeAfter({
               strokeWidth={1.2}
             />
             <text x={x + boxWidth / 2} y={boxY + 26} textAnchor="middle" fontSize={11} fontWeight={600} fill="#b9b3c7">
-              {step.top}
+              {translateUi(step.top)}
             </text>
             <text x={x + boxWidth / 2} y={boxY + 62} textAnchor="middle" fontSize={22} fontWeight={700} fill="#eef3ee">
-              {step.value}
+              {translateUi(step.value)}
             </text>
             <text x={x + boxWidth / 2} y={boxY + 88} textAnchor="middle" fontSize={11} fill="#9aa5a0">
-              {step.sub}
+              {translateUi(step.sub)}
             </text>
             {index < steps.length - 1 && (
               <g>
@@ -75,8 +78,7 @@ export function BeforeAfter({
         )
       })}
       <text x={width / 2} y={height - 22} textAnchor="middle" fontSize={10} fill="#777b8c">
-        Conta aritmética fictícia, sem previsão de retorno.
-      </text>
+        {translateUi("Conta aritmética fictícia, sem previsão de retorno.")}</text>
     </svg>
   )
 }

@@ -1,3 +1,5 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import type { CompareBar } from '@/lib/visual-datasets'
 
 export function BarsCompare({
@@ -9,6 +11,7 @@ export function BarsCompare({
   desc: string
   bars: CompareBar[]
 }) {
+  useUiTranslation();
   const width = 560
   const height = 300
   const baseline = 232
@@ -25,8 +28,8 @@ export function BarsCompare({
       aria-hidden="true"
       focusable="false"
     >
-      <title>{title}</title>
-      <desc>{desc}</desc>
+      <title>{translateUi(title)}</title>
+      <desc>{translateUi(desc)}</desc>
       {[0.25, 0.5, 0.75, 1].map((fraction) => {
         const y = baseline - maxBarHeight * fraction
         return (
@@ -45,20 +48,19 @@ export function BarsCompare({
             <rect x={x} y={y} width={barWidth} height={barHeight} rx={10} fill={index === bars.length - 1 ? '#a78bfa' : '#5b5470'} />
             <rect x={x} y={y} width={barWidth} height={barHeight} rx={10} fill="none" stroke="rgba(255,255,255,.18)" strokeWidth={1} />
             <text x={x + barWidth / 2} y={y - 10} textAnchor="middle" fontSize={15} fontWeight={700} fill="#eef3ee">
-              {bar.valueLabel}
+              {translateUi(bar.valueLabel)}
             </text>
             <text x={x + barWidth / 2} y={baseline + 22} textAnchor="middle" fontSize={13} fontWeight={600} fill="#d8dee0">
-              {bar.label}
+              {translateUi(bar.label)}
             </text>
             <text x={x + barWidth / 2} y={baseline + 40} textAnchor="middle" fontSize={11} fill="#9aa5a0">
-              {bar.detail}
+              {translateUi(bar.detail)}
             </text>
           </g>
         )
       })}
       <text x={40} y={height - 8} fontSize={10} fill="#777b8c">
-        Exemplo fictício, sem escala de mercado.
-      </text>
+        {translateUi("Exemplo fictício, sem escala de mercado.")}</text>
     </svg>
   )
 }

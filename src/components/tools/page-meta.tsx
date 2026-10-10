@@ -1,19 +1,20 @@
 import { useEffect } from 'react'
 import { useLocalization } from '@/contexts/localization-context'
 import { localizedPath } from '@/lib/localization'
+import { translateString } from '@/lib/ui-translation'
 import { omegaCopy } from '@/lib/omega-copy'
 
 export function PageMeta({ title, description, path, privatePage = false }: { title: string; description: string; path: string; privatePage?: boolean }) {
   const { locale } = useLocalization()
   useEffect(() => {
-    document.title = `${title} | ${omegaCopy.name}`
+    document.title = `${translateString(title, locale)} | ${omegaCopy.name}`
     const configuredOrigin = import.meta.env.VITE_SITE_URL
     let origin = window.location.origin
     if (configuredOrigin) {
       try { const url = new URL(configuredOrigin); if (url.protocol === 'https:' || url.protocol === 'http:') origin = url.origin } catch { /* No dev, uma configuração inválida não impede o simulador. */ }
     }
     const changes = [
-      { selector: 'meta[name="description"]', tag: 'meta', attrs: { name: 'description', content: description } },
+      { selector: 'meta[name="description"]', tag: 'meta', attrs: { name: 'description', content: translateString(description, locale) } },
       { selector: 'meta[name="robots"]', tag: 'meta', attrs: { name: 'robots', content: privatePage ? 'noindex, follow' : 'index, follow' } },
       { selector: 'link[rel="canonical"]', tag: 'link', attrs: { rel: 'canonical', href: `${origin}${localizedPath(path, locale)}` } },
     ]
@@ -29,7 +30,7 @@ export function PageMeta({ title, description, path, privatePage = false }: { ti
         else element.remove()
       }
     })
-    return () => { document.title = omegaCopy.title; cleanups.forEach((cleanup) => cleanup()) }
+    return () => { document.title = `${translateString(omegaCopy.title, locale)} | ${omegaCopy.name}`; cleanups.forEach((cleanup) => cleanup()) }
   }, [title, description, path, privatePage, locale])
   return null
 }

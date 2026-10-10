@@ -1,3 +1,5 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { ArrowRight, Image } from 'lucide-react'
 import { journeyModuleVisuals, moduleCovers, moduleVisualGuides } from '@/lib/course-media'
 import { getLessonVisual } from '@/lib/lesson-visuals'
@@ -7,14 +9,15 @@ import { BeforeAfter } from './visuals/before-after'
 import { VisualShell } from './visuals/visual-shell'
 
 export function LessonVisual({ moduleId, lessonId }: { moduleId: string; lessonId?: string }) {
+  useUiTranslation();
   const lessonSpec = getLessonVisual(lessonId)
   if (lessonSpec && lessonId) {
     if (lessonSpec.type === 'bars-compare') {
       const bars = lessonCompareDatasets[lessonId] ?? []
       if (bars.length > 0) {
         return (
-          <VisualShell title={lessonSpec.title} description={lessonSpec.description} alt={lessonSpec.alt}>
-            <BarsCompare title={lessonSpec.title} desc={lessonSpec.alt} bars={bars} />
+          <VisualShell title={translateUi(lessonSpec.title)} description={translateUi(lessonSpec.description)} alt={translateUi(lessonSpec.alt)}>
+            <BarsCompare title={translateUi(lessonSpec.title)} desc={lessonSpec.alt} bars={bars} />
           </VisualShell>
         )
       }
@@ -22,8 +25,8 @@ export function LessonVisual({ moduleId, lessonId }: { moduleId: string; lessonI
       const steps = lessonFlowDatasets[lessonId] ?? []
       if (steps.length > 0) {
         return (
-          <VisualShell title={lessonSpec.title} description={lessonSpec.description} alt={lessonSpec.alt}>
-            <BeforeAfter title={lessonSpec.title} desc={lessonSpec.alt} steps={steps} />
+          <VisualShell title={translateUi(lessonSpec.title)} description={translateUi(lessonSpec.description)} alt={translateUi(lessonSpec.alt)}>
+            <BeforeAfter title={translateUi(lessonSpec.title)} desc={lessonSpec.alt} steps={steps} />
           </VisualShell>
         )
       }
@@ -36,16 +39,16 @@ export function LessonVisual({ moduleId, lessonId }: { moduleId: string; lessonI
       <div className="relative overflow-x-auto overscroll-x-contain">
         <img
           src={`/journey-module-visuals/${moduleId}.svg`}
-          alt={visual.alt}
+          alt={translateUi(visual.alt)}
           loading="lazy"
           decoding="async"
           className="block h-auto min-w-[640px] w-full"
         />
       </div>
       <figcaption className="border-t border-white/[.07] px-4 py-3 sm:px-5">
-        <p className="text-[11px] font-medium text-[#dce6df]">{visual.title}</p>
-        <p className="mt-1 text-[10px] leading-relaxed text-[#87958d]">{visual.description}</p>
-        <p className="mt-2 text-[9px] text-[#777b8c] sm:hidden">Deslize o diagrama para explorar.</p>
+        <p className="text-[11px] font-medium text-[#dce6df]">{translateUi(visual.title)}</p>
+        <p className="mt-1 text-[10px] leading-relaxed text-[#87958d]">{translateUi(visual.description)}</p>
+        <p className="mt-2 text-[9px] text-[#777b8c] sm:hidden">{translateUi("Deslize o diagrama para explorar.")}</p>
       </figcaption>
     </figure>
   )
@@ -55,17 +58,17 @@ export function LessonVisual({ moduleId, lessonId }: { moduleId: string; lessonI
 
   return <section className="lesson-visual" aria-labelledby="lesson-visual-title">
     <div className="lesson-visual-image">
-      <img src={moduleCovers[moduleId]} alt="" loading="lazy" />
+      <img src={moduleCovers[moduleId]} alt={translateUi("")} loading="lazy" />
       <div className="lesson-visual-image-shade" />
-      <div className="lesson-visual-image-label"><Image size={13} />Imagem ilustrativa</div>
-      <p>{guide.caption}</p>
+      <div className="lesson-visual-image-label"><Image size={13} />{translateUi("Imagem ilustrativa")}</div>
+      <p>{translateUi(guide.caption)}</p>
     </div>
     <div className="lesson-visual-map">
-      <div className="lesson-visual-heading"><span>mapa do conceito</span><h2 id="lesson-visual-title">{guide.title}</h2></div>
+      <div className="lesson-visual-heading"><span>{translateUi("mapa do conceito")}</span><h2 id="lesson-visual-title">{translateUi(guide.title)}</h2></div>
       <ol>
-        {guide.steps.map((step, index) => <li key={step}><span>{String(index + 1).padStart(2, '0')}</span><p>{step}</p>{index < guide.steps.length - 1 && <ArrowRight size={13} aria-hidden="true" />}</li>)}
+        {guide.steps.map((step, index) => <li key={step}><span>{translateUi(String(index + 1).padStart(2, '0'))}</span><p>{translateUi(step)}</p>{index < guide.steps.length - 1 && <ArrowRight size={13} aria-hidden="true" />}</li>)}
       </ol>
-      <p className="lesson-visual-footnote">Leia cada etapa junto com a explicação da aula.</p>
+      <p className="lesson-visual-footnote">{translateUi("Leia cada etapa junto com a explicação da aula.")}</p>
     </div>
   </section>
 }

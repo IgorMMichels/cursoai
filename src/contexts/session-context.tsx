@@ -87,7 +87,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           (!entry.starts_at || Date.parse(entry.starts_at) <= now)
           && (!entry.expires_at || Date.parse(entry.expires_at) > now),
         )
-        const activePlan: PlanId | null = subscription?.plan_id === 'month' || subscription?.plan_id === 'quarter' || subscription?.plan_id === 'lifetime'
+        const activePlan: PlanId | null = subscription?.plan_id === 'month' || subscription?.plan_id === 'quarter' || subscription?.plan_id === 'annual' || subscription?.plan_id === 'lifetime'
           ? subscription.plan_id
           : null
         const session: AppSession = {

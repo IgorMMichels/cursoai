@@ -1,3 +1,5 @@
+import { translateUi, translateTemplate } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowRight, ExternalLink, ShieldAlert, X } from 'lucide-react'
@@ -152,6 +154,7 @@ const wallets: WalletGuide[] = [
 ]
 
 export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing' | 'access' }) {
+  useUiTranslation();
   const [selectedWallet, setSelectedWallet] = useState<WalletGuide | null>(null)
   const [selectedExchange, setSelectedExchange] = useState<ExchangeGuide | null>(null)
   const closeModal = useCallback(() => setSelectedWallet(null), [])
@@ -162,29 +165,29 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
       <div className="wallet-guide-inner">
         <div className="wallet-guide-heading">
           <div>
-            <p className="eyebrow">{isAccessPage ? 'precisa pagar?' : 'como comprar · passo 1'}</p>
-            <h2 id={isAccessPage ? 'wallet-access-title' : 'wallet-landing-title'} className="display-lg mt-4 text-[#eaf2ec]">{isAccessPage ? 'Prepare uma carteira compatível.' : 'Comece por uma carteira segura.'}</h2>
+            <p className="eyebrow">{translateUi(isAccessPage ? 'precisa pagar?' : 'como comprar · passo 1')}</p>
+            <h2 id={isAccessPage ? 'wallet-access-title' : 'wallet-landing-title'} className="display-lg mt-4 text-[#eaf2ec]">{translateUi(isAccessPage ? 'Prepare uma carteira compatível.' : 'Comece por uma carteira segura.')}</h2>
           </div>
-          <p>{isAccessPage ? 'Escolha uma carteira compatível com TRON e confira as instruções oficiais antes de transferir.' : 'Consulte as etapas e fontes oficiais. Menus, taxas e disponibilidade podem mudar conforme a versão.'}</p>
+          <p>{translateUi(isAccessPage ? 'Escolha uma carteira compatível com TRON e confira as instruções oficiais antes de transferir.' : 'Consulte as etapas e fontes oficiais. Menus, taxas e disponibilidade podem mudar conforme a versão.')}</p>
         </div>
 
-        <div className="wallet-cards-grid" aria-label="Escolha sua carteira">
-          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog" aria-label={'Abrir guia de pagamento com ' + wallet.name}>
-            <span className="wallet-choice-top"><WalletIcon wallet={wallet} />{wallet.recommended && <span className="wallet-recommended">Recomendada</span>}{!wallet.compatible && <span className="wallet-unsupported">Sem TRON</span>}</span>
-            <span className="wallet-choice-name">{wallet.name}</span>
-            <span className="wallet-choice-description">{wallet.description}</span>
-            <span className="wallet-choice-action">{wallet.compatible ? 'Ver passo a passo' : 'Ver compatibilidade'} <ArrowRight size={14} /></span>
+        <div className="wallet-cards-grid" aria-label={translateUi("Escolha sua carteira")}>
+          {wallets.map((wallet) => <button key={wallet.id} type="button" onClick={() => { setSelectedWallet(wallet); setSelectedExchange(null) }} className="wallet-choice-card" data-wallet={wallet.id} aria-haspopup="dialog" aria-label={translateTemplate('Abrir guia de pagamento com {{value0}}', [wallet.name])}>
+            <span className="wallet-choice-top"><WalletIcon wallet={wallet} />{wallet.recommended && <span className="wallet-recommended">{translateUi("Recomendada")}</span>}{!wallet.compatible && <span className="wallet-unsupported">{translateUi("Sem TRON")}</span>}</span>
+            <span className="wallet-choice-name">{translateUi(wallet.name)}</span>
+            <span className="wallet-choice-description">{translateUi(wallet.description)}</span>
+            <span className="wallet-choice-action">{translateUi(wallet.compatible ? 'Ver passo a passo' : 'Ver compatibilidade')} <ArrowRight size={14} /></span>
           </button>)}
         </div>
 
         <div className="exchange-guide-block">
-          <div className="exchange-guide-heading"><div><p className="eyebrow">como comprar · passo 2</p><h3>Compre USDT na exchange.</h3></div><p>Tutoriais educativos; não são recomendação. Disponibilidade e taxas variam. Links de indicação podem gerar comissão.</p></div>
-          <div className="exchange-cards-grid" aria-label="Tutoriais de exchanges">
-            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog" aria-label={'Abrir tutorial da ' + exchange.name}>
-              <span className="exchange-card-top"><WalletIcon wallet={exchange} className="exchange-brand-icon" /><span className={exchange.supportsTron ? 'exchange-compatible' : 'exchange-incompatible'}>{exchange.status}</span></span>
-              <span className="exchange-choice-name">{exchange.name}</span>
-              <span className="exchange-choice-description">{exchange.description}</span>
-              <span className="wallet-choice-action">Ver tutorial <ArrowRight size={14} /></span>
+          <div className="exchange-guide-heading"><div><p className="eyebrow">{translateUi("como comprar · passo 2")}</p><h3>{translateUi("Compre USDT na exchange.")}</h3></div><p>{translateUi("Tutoriais educativos; não são recomendação. Disponibilidade e taxas variam. Links de indicação podem gerar comissão.")}</p></div>
+          <div className="exchange-cards-grid" aria-label={translateUi("Tutoriais de exchanges")}>
+            {exchanges.map((exchange) => <button key={exchange.id} type="button" onClick={() => { setSelectedExchange(exchange); setSelectedWallet(null) }} className="exchange-choice-card" data-exchange={exchange.id} aria-haspopup="dialog" aria-label={translateTemplate('Abrir tutorial da {{value0}}', [exchange.name])}>
+              <span className="exchange-card-top"><WalletIcon wallet={exchange} className="exchange-brand-icon" /><span className={exchange.supportsTron ? 'exchange-compatible' : 'exchange-incompatible'}>{translateUi(exchange.status)}</span></span>
+              <span className="exchange-choice-name">{translateUi(exchange.name)}</span>
+              <span className="exchange-choice-description">{translateUi(exchange.description)}</span>
+              <span className="wallet-choice-action">{translateUi("Ver tutorial ")}<ArrowRight size={14} /></span>
             </button>)}
           </div>
         </div>
@@ -197,6 +200,7 @@ export function WalletGuideSection({ variant = 'landing' }: { variant?: 'landing
 }
 
 export function CourseAccessPage() {
+  useUiTranslation();
   return <div className="mx-auto max-w-[1100px]"><WalletGuideSection variant="access" /></div>
 }
 
@@ -233,6 +237,7 @@ function useDialogFocus(onClose: () => void, focusKey: string) {
 }
 
 function ExchangeGuideModal({ exchange, onClose }: { exchange: ExchangeGuide; onClose: () => void }) {
+  useUiTranslation();
   const { dialogRef, closeButtonRef } = useDialogFocus(onClose, exchange.id)
   const referralUrl = exchangeReferrals[exchange.id]?.trim()
   const actionUrl = referralUrl || exchange.officialUrl
@@ -242,28 +247,29 @@ function ExchangeGuideModal({ exchange, onClose }: { exchange: ExchangeGuide; on
       <div className="wallet-dialog-header">
         <div className="wallet-dialog-heading">
           <WalletIcon wallet={exchange} className="wallet-brand-icon-large" />
-          <div><p className="wallet-dialog-kicker">Tutorial da exchange</p><h2 id="exchange-dialog-title">Como comprar USDT na {exchange.name}</h2></div>
+          <div><p className="wallet-dialog-kicker">{translateUi("Tutorial da exchange")}</p><h2 id="exchange-dialog-title">{translateUi("Como comprar USDT na ")}{translateUi(exchange.name)}</h2></div>
         </div>
-        <button ref={closeButtonRef} type="button" onClick={onClose} className="wallet-dialog-close" aria-label="Fechar tutorial"><X size={20} /></button>
+        <button ref={closeButtonRef} type="button" onClick={onClose} className="wallet-dialog-close" aria-label={translateUi("Fechar tutorial")}><X size={20} /></button>
       </div>
-      <div className="wallet-dialog-intro"><p>Capturas de guias oficiais. Telas, métodos, taxas e limites mudam por versão e país.</p></div>
-      {exchange.warning && <div className="wallet-warning"><ShieldAlert size={18} /><p>{exchange.warning}</p></div>}
+      <div className="wallet-dialog-intro"><p>{translateUi("Capturas de guias oficiais. Telas, métodos, taxas e limites mudam por versão e país.")}</p></div>
+      {exchange.warning && <div className="wallet-warning"><ShieldAlert size={18} /><p>{translateUi(exchange.warning)}</p></div>}
       <div className="wallet-step-list">
         {exchange.steps.map((step, index) => <article key={step.title} className={'wallet-step-card' + (step.screenshot ? ' has-screenshot' : '') + (step.screenshot?.layout === 'panels' ? ' has-panels' : '')}>
-          <div className="wallet-step-number">{String(index + 1).padStart(2, '0')}</div>
+          <div className="wallet-step-number">{translateUi(String(index + 1).padStart(2, '0'))}</div>
           {step.screenshot && <GuideScreenshotFigure screenshot={step.screenshot} />}
-          <div className="wallet-step-copy"><h3>{step.title}</h3><p>{step.text}</p></div>
+          <div className="wallet-step-copy"><h3>{translateUi(step.title)}</h3><p>{translateUi(step.text)}</p></div>
         </article>)}
       </div>
       <div className="wallet-dialog-footer exchange-dialog-footer">
-        <div className="exchange-source-links"><a className="wallet-source-link" href={exchange.sourceUrl} target="_blank" rel="noreferrer">{exchange.sourceLabel} <ExternalLink size={12} /></a>{exchange.secondarySourceUrl && <a className="wallet-source-link" href={exchange.secondarySourceUrl} target="_blank" rel="noreferrer">{exchange.secondarySourceLabel} <ExternalLink size={12} /></a>}</div>
-        <a href={actionUrl} target="_blank" rel="noreferrer" className="wallet-primary-button exchange-open-link">{referralUrl ? 'Abrir com link de indicação' : 'Abrir site oficial'} <ExternalLink size={14} /></a>
+        <div className="exchange-source-links"><a className="wallet-source-link" href={exchange.sourceUrl} target="_blank" rel="noreferrer">{translateUi(exchange.sourceLabel)} <ExternalLink size={12} /></a>{exchange.secondarySourceUrl && <a className="wallet-source-link" href={exchange.secondarySourceUrl} target="_blank" rel="noreferrer">{translateUi(exchange.secondarySourceLabel)} <ExternalLink size={12} /></a>}</div>
+        <a href={actionUrl} target="_blank" rel="noreferrer" className="wallet-primary-button exchange-open-link">{translateUi(referralUrl ? 'Abrir com link de indicação' : 'Abrir site oficial')} <ExternalLink size={14} /></a>
       </div>
     </div>
   </div>, document.body)
 }
 
 function WalletModal({ wallet, onClose }: { wallet: WalletGuide; onClose: () => void }) {
+  useUiTranslation();
   const { dialogRef, closeButtonRef } = useDialogFocus(onClose, wallet.id)
 
   return createPortal(<div className="wallet-guide-overlay" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
@@ -271,35 +277,37 @@ function WalletModal({ wallet, onClose }: { wallet: WalletGuide; onClose: () => 
       <div className="wallet-dialog-header">
         <div className="wallet-dialog-heading">
           <WalletIcon wallet={wallet} className="wallet-brand-icon-large" />
-          <div><p className="wallet-dialog-kicker">{wallet.compatible ? 'Guia de uso' : 'Compatibilidade da rede'}</p><h2 id="wallet-dialog-title">Como pagar com {wallet.name}</h2></div>
+          <div><p className="wallet-dialog-kicker">{translateUi(wallet.compatible ? 'Guia de uso' : 'Compatibilidade da rede')}</p><h2 id="wallet-dialog-title">{translateUi("Como pagar com ")}{translateUi(wallet.name)}</h2></div>
         </div>
-        <button ref={closeButtonRef} type="button" onClick={onClose} className="wallet-dialog-close" aria-label="Fechar guia"><X size={20} /></button>
+        <button ref={closeButtonRef} type="button" onClick={onClose} className="wallet-dialog-close" aria-label={translateUi("Fechar guia")}><X size={20} /></button>
       </div>
 
-        <div className="wallet-dialog-intro"><p>{wallet.compatible ? 'Etapas para preparar e conferir transferência de USDT em TRON. Imagens mostram telas de guias oficiais.' : 'TRON não aparece entre redes suportadas pela Phantom; guia abaixo mostra alternativas seguras.'}</p></div>
-        {wallet.warning && <div className="wallet-warning"><ShieldAlert size={18} /><p>{wallet.warning}</p></div>}
+        <div className="wallet-dialog-intro"><p>{translateUi(wallet.compatible ? 'Etapas para preparar e conferir transferência de USDT em TRON. Imagens mostram telas de guias oficiais.' : 'TRON não aparece entre redes suportadas pela Phantom; guia abaixo mostra alternativas seguras.')}</p></div>
+        {wallet.warning && <div className="wallet-warning"><ShieldAlert size={18} /><p>{translateUi(wallet.warning)}</p></div>}
         <div className="wallet-step-list">
           {wallet.steps.map((step, index) => <article key={step.title} className={'wallet-step-card' + (step.screenshot ? ' has-screenshot' : '') + (step.screenshot?.layout === 'panels' ? ' has-panels' : '')}>
-            <div className="wallet-step-number">{String(index + 1).padStart(2, '0')}</div>
+            <div className="wallet-step-number">{translateUi(String(index + 1).padStart(2, '0'))}</div>
             {step.screenshot && <GuideScreenshotFigure screenshot={step.screenshot} />}
-            <div className="wallet-step-copy"><h3>{step.title}</h3><p>{step.text}</p>{index === 0 && wallet.compatible && <a href={wallet.downloadUrl} target="_blank" rel="noreferrer">Site oficial <ExternalLink size={12} /></a>}</div>
+            <div className="wallet-step-copy"><h3>{translateUi(step.title)}</h3><p>{translateUi(step.text)}</p>{index === 0 && wallet.compatible && <a href={wallet.downloadUrl} target="_blank" rel="noreferrer">{translateUi("Site oficial ")}<ExternalLink size={12} /></a>}</div>
           </article>)}
         </div>
         <div className="wallet-dialog-footer">
-          <a className="wallet-source-link" href={wallet.sourceUrl} target="_blank" rel="noreferrer">{wallet.sourceLabel} <ExternalLink size={12} /></a>
-          <button type="button" onClick={onClose} className={wallet.compatible ? 'wallet-primary-button' : 'wallet-secondary-button'}>{wallet.compatible ? 'Fechar guia' : 'Escolher outra carteira'}</button>
+          <a className="wallet-source-link" href={wallet.sourceUrl} target="_blank" rel="noreferrer">{translateUi(wallet.sourceLabel)} <ExternalLink size={12} /></a>
+          <button type="button" onClick={onClose} className={wallet.compatible ? 'wallet-primary-button' : 'wallet-secondary-button'}>{translateUi(wallet.compatible ? 'Fechar guia' : 'Escolher outra carteira')}</button>
         </div>
     </div>
   </div>, document.body)
 }
 
 function WalletIcon({ wallet, className = '' }: { wallet: { name: string; tint: string; iconPath: string }; className?: string }) {
-  return <span className={'wallet-brand-icon wallet-tint-' + wallet.tint + (className ? ' ' + className : '')} aria-hidden="true"><img src={wallet.iconPath} alt="" /></span>
+  useUiTranslation();
+  return <span className={'wallet-brand-icon wallet-tint-' + wallet.tint + (className ? ' ' + className : '')} aria-hidden="true"><img src={wallet.iconPath} alt={translateUi("")} /></span>
 }
 
 function GuideScreenshotFigure({ screenshot }: { screenshot: GuideScreenshot }) {
+  useUiTranslation();
   return <figure className="guide-screenshot" data-layout={screenshot.layout}>
-    <img src={screenshot.src} alt={screenshot.alt} loading="lazy" decoding="async" />
-    <figcaption>Fonte: <a href={screenshot.sourceUrl} target="_blank" rel="noreferrer">{screenshot.sourceLabel} <ExternalLink size={11} /></a></figcaption>
+    <img src={screenshot.src} alt={translateUi(screenshot.alt)} loading="lazy" decoding="async" />
+    <figcaption>{translateUi("Fonte: ")}<a href={screenshot.sourceUrl} target="_blank" rel="noreferrer">{translateUi(screenshot.sourceLabel)} <ExternalLink size={11} /></a></figcaption>
   </figure>
 }

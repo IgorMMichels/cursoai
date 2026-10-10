@@ -1,3 +1,5 @@
+import { translateUi } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { PlatformGuides } from '@/components/platform-guides'
@@ -83,6 +85,7 @@ const filters: { id: Filter; label: string }[] = [
 ]
 
 export function PlatformsPage() {
+  useUiTranslation();
   const [filtro, setFiltro] = useState<Filter>('todas')
 
   const goTo = (target: Filter) => {
@@ -105,15 +108,12 @@ export function PlatformsPage() {
     <div className="space-y-10">
       <section className="overflow-hidden rounded-2xl border border-white/[.07] bg-[#0d0e14]">
         <div className="mx-auto w-full max-w-5xl px-6 py-10 sm:px-10 sm:py-14">
-          <p className="eyebrow">Plataformas</p>
+          <p className="eyebrow">{translateUi("Plataformas")}</p>
           <h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#eef3ee] sm:text-5xl">
-            Compare antes
-            <br />
-            de conectar.
-          </h1>
+            {translateUi("Compare antes")}<br />
+            {translateUi("de conectar.")}</h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#8fa197]">
-            Terminais, carteiras e caminhos de pagamento em um só lugar. Abra o guia, confira o endereço oficial e siga com limites definidos.
-          </p>
+            {translateUi("Terminais, carteiras e caminhos de pagamento em um só lugar. Abra o guia, confira o endereço oficial e siga com limites definidos.")}</p>
         </div>
       </section>
 
@@ -123,22 +123,22 @@ export function PlatformsPage() {
             <div className="relative aspect-[16/9] overflow-hidden bg-[#13141b]">
               <img
                 src={category.cover}
-                alt=""
+                alt={translateUi("")}
                 loading="lazy"
                 className="size-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.04]"
               />
               <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0d0e14]/60 to-transparent" />
             </div>
             <div className="flex flex-1 flex-col p-6 sm:p-7">
-              <h2 className="font-display text-xl font-medium tracking-[-.03em] text-[#eef3ee]">{category.title}</h2>
-              <p className="mt-2 text-xs leading-relaxed text-[#8fa197]">{category.description}</p>
+              <h2 className="font-display text-xl font-medium tracking-[-.03em] text-[#eef3ee]">{translateUi(category.title)}</h2>
+              <p className="mt-2 text-xs leading-relaxed text-[#8fa197]">{translateUi(category.description)}</p>
               <div className="mt-auto pt-6">
                 <button
                   type="button"
                   onClick={() => goTo(category.id)}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#a78bfa] px-5 text-xs font-semibold text-[#0d0e14] transition-colors hover:bg-[#c1acff]"
                 >
-                  {category.cta}
+                  {translateUi(category.cta)}
                   <ArrowRight size={15} />
                 </button>
               </div>
@@ -147,7 +147,7 @@ export function PlatformsPage() {
         ))}
       </div>
 
-      <div id="lista-plataformas" className="flex flex-wrap gap-2 scroll-mt-24" role="group" aria-label="Filtrar plataformas">
+      <div id="lista-plataformas" className="flex flex-wrap gap-2 scroll-mt-24" role="group" aria-label={translateUi("Filtrar plataformas")}>
         {filters.map((entry) => (
           <button
             key={entry.id}
@@ -160,7 +160,7 @@ export function PlatformsPage() {
                 : 'border-white/[.09] bg-white/[.02] text-[#a9b6ad] hover:border-[#a78bfa]/40 hover:text-white'
             }`}
           >
-            {entry.label}
+            {translateUi(entry.label)}
           </button>
         ))}
       </div>
@@ -178,23 +178,22 @@ export function PlatformsPage() {
         )}
         {showPagamentos && (
           <div id="plataformas-pagamentos" className="scroll-mt-24 rounded-2xl border border-white/[.07] bg-[#0d0e14] p-5 sm:p-7">
-            <p className="eyebrow">Pagamentos</p>
-            <h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#e9f1eb]">Carteiras e exchanges</h2>
+            <p className="eyebrow">{translateUi("Pagamentos")}</p>
+            <h2 className="mt-2 font-display text-2xl font-medium tracking-[-.04em] text-[#e9f1eb]">{translateUi("Carteiras e exchanges")}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#8ea197]">
-              Prepare USDT na rede certa. Confira endereço, rede e taxas na tela antes de confirmar.
-            </p>
+              {translateUi("Prepare USDT na rede certa. Confira endereço, rede e taxas na tela antes de confirmar.")}</p>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {walletBasics.map((card) => (
                 <article key={card.title} className="flex flex-col rounded-xl border border-white/[.07] bg-[#12121a] p-5">
-                  <h3 className="font-display text-base font-medium text-[#e9f1eb]">{card.title}</h3>
-                  <p className="mt-2 text-xs leading-relaxed text-[#c5d1c8]">{card.frase}</p>
+                  <h3 className="font-display text-base font-medium text-[#e9f1eb]">{translateUi(card.title)}</h3>
+                  <p className="mt-2 text-xs leading-relaxed text-[#c5d1c8]">{translateUi(card.frase)}</p>
                   <ul className="mt-3 list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-[#8ea197]">
                     {card.bullets.map((item) => (
-                      <li key={item}>{item}</li>
+                      <li key={item}>{translateUi(item)}</li>
                     ))}
                   </ul>
                   <p className="mt-4 rounded-lg border border-amber-300/20 bg-amber-300/[.04] p-3 text-[11px] leading-relaxed text-amber-100">
-                    {card.alerta}
+                    {translateUi(card.alerta)}
                   </p>
                 </article>
               ))}

@@ -8,6 +8,7 @@ import { PlatformEntryContext, shouldShowPlatformEntry } from '@/contexts/platfo
 import { PriceTicker } from '@/components/price-ticker'
 import { LocalizationProvider, useLocalization } from '@/contexts/localization-context'
 import { localeFromPath, localizedPath, normalizePathname, unlocalizedPath } from '@/lib/localization'
+import { translateUi } from '@/lib/ui-translation'
 
 const LandingPage = lazy(() => import('@/pages/landing-page').then((module) => ({ default: module.LandingPage })))
 const LoginPage = lazy(() => import('@/pages/login-page').then((module) => ({ default: module.LoginPage })))
@@ -26,6 +27,7 @@ const CourseLayout = lazy(() => import('@/components/course-layout').then((modul
 const JourneysPage = lazy(() => import('@/pages/journeys-page').then((module) => ({ default: module.JourneysPage })))
 const PlatformsPage = lazy(() => import('@/pages/platforms-page').then((module) => ({ default: module.PlatformsPage })))
 const PlansPage = lazy(() => import('@/pages/plans-page').then((module) => ({ default: module.PlansPage })))
+const CheckoutPage = lazy(() => import('@/pages/checkout-page').then((module) => ({ default: module.CheckoutPage })))
 const PreviewPage = lazy(() => import('@/pages/preview-page').then((module) => ({ default: module.PreviewPage })))
 const ToolsPage = lazy(() => import('@/pages/tools-page').then((module) => ({ default: module.ToolsPage })))
 const SimulatorPage = lazy(() => import('@/pages/simulator-page').then((module) => ({ default: module.SimulatorPage })))
@@ -45,27 +47,28 @@ function AffiliateReferralRedirect() {
 
 function AppRoutes() {
   const location = useLocation()
-  const { locale } = useLocalization()
+  const { locale, localizationReady } = useLocalization()
   const { loading: sessionLoading } = useSession()
   const [entryVisible, setEntryVisible] = useState(false)
   const [readyPath, setReadyPath] = useState<string | null>(null)
   const normalizedPathname = normalizePathname(location.pathname)
   const explicitLocale = localeFromPath(normalizedPathname)
   const routePath = unlocalizedPath(normalizedPathname)
-  const routeLocation = { ...location, pathname: routePath }
   const canonicalPath = explicitLocale ? normalizedPathname : localizedPath(normalizedPathname, locale)
+  if (!localizationReady && !explicitLocale) return <div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab">{translateUi('Detectando região…')}</div>
   // Normalize first: page-level redirects must not race the locale redirect.
   if (location.pathname !== canonicalPath) return <Navigate to={`${canonicalPath}${location.search}${location.hash}`} replace state={location.state} />
   const entryActive = shouldShowPlatformEntry(routePath) || entryVisible
   return <PlatformEntryContext.Provider value={entryActive}>
     <ReferralTracker />
     <PlatformEntryAnimation key={routePath} onVisibilityChange={setEntryVisible} contentReady={readyPath === routePath} />
-    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">Abrindo sua trilha…</div>}><RouteContentReady pathname={routePath} ready={!routePath.startsWith('/curso') || !sessionLoading} onReady={setReadyPath}><div key={routePath} className="route-enter" inert={entryActive || undefined} aria-hidden={entryActive || undefined}><Routes location={routeLocation}>
+    <Suspense fallback={<div className="grid min-h-screen place-items-center bg-[#09090d] text-xs text-[#a19dab]">{translateUi('Abrindo sua trilha…')}</div>}><RouteContentReady pathname={routePath} ready={!routePath.startsWith('/curso') || !sessionLoading} onReady={setReadyPath}><div key={routePath} className="route-enter" inert={entryActive || undefined} aria-hidden={entryActive || undefined}><Routes location={{ ...location, pathname: routePath }}>
       <Route path="/" element={<Navigate to={`${localizedPath('/landing', locale)}${location.search}${location.hash}`} replace />} />
       <Route path="/quiz" element={<Navigate to={`${localizedPath('/landing', locale)}${location.search}${location.hash}`} replace />} />
       <Route path="/landing" element={<LandingPage />} />
       {import.meta.env.DEV && <Route path="/loading-preview" element={<LoadingPreviewPage />} />}
       <Route path="/planos" element={<PlansPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/explorar" element={<PreviewPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/ferramentas" element={<ToolsPage />} />

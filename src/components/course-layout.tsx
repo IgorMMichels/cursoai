@@ -1,5 +1,8 @@
+import { translateUi, translateTemplate } from '@/lib/ui-translation'
+import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
+import { LocalizedLink as Link, LocalizedNavLink as NavLink, useLocalizedNavigate as useNavigate } from '@/components/localized-router'
 import { BookOpen, ChevronRight, Headphones, LayoutDashboard, LayoutGrid, LogOut, Map, PanelLeftClose, PanelLeftOpen, ShieldCheck, WalletCards, SlidersHorizontal, Radio } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Brand } from '@/components/brand'
@@ -27,6 +30,7 @@ function routeMetadata(pathname: string) {
 }
 
 export function CourseLayout() {
+  useUiTranslation();
   const { user, completedLessons, signOut } = useSession()
   const location = useLocation()
   const navigate = useNavigate()
@@ -74,8 +78,8 @@ export function CourseLayout() {
           type="button"
           onClick={() => setPinned((value) => !value)}
           aria-expanded={expanded}
-          aria-label={pinned ? 'Recolher barra lateral' : 'Fixar barra lateral'}
-          title={pinned ? 'Recolher barra lateral' : 'Fixar barra lateral'}
+          aria-label={translateUi(pinned ? 'Recolher barra lateral' : 'Fixar barra lateral')}
+          title={translateUi(pinned ? 'Recolher barra lateral' : 'Fixar barra lateral')}
           className="grid size-7 shrink-0 place-items-center rounded-lg border border-white/[.08] bg-white/[.02] text-[#8ea197] transition hover:bg-white/[.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]"
         >
           {expanded ? <PanelLeftClose size={15} /> : <PanelLeftOpen size={15} />}
@@ -83,25 +87,25 @@ export function CourseLayout() {
       </div>
       <div className={expanded ? 'px-4' : 'px-2'}>
         {expanded
-          ? <p className="px-3 pb-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#687b70]">Aprender</p>
+          ? <p className="px-3 pb-3 text-[10px] font-semibold uppercase tracking-[.16em] text-[#687b70]">{translateUi("Aprender")}</p>
           : <div aria-hidden="true" className="mx-auto mb-3 h-px w-8 bg-white/10" />}
-        <nav className="space-y-1" aria-label="Área do aluno">
-          {links.map(({ to, label, icon: Icon, end }) => <NavLink key={label} to={to} end={end} title={!expanded ? label : undefined} aria-label={label} className={({ isActive }) => `group flex items-center gap-3 rounded-xl py-3 text-[13px] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] ${expanded ? 'px-3' : 'justify-center px-0'} ${isCurrentLink(label, isActive) ? 'bg-[#a78bfa]/[.12] text-white ring-1 ring-[#a78bfa]/25' : 'text-[#8ea197] hover:bg-white/[.05] hover:text-white'}`}><Icon size={17} strokeWidth={1.7} />{expanded && <span className="truncate">{label}</span>}</NavLink>)}
+        <nav className="space-y-1" aria-label={translateUi("Área do aluno")}>
+          {links.map(({ to, label, icon: Icon, end }) => <NavLink key={label} to={to} end={end} title={translateUi(!expanded ? label : undefined)} aria-label={translateUi(label)} className={({ isActive }) => `group flex items-center gap-3 rounded-xl py-3 text-[13px] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa] ${expanded ? 'px-3' : 'justify-center px-0'} ${isCurrentLink(label, isActive) ? 'bg-[#a78bfa]/[.12] text-white ring-1 ring-[#a78bfa]/25' : 'text-[#8ea197] hover:bg-white/[.05] hover:text-white'}`}><Icon size={17} strokeWidth={1.7} />{expanded && <span className="truncate">{translateUi(label)}</span>}</NavLink>)}
         </nav>
       </div>
       <div className={`mt-auto ${expanded ? 'p-4' : 'p-2'}`}>
-        {!isPreview && expanded && <div className="rounded-2xl border border-white/[.07] bg-white/[.025] p-4"><div className="flex items-center justify-between text-xs"><span className="text-[#a4b5ab]">Cripto do Zero</span><span className="font-semibold text-[#a78bfa]">{progress}%</span></div><Progress value={progress} className="mt-3 h-1.5 bg-white/[.08] [&_[data-slot=progress-indicator]]:bg-[#a78bfa]" /><p className="mt-3 text-[11px] leading-relaxed text-[#788b80]">{legacyCompleted} de {allLessons.length} aulas marcadas como concluídas</p><NavLink to="/curso#modulos" className="mt-4 inline-flex items-center gap-1 text-xs text-[#b6a5f0] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]">Continuar <ChevronRight size={14} /></NavLink></div>}
-        <div className={`flex items-center gap-1 rounded-xl border border-white/[.045] bg-white/[.015] p-1 ${expanded ? 'mt-4' : 'mt-4 flex-col justify-center'}`}><ProfileSettings compact={!expanded} /><button type="button" onClick={() => { signOut(); navigate('/login') }} aria-label="Sair" title="Sair" className="grid size-9 shrink-0 place-items-center rounded-lg text-[#81948a] transition hover:bg-white/[.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]"><LogOut size={15} /></button></div>
+        {!isPreview && expanded && <div className="rounded-2xl border border-white/[.07] bg-white/[.025] p-4"><div className="flex items-center justify-between text-xs"><span className="text-[#a4b5ab]">{translateUi("Cripto do Zero")}</span><span className="font-semibold text-[#a78bfa]">{translateUi(progress)}%</span></div><Progress value={progress} className="mt-3 h-1.5 bg-white/[.08] [&_[data-slot=progress-indicator]]:bg-[#a78bfa]" /><p className="mt-3 text-[11px] leading-relaxed text-[#788b80]">{translateUi(legacyCompleted)} {translateUi(" de ")}{translateUi(allLessons.length)} {translateUi(" aulas marcadas como concluídas")}</p><NavLink to="/curso#modulos" className="mt-4 inline-flex items-center gap-1 text-xs text-[#b6a5f0] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]">{translateUi("Continuar ")}<ChevronRight size={14} /></NavLink></div>}
+        <div className={`flex items-center gap-1 rounded-xl border border-white/[.045] bg-white/[.015] p-1 ${expanded ? 'mt-4' : 'mt-4 flex-col justify-center'}`}><ProfileSettings compact={!expanded} /><button type="button" onClick={() => { signOut(); navigate('/login') }} aria-label={translateUi("Sair")} title={translateUi("Sair")} className="grid size-9 shrink-0 place-items-center rounded-lg text-[#81948a] transition hover:bg-white/[.06] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#a78bfa]"><LogOut size={15} /></button></div>
       </div>
     </aside>
 
     <div data-course-scroll className="min-w-0 lg:col-start-2 lg:h-[calc(100dvh-40px)] lg:overflow-y-auto lg:overscroll-y-contain">
       <header className="sticky top-0 z-20 flex h-[68px] items-center justify-between border-b border-white/[.07] bg-[#09090d]/85 px-4 backdrop-blur-xl sm:px-7 lg:px-10">
         <div className="lg:hidden"><Brand compact /></div>
-        <div className="hidden items-center gap-2 text-xs text-[#7f9287] lg:flex"><span>Seu espaço de estudo</span><ChevronRight size={13} /><span className="text-[#c6d4cb]">{inExtraAudio ? 'Áudios extras' : inTools ? 'Ferramentas' : inJourneys ? 'Jornadas' : inPlatforms ? 'Plataformas' : `${modules.length} módulos`}</span></div>
-        <Link to="/curso/ferramentas" className="ml-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/[.08] px-2.5 text-[10px] text-[#c1acff] lg:hidden" aria-label="Ferramentas do curso"><SlidersHorizontal size={14} /><span className="hidden sm:inline">Ferramentas</span></Link>
-        <Link to="/curso/audios-extras" className="ml-1 grid size-9 shrink-0 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label="Áudios extras" title="Áudios extras"><Headphones size={15} /></Link>
-        <div className="ml-auto flex items-center gap-2 sm:gap-3"><div className="hidden md:block"><LocalizationSelector /></div>{isPreview && <Link to="/planos" className="button-motion inline-flex min-h-9 items-center justify-center rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]">Começar agora</Link>}<Link to="/jornadas" className="inline-flex min-h-9 items-center gap-1 rounded-full border border-white/[.08] px-3 text-[10px] text-[#c1acff] hover:bg-white/[.04] lg:hidden"><Map size={14} />Jornadas</Link><Link to="/plataformas" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label="Plataformas"><LayoutGrid size={16} /></Link><Link to="/acesso" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04]" aria-label="Como pagar"><WalletCards size={16} /></Link><ProfileSettings compact /></div>
+        <div className="hidden items-center gap-2 text-xs text-[#7f9287] lg:flex"><span>{translateUi("Seu espaço de estudo")}</span><ChevronRight size={13} /><span className="text-[#c6d4cb]">{translateUi(inExtraAudio ? 'Áudios extras' : inTools ? 'Ferramentas' : inJourneys ? 'Jornadas' : inPlatforms ? 'Plataformas' : translateTemplate("{{value0}} módulos", [modules.length]))}</span></div>
+        <Link to="/curso/ferramentas" className="ml-3 inline-flex min-h-9 items-center gap-1.5 rounded-full border border-white/[.08] px-2.5 text-[10px] text-[#c1acff] lg:hidden" aria-label={translateUi("Ferramentas do curso")}><SlidersHorizontal size={14} /><span className="hidden sm:inline">{translateUi("Ferramentas")}</span></Link>
+        <Link to="/curso/audios-extras" className="ml-1 grid size-9 shrink-0 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label={translateUi("Áudios extras")} title={translateUi("Áudios extras")}><Headphones size={15} /></Link>
+        <div className="ml-auto flex items-center gap-2 sm:gap-3"><LocalizationSelector compact showRegion={false} />{isPreview && <Link to="/planos" className="button-motion inline-flex min-h-9 items-center justify-center rounded-xl bg-[#b49cff] px-4 text-xs font-semibold text-[#100c19] hover:bg-[#c6b4ff]">{translateUi("Começar agora")}</Link>}<Link to="/jornadas" className="inline-flex min-h-9 items-center gap-1 rounded-full border border-white/[.08] px-3 text-[10px] text-[#c1acff] hover:bg-white/[.04] lg:hidden"><Map size={14} />{translateUi("Jornadas")}</Link><Link to="/plataformas" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04] lg:hidden" aria-label={translateUi("Plataformas")}><LayoutGrid size={16} /></Link><Link to="/acesso" className="grid size-9 place-items-center rounded-full border border-white/[.08] text-[#c1acff] hover:bg-white/[.04]" aria-label={translateUi("Como pagar")}><WalletCards size={16} /></Link><ProfileSettings compact /></div>
       </header>
       <main className="mx-auto w-full max-w-[1450px] px-4 pb-20 pt-7 sm:px-7 sm:pt-9 lg:px-10"><Outlet /></main>
     </div>

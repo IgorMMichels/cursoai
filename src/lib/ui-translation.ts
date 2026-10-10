@@ -1,0 +1,191 @@
+import i18n from 'i18next'
+import { publicTranslations } from './translations-public.ts'
+import { courseTranslations } from './translations-course.ts'
+import { templateTranslations } from './translations-templates.ts'
+import { extraTranslations } from './translations-extra.ts'
+import { platformTranslations } from './translations-platforms.ts'
+import { editorialTranslations } from './translations-editorial.ts'
+import { translationGaps } from './translations-gaps.ts'
+
+export type TranslationCatalog = Record<string, { en: string; es: string }>
+export const uiTranslations: TranslationCatalog = { ...platformTranslations, ...editorialTranslations, ...courseTranslations, ...extraTranslations, ...publicTranslations, ...templateTranslations, ...translationGaps,
+
+  'Publicado': { en: 'Published', es: 'Publicado' },
+  'Rascunho': { en: 'Draft', es: 'Borrador' },
+  'Fechar aulas': { en: 'Collapse lessons', es: 'Cerrar lecciones' },
+  'Ver aulas': { en: 'View lessons', es: 'Ver lecciones' },
+  'Chave PIX': { en: 'PIX key', es: 'Clave PIX' },
+  'Carteira Solana': { en: 'Solana wallet', es: 'Billetera Solana' },
+  'Ativando…': { en: 'Activating…', es: 'Activando…' },
+  'Ativar conta de afiliado': { en: 'Activate affiliate account', es: 'Activar cuenta de afiliado' },
+  'Copiado': { en: 'Copied', es: 'Copiado' },
+  'Copiar': { en: 'Copy', es: 'Copiar' },
+  'one-time · draft': { en: 'one-time · draft', es: 'pago único · borrador' },
+  'Marcar aula concluída': { en: 'Mark lesson as complete', es: 'Marcar lección como completada' },
+  'Próxima aula': { en: 'Next lesson', es: 'Siguiente lección' },
+  'Revisar módulo': { en: 'Review module', es: 'Repasar módulo' },
+  'Senha': { en: 'Password', es: 'Contraseña' },
+  'Aguarde…': { en: 'Please wait…', es: 'Espera…' },
+  'Estimativa por IA': { en: 'AI estimate', es: 'Estimación de IA' },
+  'Triagem por regras': { en: 'Rule-based screening', es: 'Análisis basado en reglas' },
+  '· Macro': { en: '· Macro', es: '· Macro' },
+  '· Cripto': { en: '· Crypto', es: '· Cripto' },
+  'Atualizações automáticas': { en: 'Automatic updates', es: 'Actualizaciones automáticas' },
+  'Nenhuma notícia com esses filtros': { en: 'No news matches these filters', es: 'No hay noticias con estos filtros' },
+  'Aguardando as primeiras notícias': { en: 'Waiting for the first news items', es: 'Esperando las primeras noticias' },
+  'Experimente outro ativo, tema ou fonte.': { en: 'Try another asset, topic, or source.', es: 'Prueba con otro activo, tema o fuente.' },
+  'As manchetes aparecem aqui assim que o serviço conclui uma coleta.': { en: 'Headlines will appear here after the service completes its next fetch.', es: 'Los titulares aparecerán aquí cuando el servicio complete la próxima actualización.' },
+  'Remover notícia das salvas': { en: 'Remove saved news item', es: 'Quitar noticia de guardados' },
+  'Salvar notícia': { en: 'Save news item', es: 'Guardar noticia' },
+  'Dado anterior': { en: 'Previous reading', es: 'Dato anterior' },
+  'Taxa elevada': { en: 'Elevated rate', es: 'Tasa elevada' },
+  'Dentro do limite': { en: 'Within range', es: 'Dentro del rango' },
+  'Taxa neutra': { en: 'Neutral rate', es: 'Tasa neutral' },
+  'Longs pagam shorts': { en: 'Longs pay shorts', es: 'Las posiciones long pagan a las short' },
+  'Shorts pagam longs': { en: 'Shorts pay longs', es: 'Las posiciones short pagan a las long' },
+  'Sem notícias recentes no recorte': { en: 'No recent news in this selection', es: 'No hay noticias recientes en esta selección' },
+  'Fonte com falha': { en: 'Source unavailable', es: 'Fuente con errores' },
+  'Feed acessível': { en: 'Feed available', es: 'Feed disponible' },
+  'Nenhuma coleta concluída': { en: 'No fetch has completed', es: 'No se ha completado ninguna actualización' },
+  'Valores fictícios': { en: 'Sample values', es: 'Valores de ejemplo' },
+  'BTC · ETH · SOL': { en: 'BTC · ETH · SOL', es: 'BTC · ETH · SOL' },
+  'Falha · usando regras': { en: 'Unavailable · using rules', es: 'Error · usando reglas' },
+  'Limite diário · usando regras': { en: 'Daily limit · using rules', es: 'Límite diario · usando reglas' },
+  'Ativa': { en: 'Active', es: 'Activa' },
+  'Aguardando análise': { en: 'Waiting for analysis', es: 'Esperando el análisis' },
+  'Chave não configurada': { en: 'API key not configured', es: 'Clave no configurada' },
+  'Desativada · usando regras': { en: 'Inactive · using rules', es: 'Desactivada · usando reglas' },
+  'Pausado': { en: 'Paused', es: 'En pausa' },
+  'Não conectado': { en: 'Not connected', es: 'Sin conexión' },
+  'resultado': { en: 'result', es: 'resultado' },
+  'Cole o mint address da Solana': { en: 'Paste the Solana mint address', es: 'Pega la dirección mint de Solana' },
+  '0x… contrato da rede selecionada': { en: '0x… contract address on the selected network', es: '0x… contrato de la red seleccionada' },
+  'Buscando…': { en: 'Searching…', es: 'Buscando…' },
+  'Carregar token': { en: 'Load token', es: 'Cargar token' },
+  'Token fictício · exemplo didático': { en: 'Sample token · educational example', es: 'Token de ejemplo · demostración didáctica' },
+  'DEMONSTRAÇÃO': { en: 'DEMO', es: 'DEMOSTRACIÓN' },
+  'DADOS DE MERCADO': { en: 'MARKET DATA', es: 'DATOS DE MERCADO' },
+  'Market cap não informado pela fonte': { en: 'Market cap not reported by source', es: 'La fuente no informa la capitalización de mercado' },
+  'cenário sintético': { en: 'synthetic scenario', es: 'escenario sintético' },
+  'velas de negócios recentes': { en: 'recent trade candles', es: 'velas de operaciones recientes' },
+  'velas históricas': { en: 'historical candles', es: 'velas históricas' },
+  'Pausar exemplo': { en: 'Pause example', es: 'Pausar ejemplo' },
+  'Reproduzir exemplo': { en: 'Play example', es: 'Reproducir ejemplo' },
+  'Carregando velas…': { en: 'Loading candles…', es: 'Cargando velas…' },
+  'Sem negócios disponíveis neste intervalo': { en: 'No trades available for this interval', es: 'No hay operaciones disponibles en este intervalo' },
+  'Reconectando cotação': { en: 'Reconnecting to price feed', es: 'Reconectando con la cotización' },
+  'Gráfico com atualização limitada': { en: 'Chart updates are limited', es: 'Actualización limitada del gráfico' },
+  'Fonte sem negócios recentes': { en: 'No recent trades from source', es: 'La fuente no tiene operaciones recientes' },
+  'Consultas automáticas ativas': { en: 'Automatic requests are active', es: 'Las consultas automáticas están activas' },
+  'Não disponível': { en: 'Unavailable', es: 'No disponible' },
+  'Não informado': { en: 'Not reported', es: 'No informado' },
+  'sem liquidez informada': { en: 'liquidity not reported', es: 'liquidez no informada' },
+  'Preços e métricas fictícios. Avance o cenário para observar sua posição.': { en: 'Sample prices and metrics. Advance the scenario to see your position change.', es: 'Precios y métricas de ejemplo. Avanza el escenario para observar tu posición.' },
+  'A vela roxa em formação reage a cada cotação recebida: é uma estimativa, sem volume inventado. As velas verdes e vermelhas mostram negócios da fonte. Cotação a cada 5s · negócios a cada 15s · histórico a cada 60s. Intervalo de 1s não significa transmissão por segundo; as fontes têm cache.': { en: 'The developing purple candle responds to each price update; it is an estimate with no invented volume. Green and red candles show trades from the source. Prices every 5s · trades every 15s · history every 60s. A 1s interval does not mean second-by-second streaming; sources are cached.', es: 'La vela morada en formación responde a cada cotización: es una estimación sin inventar volumen. Las velas verdes y rojas muestran operaciones de la fuente. Cotización cada 5 s · operaciones cada 15 s · historial cada 60 s. Un intervalo de 1 s no significa transmisión segundo a segundo; las fuentes usan caché.' },
+  'Qual é sua hipótese?': { en: 'What is your hypothesis?', es: '¿Cuál es tu hipótesis?' },
+  'O que aprendeu com a saída?': { en: 'What did you learn from the exit?', es: '¿Qué aprendiste de la salida?' },
+  'Débito total': { en: 'Total debit', es: 'Débito total' },
+  'Recebimento líquido': { en: 'Net proceeds', es: 'Importe neto recibido' },
+  'Confirmando cotação…': { en: 'Confirming price…', es: 'Confirmando cotización…' },
+  'Compre este token para abrir uma posição.': { en: 'Buy this token to open a position.', es: 'Compra este token para abrir una posición.' },
+  'Fictício': { en: 'Sample', es: 'De ejemplo' },
+  'Cenário': { en: 'Scenario', es: 'Escenario' },
+  'Venda': { en: 'Sell', es: 'Vender' },
+  'Piloto disponível': { en: 'Pilot available', es: 'Piloto disponible' },
+  'Em planejamento': { en: 'In planning', es: 'En planificación' },
+  'Verificando seu acesso…': { en: 'Checking your access…', es: 'Comprobando tu acceso…' },
+  'Em planejamento para o curso': { en: 'Planned for the course', es: 'Previsto para el curso' },
+  'Em planejamento para assinantes': { en: 'Planned for subscribers', es: 'Previsto para suscriptores' },
+  'Pausar narração': { en: 'Pause narration', es: 'Pausar narración' },
+  'Reproduzir narração': { en: 'Play narration', es: 'Reproducir narración' },
+  'Fechar transcrição': { en: 'Close transcript', es: 'Cerrar transcripción' },
+  'Ver transcrição': { en: 'View transcript', es: 'Ver transcripción' },
+  'Acompanhar leitura: ligado': { en: 'Follow reading: on', es: 'Seguir lectura: activado' },
+  'Acompanhar leitura: desligado': { en: 'Follow reading: off', es: 'Seguir lectura: desactivado' },
+  'Recolher barra lateral': { en: 'Collapse sidebar', es: 'Contraer barra lateral' },
+  'Fixar barra lateral': { en: 'Pin sidebar', es: 'Fijar barra lateral' },
+  'Conteúdo protegido': { en: 'Protected content', es: 'Contenido protegido' },
+  'Salvar': { en: 'Save', es: 'Guardar' },
+  'publicada': { en: 'published', es: 'publicada' },
+  'rascunho': { en: 'draft', es: 'borrador' },
+  'Áudio atualizado · voz gerada por IA': { en: 'Updated audio · AI-generated voice', es: 'Audio actualizado · voz generada por IA' },
+  'Áudio extra · voz gerada por IA': { en: 'Extra audio · AI-generated voice', es: 'Audio adicional · voz generada por IA' },
+  'Pausar áudio complementar': { en: 'Pause extra audio', es: 'Pausar audio adicional' },
+  'Reproduzir áudio complementar': { en: 'Play extra audio', es: 'Reproducir audio adicional' },
+  'Link de indicação': { en: 'Referral link', es: 'Enlace de referido' },
+  'Endereço oficial': { en: 'Official address', es: 'Dirección oficial' },
+  'Pronto para começar': { en: 'Ready to begin', es: 'Listo para empezar' },
+  'Preparando sua trilha': { en: 'Preparing your learning path', es: 'Preparando tu recorrido' },
+  'Preparando sua jornada': { en: 'Preparing your journey', es: 'Preparando tu recorrido' },
+  'Cotação de USDT em reais': { en: 'USDT price in Brazilian reais', es: 'Cotización de USDT en reales brasileños' },
+  'Tether': { en: 'Tether', es: 'Tether' },
+  'USDT / BRL · pode diferir do dólar comercial': { en: 'USDT / BRL · may differ from the market exchange rate', es: 'USDT / BRL · puede diferir del tipo de cambio de mercado' },
+  'Indisponível': { en: 'Unavailable', es: 'No disponible' },
+  'Perfil salvo na conta': { en: 'Profile saved to your account', es: 'Perfil guardado en tu cuenta' },
+  'Login indisponível': { en: 'Login unavailable', es: 'Inicio de sesión no disponible' },
+  'Salvar perfil': { en: 'Save profile', es: 'Guardar perfil' },
+  'Long': { en: 'Long', es: 'Long' },
+  'Short': { en: 'Short', es: 'Short' },
+  'Compra + taxa de entrada': { en: 'Purchase + entry fee', es: 'Compra + comisión de entrada' },
+  'posição comprada': { en: 'long position', es: 'posición long' },
+  'posição vendida': { en: 'short position', es: 'posición short' },
+  'recebido': { en: 'received', es: 'recibido' },
+  'pago': { en: 'paid', es: 'pagado' },
+  'Mesma margem, exposição diferente.': { en: 'Same margin, different exposure.', es: 'Mismo margen, distinta exposición.' },
+  'Mesma quantidade, margem diferente.': { en: 'Same quantity, different margin.', es: 'Misma cantidad, distinto margen.' },
+  'Com margem fixa, aumentar a alavancagem aumenta a exposição e os efeitos da variação do preço. Os custos também crescem com a posição.': { en: 'With fixed margin, higher leverage increases exposure and amplifies the effect of price changes. Costs also rise with position size.', es: 'Con margen fijo, más apalancamiento aumenta la exposición y amplifica el efecto de los cambios de precio. Los costes también aumentan con el tamaño de la posición.' },
+  'Com quantidade fixa, mudar a alavancagem altera a margem exigida. O resultado em USDT permanece o mesmo para os mesmos preços e custos.': { en: 'With fixed quantity, leverage changes the required margin. The USDT result stays the same for the same prices and costs.', es: 'Con cantidad fija, el apalancamiento cambia el margen requerido. El resultado en USDT se mantiene igual con los mismos precios y costes.' },
+  'Sem percentual finito': { en: 'No finite percentage', es: 'No existe un porcentaje finito' },
+  'Saldo zero não cresce por multiplicação percentual.': { en: 'A zero balance cannot grow through percentage multiplication.', es: 'Un saldo de cero no puede crecer mediante una multiplicación porcentual.' },
+  'Por que não aparece um número?': { en: 'Why is there no number?', es: '¿Por qué no aparece un número?' },
+  'Por que queda e recuperação não se anulam?': { en: 'Why don’t a loss and recovery cancel each other out?', es: '¿Por qué una pérdida y su recuperación no se compensan?' },
+  'Com perda total, o ponto de partida é zero. Qualquer percentual multiplicado por zero continua zero; um novo aporte seria outra situação, fora deste cálculo.': { en: 'After a total loss, the starting balance is zero. Any percentage multiplied by zero remains zero; adding new funds is a separate case outside this calculation.', es: 'Tras una pérdida total, el saldo inicial es cero. Cualquier porcentaje multiplicado por cero sigue siendo cero; añadir fondos sería otro caso, fuera de este cálculo.' },
+  'Informe um saldo inicial maior que zero.': { en: 'Enter a starting balance greater than zero.', es: 'Introduce un saldo inicial superior a cero.' },
+  'Sair da tela cheia': { en: 'Exit full screen', es: 'Salir de pantalla completa' },
+  'Tela cheia': { en: 'Full screen', es: 'Pantalla completa' },
+  'Linhas de referência de preço': { en: 'Price reference lines', es: 'Líneas de referencia de precio' },
+  'Trajetória ilustrativa de preço': { en: 'Illustrative price path', es: 'Trayectoria ilustrativa del precio' },
+  'Comparação ilustrativa de saldo': { en: 'Illustrative balance comparison', es: 'Comparación ilustrativa del saldo' },
+  'Entre na sua conta': { en: 'Sign in to your account', es: 'Inicia sesión en tu cuenta' },
+  'Crie sua conta': { en: 'Create your account', es: 'Crea tu cuenta' },
+  'Redefina sua senha': { en: 'Reset your password', es: 'Restablece tu contraseña' },
+  'Escolha uma nova senha': { en: 'Choose a new password', es: 'Elige una contraseña nueva' },
+  'Escolha seu ID público. Ele vira seu link de indicação assim que criar a conta.': { en: 'Choose a public username. It becomes your referral link when you create your account.', es: 'Elige un nombre de usuario público. Será tu enlace de referido al crear la cuenta.' },
+  'Enviaremos um link seguro se houver conta para esse e-mail.': { en: 'We’ll send a secure link if an account exists for this email.', es: 'Enviaremos un enlace seguro si existe una cuenta con este correo.' },
+  'Escolha uma senha nova para proteger sua conta.': { en: 'Choose a new password to protect your account.', es: 'Elige una contraseña nueva para proteger tu cuenta.' },
+  'Acesse com seu e-mail e senha.': { en: 'Sign in with your email and password.', es: 'Inicia sesión con tu correo y contraseña.' },
+  'Omega — cripto, memecoins, futuros e trading': { en: 'Omega — crypto, memecoins, futures, and trading', es: 'Omega — criptomonedas, memecoins, futuros y trading' },
+  'Prévia do loading Omega': { en: 'Omega loading preview', es: 'Vista previa de la carga de Omega' },
+  'A mesma entrada do site, com mais tempo para observar.': { en: 'The site entrance, with more time to explore it.', es: 'La entrada del sitio, con más tiempo para observarla.' },
+  'Rever loading': { en: 'Replay loading screen', es: 'Volver a ver la pantalla de carga' },
+  'Abrir o site': { en: 'Open the site', es: 'Abrir el sitio' },
+}
+export const getUiLocale = () => i18n.language || 'pt-BR'
+const foldedKeys = new WeakMap<TranslationCatalog, Map<string, string>>()
+
+// Translate visible strings only. React elements, numbers, form values, IDs and
+// financial units pass through unchanged; no DOM rewriting or page remounting.
+export function translateString(value: string, locale: string, catalog: TranslationCatalog = uiTranslations) {
+  if (locale !== 'en' && locale !== 'es') return value
+  const text = value.trim().replace(/\s+/g, ' ')
+  let keys = foldedKeys.get(catalog)
+  if (!keys) {
+    keys = new Map(Object.keys(catalog).map((key) => [key.toLowerCase(), key]))
+    foldedKeys.set(catalog, keys)
+  }
+  const sourceKey = catalog[text] ? text : keys.get(text.toLowerCase()) ?? text
+  const translation = catalog[sourceKey]?.[locale]
+  return translation ? value.replace(value.trim(), translation) : value
+}
+
+export function translateUi<T>(value: T): T {
+  return (typeof value === 'string' ? translateString(value, getUiLocale()) : value) as T
+}
+
+export function interpolateTranslation(pattern: string, values: unknown[], locale: string) {
+  const template = locale === 'en' || locale === 'es' ? templateTranslations[pattern]?.[locale] ?? pattern : pattern
+  // Replacement callback preserves literal $, markup and names in user values.
+  return template.replace(/\{\{value(\d+)\}\}/g, (_, index: string) => String(values[Number(index)] ?? ''))
+}
+
+export const translateTemplate = (pattern: string, values: unknown[]) => interpolateTranslation(pattern, values, getUiLocale())
