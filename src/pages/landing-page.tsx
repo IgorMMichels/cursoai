@@ -1,6 +1,6 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
-import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
@@ -19,12 +19,14 @@ import { getPlanIdsForMarket } from '@/lib/regional-offers'
 import { PlanPaymentOptions } from '@/components/plan-payment-options'
 import { PageMeta } from '@/components/tools/page-meta'
 import { SourceLanguageNotice } from '@/components/source-language-notice'
+import type { StageState } from '@/lib/omega-logo-stage'
 import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
+import '@/styles/platform-loading.css'
 
-const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
 const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
+const OmegaGlbScene = lazy(() => import('@/components/ui/omega-glb-scene'))
 
 const journeyModuleCount = localJourneys.reduce((total, journey) => total + journey.modules.length, 0)
 const journeyLessonCount = localJourneys.reduce(
@@ -132,7 +134,7 @@ export function LandingPage() {
       <section id="metodo" className="learning-method scroll-mt-24 py-20 sm:py-28">
         <div className="page-shell">
           <div className="learning-method-heading">
-            <div><p className="eyebrow">{translateUi("uma estrutura para pensar")}</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Preço oscila.")}<br /><span>{translateUi("Processo dá contexto.")}</span></h2></div>
+            <div><p className="eyebrow">{translateUi("uma estrutura para pensar")}</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Um método para pensar cripto.")}<br /><span>{translateUi("Sem prever o próximo movimento.")}</span></h2></div>
             <p className="max-w-md text-sm leading-relaxed text-[#9695a0]">{translateUi("Mercado mistura dado, opinião e ruído. A trilha organiza perguntas que você pode levar para qualquer ativo — sem tentar adivinhar o próximo movimento.")}</p>
           </div>
           <div className="learning-method-body mt-11">
@@ -199,7 +201,7 @@ export function LandingPage() {
                 <motion.path className="market-scenario-line" d="M5 61C21 57 23 28 42 37S63 70 81 53 104 18 121 31 145 64 162 49 181 39 199 46 218 68 236 51 255 20 270 33 287 45 296 26" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.35, ease: 'easeInOut', delay: 0.22 }} />
                 <motion.circle cx="296" cy="26" r="3.5" initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }} transition={{ type: 'spring', stiffness: 240, damping: 13, delay: 1.35 }} />
               </svg>
-              <div className="market-bento-copy"><h3>{translateUi("Movimento não é sinal.")}</h3><p>{translateUi("Compare cenários e exposição. O gráfico é didático, não uma cotação.")}</p></div>
+              <div className="market-bento-copy"><h3>{translateUi("Gráfico ilustrativo.")}</h3><p>{translateUi("Compare cenários e exposição. O gráfico é didático, não uma cotação.")}</p></div>
             </motion.article>
 
             <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-markets">
@@ -213,7 +215,7 @@ export function LandingPage() {
 
             <motion.article variants={cardReveal} whileHover={{ y: -3 }} className="market-bento-card market-bento-questions">
               <div className="market-bento-topline"><span>{translateUi("PROCESSO DE ANÁLISE")}</span><FingerprintPattern size={15} /></div>
-              <h3>{translateUi("Antes do ticker, três perguntas.")}</h3>
+              <h3>{translateUi("Três perguntas antes de operar.")}</h3>
               <ul className="market-review-list">
                 <li><span>01</span>{translateUi("Que evidência sustenta a tese?")}</li>
                 <li><span>02</span>{translateUi("O que faria você mudar de ideia?")}</li>
@@ -230,10 +232,6 @@ export function LandingPage() {
             <p className="eyebrow">{translateUi("O que você vai aprender")}</p>
             <h2 id="curriculum-title">{translateUi("Da primeira pergunta ao seu próprio processo.")}</h2>
             <p>{translateUi("Veja as aulas de cada módulo. Comece pelos fundamentos e avance no seu ritmo.")}</p>
-            <dl className="curriculum-facts">
-              <div><dt>{translateUi("módulos")}</dt><dd>{translateUi(modules.length)}</dd></div>
-              <div><dt>{translateUi("aulas narradas")}</dt><dd>{translateUi(allLessons.length)}</dd></div>
-            </dl>
             <p className="curriculum-note">{translateUi("Ao final, você organiza um plano de estudo e segurança. Nenhuma atividade exige comprar cripto.")}</p>
             <a href="#planos" className="curriculum-action">{translateUi("Comparar planos ")}<ArrowRight size={16} /></a>
           </div>
@@ -262,7 +260,7 @@ export function LandingPage() {
 
       <section id="planos" className="pricing-section scroll-mt-24 border-y border-white/[.06] bg-[#0f1017] py-20 sm:py-24">
         <AmbientShader className="pricing-shader" />
-        <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">{translateUi("escolha seu tempo de estudo")}</p><h2 className="display-lg mt-4 text-[#eaf2ec]">{translateUi("Um curso completo. Três formas de acessar.")}</h2><p className="body-lg mt-4 text-[15px]">{translateUi("Escolha o período de acesso que combina com seu ritmo de estudo.")}</p></div>
+        <div className="page-shell"><div className="mx-auto max-w-2xl text-center"><p className="eyebrow">{translateUi("escolha seu tempo de estudo")}</p><h2 className="display-lg mt-4 text-[#eaf2ec]">{translateUi("Escolha quanto tempo de acesso.")}</h2><p className="body-lg mt-4 text-[15px]">{translateUi("Escolha o período de acesso que combina com seu ritmo de estudo.")}</p></div>
           {marketLoading && <p role="status" className="mx-auto mt-8 max-w-xl text-center text-xs text-[#93a69b]">{locale === 'en' ? 'Loading regional prices…' : locale === 'es' ? 'Cargando precios regionales…' : 'Carregando preços da região…'}</p>}
           {pricingError && <p role="alert" className="mx-auto mt-8 max-w-xl text-center text-xs text-[#e4bc76]">{locale === 'en' ? 'Regional prices could not be loaded. Please try again later.' : locale === 'es' ? 'No se pudieron cargar los precios regionales. Inténtalo más tarde.' : 'Não foi possível carregar os preços regionais. Tente novamente mais tarde.'}</p>}
           <div className="pricing-bento mx-auto mt-8">
@@ -284,7 +282,7 @@ export function LandingPage() {
       </section>
 
       <section className="page-shell grid gap-10 pb-8 pt-20 sm:pb-10 sm:pt-24 lg:grid-cols-[.7fr_1.3fr]">
-        <div><p className="eyebrow">{translateUi("perguntas comuns")}</p><h2 className="display-lg mt-4 max-w-sm text-[#eaf2ec]">{translateUi("Sem letra miúda.")}</h2><p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8fa197]">{translateUi("Tire suas dúvidas sobre conteúdo, acesso e programa de afiliados.")}</p><Link to="/afiliar" className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#a78bfa]/20 px-4 py-2.5 text-xs text-[#c1acff] hover:bg-[#a78bfa]/[.06]">{translateUi("Quero participar como afiliado ")}<ArrowRight size={14} /></Link></div>
+        <div><p className="eyebrow">{translateUi("perguntas comuns")}</p><h2 className="display-lg mt-4 max-w-sm text-[#eaf2ec]">{translateUi("Dúvidas frequentes.")}</h2><p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8fa197]">{translateUi("Tire suas dúvidas sobre conteúdo, acesso e programa de afiliados.")}</p><Link to="/afiliar" className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#a78bfa]/20 px-4 py-2.5 text-xs text-[#c1acff] hover:bg-[#a78bfa]/[.06]">{translateUi("Quero participar como afiliado ")}<ArrowRight size={14} /></Link></div>
         <div className="faq-list divide-y divide-white/[.08] border-y border-white/[.08]">{[
           ['Este curso promete que vou ganhar dinheiro?', 'Não. Ele ensina conceitos, pesquisa e organização de risco. O mercado pode gerar perdas, inclusive perda total do capital.'],
           ['Preciso saber programar ou já ter cripto?', 'Não. A trilha começa pelos fundamentos e explica termos antes de avançar. Você pode concluir tudo sem comprar ativos.'],
@@ -303,9 +301,9 @@ function HeroVisual() {
   return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
-        {!entryActive && <Suspense fallback={<AsciiHeroLoading />}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
+        {!entryActive && <HeroOmegaScene />}
         <div className="absolute bottom-5 left-5 right-5 z-10 flex items-end justify-between gap-4">
-          <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">{translateUi("pergunta antes da entrada")}</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">{translateUi("O que faria você mudar de ideia?")}</p></div>
+          <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">{translateUi("trilha omega")}</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">{translateUi("Método antes do mercado.")}</p></div>
         </div>
         <div className="image-grain pointer-events-none absolute inset-0 z-10" />
       </div>
@@ -313,14 +311,19 @@ function HeroVisual() {
   </motion.div>
 }
 
-function AsciiHeroLoading() {
-  useUiTranslation();
-  return <div className="ascii-loader" role="status" aria-live="polite">
-    <div className="ascii-loader-mark"><span>₿</span><i /><i /><i /></div>
-    <p>{translateUi("CARREGANDO VISUALIZAÇÃO")}</p>
-    <div className="ascii-loader-track"><span /></div>
+function HeroOmegaScene() {
+  const spin = useRef<StageState>({ speed: 0.7, reveal: 1, boost: 0 })
+  const shell = useRef<HTMLDivElement>(null)
+  const [failed, setFailed] = useState(false)
+  const frame = useCallback(() => shell.current?.getBoundingClientRect(), [])
+  const noop = useCallback(() => {}, [])
+  const onFailure = useCallback(() => setFailed(true), [])
+  if (failed) return null
+  return <div ref={shell} className="omega-loading-stage is-ready absolute inset-0" aria-hidden="true">
+    <Suspense fallback={null}><OmegaGlbScene spin={spin} frame={frame} onProgress={noop} onReady={noop} onFailure={onFailure} /></Suspense>
   </div>
 }
+
 
 function PracticeCard({ to, icon, number, title, copy, tone }: { to: string; icon: ReactNode; number: string; title: string; copy: string; tone: 'mint' | 'blue' | 'amber' }) {
   useUiTranslation();
