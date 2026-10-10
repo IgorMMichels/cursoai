@@ -25,24 +25,20 @@
           if (as === 'image') link.setAttribute('fetchpriority', 'high')
           document.head.append(link)
         }
-        preload('image', '/brand/omega/symbol-accent.svg', 'image/svg+xml')
-        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) preload('fetch', '/brand/omega/loading-ascii.glb', 'model/gltf-binary')
+        preload('fetch', '/brand/omega/omega-logo-3d.glb', 'model/gltf-binary')
       })()
     </script>
     <style>
       html, body { min-height: 100%; background: #09080e; }
-      .omega-boot-screen { display: none; position: fixed; z-index: 999; inset: 0; place-items: center; background: #09080e; }
-      .omega-boot-screen img { width: min(28vw, 180px); height: min(28vw, 180px); animation: omega-boot-turn 5s linear infinite; }
+      .omega-boot-screen { display: none; position: fixed; z-index: 999; inset: 0; place-items: center; background: #07060c; }
       html.omega-home-intro .omega-boot-screen { display: grid; }
-      @keyframes omega-boot-turn { to { transform: rotateY(360deg) rotateZ(-6deg); } }
-      @media (prefers-reduced-motion: reduce) { .omega-boot-screen img { animation: none; } }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div id="omega-boot-screen" class="omega-boot-screen" aria-hidden="true"><img src="/brand/omega/symbol-accent.svg" alt="" /></div>
+    <div id="omega-boot-screen" class="omega-boot-screen" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

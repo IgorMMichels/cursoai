@@ -9,6 +9,12 @@ gsap.registerPlugin(useGSAP)
 const OmegaGlbScene = lazy(() => import('@/components/ui/omega-glb-scene'))
 const ringLength = 2 * Math.PI * 182
 
+function startSiteEntry() {
+  const html = document.documentElement
+  html.classList.add('omega-entering')
+  window.setTimeout(() => html.classList.remove('omega-entering'), 1600)
+}
+
 class ModelBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() { return { failed: true } }
@@ -24,7 +30,7 @@ interface LoadingProps {
   minimumDuration?: number
 }
 
-export function PlatformLoadingScreen({ contentReady, onComplete, course = false, animatedLogo = false, minimumDuration = 1200 }: LoadingProps) {
+export function PlatformLoadingScreen({ contentReady, onComplete, course = false, minimumDuration = 2000 }: LoadingProps) {
   useUiTranslation();
   const root = useRef<HTMLDivElement>(null)
   const progressBar = useRef<HTMLDivElement>(null)
@@ -32,6 +38,9 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
   const percentage = useRef<HTMLSpanElement>(null)
   const progressArc = useRef<SVGCircleElement>(null)
   const progress = useRef({ value: 0 })
+  const spin = useRef({ speed: .7, reveal: 0, boost: 0 })
+  const anchor = useRef<HTMLDivElement>(null)
+  const ringRect = useCallback(() => anchor.current?.getBoundingClientRect(), [])
   const progressTween = useRef<gsap.core.Tween | null>(null)
   const exitTimeline = useRef<gsap.core.Timeline | null>(null)
   const started = useRef(0)
@@ -57,27 +66,30 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
     progressTween.current?.kill()
     progressTween.current = gsap.to(progress.current, { value: target, duration: .65, ease: 'power3.out', onUpdate: writeProgress })
   }, [writeProgress])
-  const sceneReady = useCallback(() => { setModelReady(true); advance(88) }, [advance])
+  const sceneReady = useCallback(() => {
+    setModelReady(true); advance(88)
+    // Os glifos convergem para formar o logo assim que os shaders estão compilados.
+    gsap.to(spin.current, { reveal: 1, duration: .9, ease: 'power2.out' })
+  }, [advance])
   const sceneFailed = useCallback(() => { setModelFailed(true); advance(88) }, [advance])
   const assetProgress = useCallback((fraction: number) => advance(8 + fraction * 68), [advance])
   useEffect(() => {
     document.getElementById('omega-boot-screen')?.remove()
     const frame = requestAnimationFrame(() => {
       setVisualReady(true)
-      if (!animatedLogo || motion === false) advance(88)
+      if (motion === false) { spin.current.reveal = 1; spin.current.speed = 0 }
     })
     return () => cancelAnimationFrame(frame)
-  }, [advance, animatedLogo, motion])
+  }, [advance, motion])
 
   useGSAP(() => {
     if (motion === null) return
     const timeline = gsap.timeline({ defaults: { ease: 'power3.out' } })
-    gsap.set('.omega-loading-copy', { opacity: 1 })
-    if (motion) {
-      timeline.fromTo('.omega-loading-header', { opacity: 0 }, { opacity: 1, duration: .3 })
-        .fromTo('.omega-loading-orbit', { opacity: 0, scale: .92, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: .72 }, .08)
-        .fromTo('.omega-loading-line > span', { yPercent: 110 }, { yPercent: 0, duration: .58, stagger: .06 }, .2)
-        .fromTo('.omega-loading-footer', { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: .42 }, .3)
+        if (motion) {
+      timeline.fromTo('.omega-loading-glow', { opacity: 0, scale: .7 }, { opacity: 1, scale: 1, duration: 1.4, ease: 'power2.out' }, 0)
+        .fromTo('.omega-loading-header', { opacity: 0 }, { opacity: 1, duration: .5 }, .1)
+        .fromTo('.omega-loading-orbit', { opacity: 0, scale: .86 }, { opacity: 1, scale: 1, duration: 1.05, ease: 'expo.out' }, .05)
+        .fromTo('.omega-loading-footer', { opacity: 0, y: 4 }, { opacity: 1, y: 0, duration: .3 }, 0)
     } else {
       gsap.set('.omega-loading-header, .omega-loading-orbit, .omega-loading-footer', { opacity: 1 })
       timeline.fromTo(root.current, { opacity: 0 }, { opacity: 1, duration: .15 })
@@ -91,11 +103,17 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
     progressTween.current?.kill()
     const timeline = gsap.timeline({ onComplete: () => completion.current() })
     exitTimeline.current = timeline
-    timeline.to(progress.current, { value: 100, duration: .28, ease: 'power2.out', onUpdate: writeProgress })
+    timeline.to(progress.current, { value: 100, duration: .3, ease: 'power2.out', onUpdate: writeProgress })
     if (motion) {
-      timeline.to(root.current?.querySelector('.omega-loading-orbit') ?? [], { opacity: 0, scale: 1.035, y: -12, duration: .45, ease: 'power2.in' }, .3)
-        .to(root.current?.querySelectorAll('.omega-loading-copy, .omega-loading-footer, .omega-loading-header') ?? [], { opacity: 0, y: -6, duration: .28 }, .35)
-        .to(root.current, { yPercent: -100, duration: .42, ease: 'power3.inOut' }, .52)
+      const q = gsap.utils.selector(root)
+      // O logo acelera o giro, o brilho expande e a tela dissolve revelando o site, que entra em seguida.
+      timeline.to(spin.current, { speed: 12, boost: 1, duration: .8, ease: 'power2.in' }, .1)
+        .to(q('.omega-loading-orbit'), { scale: 1.24, duration: .85, ease: 'power3.in' }, .15)
+        .to(q('.omega-loading-glow'), { scale: 2.1, duration: 1, ease: 'power2.out' }, .15)
+        .to(q('.omega-loading-header, .omega-loading-footer'), { opacity: 0, duration: .3 }, .15)
+        .call(startSiteEntry, [], .85)
+        .to(q('.omega-loading-orbit'), { opacity: 0, duration: .3, ease: 'power1.in' }, .98)
+        .to(root.current, { opacity: 0, duration: .65, ease: 'power2.inOut' }, .95)
     } else timeline.to(root.current, { opacity: 0, duration: .18 })
   }, [motion, writeProgress])
   const finishRef = useRef(finish)
@@ -103,10 +121,9 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
 
   useEffect(() => {
     started.current = performance.now()
-    const media = matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setMotion(!media.matches)
+    // A loading sempre anima: não obedece ao ajuste de acessibilidade "reduzir movimento" do sistema.
+    const update = () => setMotion(true)
     update()
-    media.addEventListener('change', update)
     const priorFocus = document.activeElement
     const dialog = root.current
     if (!restoreFocus.current && priorFocus instanceof HTMLElement && priorFocus !== dialog) restoreFocus.current = priorFocus
@@ -118,7 +135,6 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
     const deadline = window.setTimeout(() => finishRef.current(), 9000)
     return () => {
       clearTimeout(deadline)
-      media.removeEventListener('change', update)
       progressTween.current?.kill(); exitTimeline.current?.kill()
       document.body.style.overflow = previousOverflow
       queueMicrotask(() => {
@@ -142,12 +158,17 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
       if (event.key === 'Escape') finish()
       if (event.key === 'Tab') { event.preventDefault(); root.current?.querySelector<HTMLButtonElement>('.omega-loading-skip')?.focus() }
     }}>
-    <div className="omega-loading-atmosphere" aria-hidden="true" />
+    <div className="omega-loading-atmosphere" aria-hidden="true"><div className="omega-loading-glow"><span /></div></div>
+    <div className={`omega-loading-stage ${modelReady ? 'is-ready' : ''}`} aria-hidden="true">
+      {motion !== null && !modelFailed && <ModelBoundary onFailure={sceneFailed}><Suspense fallback={null}>
+        <OmegaGlbScene spin={spin} frame={ringRect} onProgress={assetProgress} onReady={sceneReady} onFailure={sceneFailed} />
+      </Suspense></ModelBoundary>}
+    </div>
     <header className="omega-loading-header">
-      <div className="omega-loading-wordmark"><img src="/brand/omega/symbol-accent.svg" alt={translateUi("")} /><span>{translateUi("Omega")}</span></div>
+      <div className="omega-loading-wordmark"><span>{translateUi("Omega")}</span></div>
       <button type="button" className="omega-loading-skip" onClick={() => finish()}>{translateUi("Continuar ")}<span aria-hidden="true">↗</span></button>
     </header>
-    <div className="omega-loading-orbit-anchor" aria-hidden="true">
+    <div ref={anchor} className="omega-loading-orbit-anchor" aria-hidden="true">
       <div className="omega-loading-orbit">
         <div className="omega-loading-aura" />
         <svg className="omega-loading-rings" viewBox="0 0 400 400" fill="none">
@@ -157,18 +178,10 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
             strokeDasharray={ringLength} strokeDashoffset={ringLength} transform="rotate(-90 200 200)" />
           <path d="M200 10v7M200 383v7M10 200h7M383 200h7" className="omega-loading-ring-ticks" />
         </svg>
-        <div className={`omega-loading-model ${modelReady ? 'omega-loading-model-ready' : ''}`}>
-          <img className={`omega-loading-svg ${motion ? 'omega-loading-svg-spinning' : ''}`} src="/brand/omega/symbol-accent.svg" alt={translateUi("")} />
-          {animatedLogo && motion && !modelFailed && <ModelBoundary onFailure={sceneFailed}><Suspense fallback={null}>
-            <OmegaGlbScene reducedMotion={false} onProgress={assetProgress} onReady={sceneReady} onFailure={sceneFailed} />
-          </Suspense></ModelBoundary>}
-        </div>
+        {/* O logo 2D só aparece se o 3D falhar — nada de imagem girando enquanto carrega. */}
+        {modelFailed && <div className="omega-loading-model"><img className="omega-loading-svg" src="/brand/omega/symbol-accent.svg" alt={translateUi("")} /></div>}
         <span className="omega-loading-orbit-caption">{translateUi("método antes do mercado")}</span>
       </div>
-    </div>
-    <div className="omega-loading-copy">
-      <h1 id="omega-loading-title"><span className="omega-loading-line"><span>{translateUi("Clareza para")}</span></span><span className="omega-loading-line"><span>{translateUi("seu próximo passo.")}</span></span></h1>
-      <p>{translateUi("Conhecimento que transforma a sua forma de olhar.")}</p>
     </div>
     <footer className="omega-loading-footer">
       <div className="omega-loading-status"><span role="status">{translateUi(visualReady && contentReady ? 'Pronto para começar' : course ? 'Preparando sua trilha' : 'Preparando sua jornada')}</span><span className="omega-loading-number" aria-hidden="true"><span ref={percentage}>00</span><small>%</small></span></div>
