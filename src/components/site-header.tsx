@@ -1,4 +1,5 @@
 import { translateUi, translateTemplate } from '@/lib/ui-translation'
+import { HeaderLanguageSelect } from '@/components/header-language-select'
 import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useSession } from '@/contexts/session-context'
 import { hasActivePlan } from '@/components/guards'
 import { ProfileSettings } from '@/components/profile-settings'
+import { FounderBadge } from '@/components/founder-badge'
 
 function scrollToSection(id: string) {
   const target = document.getElementById(id)
@@ -172,7 +174,7 @@ function ProfileDropdown({ layout = 'desktop', onNavigate }: { layout?: 'desktop
             <AvatarImage src={user?.avatarUrl} alt={translateUi("")} className="object-cover" />
             <AvatarFallback className="bg-[#211f2b] font-display text-xs font-semibold text-[#cbbaff]">{translateUi(initial)}</AvatarFallback>
           </Avatar>
-          <span className="min-w-0 flex-1"><span className="block truncate text-sm text-[#e8e4ee]">{translateUi(displayName)}</span><span className="block text-[11px] text-[#8b8793]">{translateUi(planStatus)}</span></span>
+          <span className="min-w-0 flex-1"><span className="block truncate text-sm text-[#e8e4ee]">{translateUi(displayName)}</span><span className="flex items-center gap-2"><span className="block text-[11px] text-[#8b8793]">{translateUi(planStatus)}</span>{user?.isFounder && <FounderBadge isFounder={user.isFounder} />}</span></span>
           <ChevronDown size={14} className={`shrink-0 text-[#8b8793] transition-transform duration-300 ${open ? 'rotate-180 text-[#a78bfa]' : ''}`} />
         </button>
       )}
@@ -191,7 +193,7 @@ function ProfileDropdown({ layout = 'desktop', onNavigate }: { layout?: 'desktop
               </Avatar>
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold text-[#e8e4ee]">{translateUi(displayName)}</span>
-                <span className={`block truncate text-[10px] ${activePlan ? 'text-[#8bd8b1]' : 'text-[#8b8793]'}`}>{translateUi(planStatus)}</span>
+                <span className={`flex items-center gap-2 truncate text-[10px] ${activePlan ? 'text-[#8bd8b1]' : 'text-[#8b8793]'}`}><span>{translateUi(planStatus)}</span>{user?.isFounder && <FounderBadge isFounder={user.isFounder} />}</span>
               </span>
             </div>
             <div className="mx-2 my-1 border-t border-white/[.07]" />
@@ -328,6 +330,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
           </>}
         </nav>
         <div className="hidden items-center justify-self-end gap-3 2xl:flex">
+          <HeaderLanguageSelect />
           {affiliateMode ? <><ProfileSettings compact /><button type="button" onClick={() => { signOut(); navigate('/landing') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]" aria-label={translateUi("Sair da conta")} title={translateUi("Sair")}><LogOut size={15} /></button></> : landing ? (
             <><Link to="/login" className="dock-login inline-flex h-10 items-center justify-center px-3 text-xs text-[#b1abbc] hover:text-white">{translateUi("Entrar")}</Link><Link to="/explorar" className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">{translateUi("Conhecer o curso")}<ArrowUpRight size={15} /></Link></>
           ) : isLogged ? (

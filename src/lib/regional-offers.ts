@@ -10,7 +10,7 @@ export type RegionalOffer = {
   currency: OfferCurrency
   amountMinor: number
   paymentMethod: PaymentMethod
-  billingMode: 'monthly' | 'annual' | 'one_time'
+  billingMode: 'one_time'
   accessDays: 30 | 90 | 365 | null
   version: number
   status: 'draft' | 'published' | 'retired'
@@ -31,13 +31,14 @@ const brazilOffers: RegionalOffer[] = [
 const internationalOffers: RegionalOffer[] = (['US', 'ES', 'OTHER'] as const).flatMap((market): RegionalOffer[] => {
   const fiatCurrency = market === 'ES' ? 'EUR' : 'USD'
   const fiatOffers = market === 'OTHER' ? [] : [
-    publish({ id: `${market.toLowerCase()}-month-fiat-v1`, marketId: market, planId: 'month', currency: fiatCurrency, amountMinor: 9700, paymentMethod: 'fiat', billingMode: 'monthly', accessDays: 30 }),
-    publish({ id: `${market.toLowerCase()}-annual-fiat-v1`, marketId: market, planId: 'annual', currency: fiatCurrency, amountMinor: 29700, paymentMethod: 'fiat', billingMode: 'annual', accessDays: 365 }),
+    publish({ id: `${market.toLowerCase()}-month-fiat-v1`, marketId: market, planId: 'month', currency: fiatCurrency, amountMinor: 9700, paymentMethod: 'fiat', billingMode: 'one_time', accessDays: 30 }),
+    publish({ id: `${market.toLowerCase()}-quarter-fiat-v1`, marketId: market, planId: 'quarter', currency: fiatCurrency, amountMinor: 24700, paymentMethod: 'fiat', billingMode: 'one_time', accessDays: 90 }),
+    publish({ id: `${market.toLowerCase()}-lifetime-fiat-v1`, marketId: market, planId: 'lifetime', currency: fiatCurrency, amountMinor: 29700, paymentMethod: 'fiat', billingMode: 'one_time', accessDays: null }),
   ]
   const cryptoOffers = [
     publish({ id: `${market.toLowerCase()}-month-sol-v1`, marketId: market, planId: 'month', currency: 'SOL', amountMinor: 800_000_000, paymentMethod: 'crypto', billingMode: 'one_time', accessDays: 30 }),
     publish({ id: `${market.toLowerCase()}-quarter-sol-v1`, marketId: market, planId: 'quarter', currency: 'SOL', amountMinor: 1_300_000_000, paymentMethod: 'crypto', billingMode: 'one_time', accessDays: 90 }),
-    publish({ id: `${market.toLowerCase()}-annual-sol-v1`, marketId: market, planId: 'annual', currency: 'SOL', amountMinor: 1_600_000_000, paymentMethod: 'crypto', billingMode: 'one_time', accessDays: 365 }),
+    publish({ id: `${market.toLowerCase()}-lifetime-sol-v1`, marketId: market, planId: 'lifetime', currency: 'SOL', amountMinor: 1_600_000_000, paymentMethod: 'crypto', billingMode: 'one_time', accessDays: null }),
   ]
   return [...fiatOffers, ...cryptoOffers]
 })
@@ -65,7 +66,7 @@ export function formatRegionalOffer(offer: RegionalOffer, locale: UiLocale) {
 
 export function getPlanIdsForMarket(marketId: MarketId): PlanId[] {
   const ids = [...new Set(offers.filter((offer) => offer.marketId === marketId && offer.status === 'published').map((offer) => offer.planId))]
-  return (['month', 'quarter', 'annual', 'lifetime'] as const).filter((id) => ids.includes(id))
+  return (['month', 'quarter', 'lifetime'] as const).filter((id) => ids.includes(id))
 }
 
 export type RegionalCatalog = {

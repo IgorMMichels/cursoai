@@ -275,7 +275,7 @@ export function LandingPage() {
               </div>
             })}
           </div>
-          <p className="mx-auto mt-6 max-w-3xl text-center text-[11px] leading-relaxed text-[#708279]">{locale === 'en' ? 'Regional prices are fixed by your detected country. Stripe and crypto checkout are being connected.' : locale === 'es' ? 'Los precios regionales se fijan según el país detectado. Estamos conectando los pagos con Stripe y cripto.' : 'Os preços regionais são definidos pelo país detectado. Stripe e pagamento cripto ainda estão em integração.'}</p>
+          <p className="mx-auto mt-6 max-w-3xl text-center text-[11px] leading-relaxed text-[#708279]">{locale === 'en' ? 'Regional prices are based on your detected country. Choose crypto, Stripe, or Pix at checkout.' : locale === 'es' ? 'Los precios regionales se basan en el país detectado. Elige cripto, Stripe o Pix al pagar.' : 'Os preços regionais são definidos pelo país detectado. Escolha cripto, Stripe ou Pix na etapa de pagamento.'}</p>
         </div>
       </section>
 

@@ -137,5 +137,5 @@ function Empty({ text }: { text: string }) {
   return <div className="grid min-h-[110px] place-items-center rounded-xl border border-dashed border-white/[.08] px-4 text-center text-xs text-[#7f9287]">{translateUi(text)}</div>
 }
 
-function planName(plan: string) { return plan === 'month' ? '1 mês' : plan === 'quarter' ? '3 meses' : plan === 'annual' ? 'Anual' : plan === 'lifetime' ? 'Vitalício' : plan }
+function planName(plan: string) { return plan === 'month' ? '1 mês' : plan === 'quarter' ? '3 meses' : plan === 'lifetime' ? 'Vitalício' : plan }
 function formatMoney(value: number, currency: Currency) { return currency === 'BRL' ? `R$ ${value.toFixed(2).replace('.', ',')}` : `${value.toFixed(4).replace('.', ',')} SOL` }

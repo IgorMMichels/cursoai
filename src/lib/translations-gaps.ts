@@ -1,5 +1,16 @@
 /** Missing English and Spanish keys for visible course-preview/tool metadata. */
 export const translationGaps: Record<string, { en: string; es: string }> = {
+  'Idioma dos e-mails atualizado.': { en: 'Email language updated.', es: 'Idioma de los correos actualizado.' },
+  'Não foi possível salvar o idioma dos e-mails.': { en: 'The email language could not be saved.', es: 'No se pudo guardar el idioma de los correos.' },
+  'Solicitar novo link de recuperação': { en: 'Request a new recovery link', es: 'Solicitar un nuevo enlace de recuperación' },
+  'Validando link de recuperação…': { en: 'Verifying recovery link…', es: 'Verificando enlace de recuperación…' },
+  'Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.': { en: 'This link is invalid or expired. Return to sign-in and request another password reset.', es: 'Este enlace no es válido o ha caducado. Vuelve al inicio de sesión y solicita otra recuperación de contraseña.' },
+  'Enviaremos um link seguro ao seu e-mail para você entrar.': { en: 'We will email you a secure sign-in link.', es: 'Te enviaremos un enlace seguro por correo para iniciar sesión.' },
+  'Se houver uma conta com esse e-mail, enviaremos um link seguro para entrar.': { en: 'If an account exists for this email, we will send a secure sign-in link.', es: 'Si existe una cuenta con este correo, enviaremos un enlace seguro para iniciar sesión.' },
+  'Se houver uma confirmação pendente para esse e-mail, enviaremos outra mensagem.': { en: 'If confirmation is pending for this email, we will send another message.', es: 'Si este correo tiene una confirmación pendiente, enviaremos otro mensaje.' },
+  'Esse link é inválido ou expirou. Solicite um novo e-mail e tente novamente.': { en: 'This link is invalid or expired. Request a new email and try again.', es: 'Este enlace no es válido o ha caducado. Solicita un nuevo correo e inténtalo de nuevo.' },
+  'Não foi possível validar o link. Solicite um novo e-mail e tente novamente.': { en: 'The link could not be verified. Request a new email and try again.', es: 'No se pudo verificar el enlace. Solicita un nuevo correo e inténtalo de nuevo.' },
+  'Solicite um link de recuperação válido para alterar sua senha.': { en: 'Request a valid recovery link to change your password.', es: 'Solicita un enlace de recuperación válido para cambiar tu contraseña.' },
   'Risco e stop': { en: 'Risk and stop-loss', es: 'Riesgo y stop' },
   'Calcule a quantidade da posição a partir do risco escolhido e do preço do stop.': { en: 'Calculate position size from your chosen risk and stop price.', es: 'Calcula el tamaño de la posición según el riesgo elegido y el precio del stop.' },
   'Long e short': { en: 'Long and short', es: 'Long y short' },

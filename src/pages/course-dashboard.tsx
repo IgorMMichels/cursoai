@@ -13,6 +13,7 @@ import { allLessons, modules } from '@/lib/course'
 import { moduleCovers } from '@/lib/course-media'
 import { loadReviewSchedule, saveReviewSchedule, type ReviewSchedule } from '@/lib/learning-service'
 import { AmbientShader } from '@/components/ui/ambient-shader'
+import { FounderBadge } from '@/components/founder-badge'
 const reviewCards = [
   { id: 'blockchain', prompt: 'O que uma blockchain ajuda a fazer?', answer: 'Manter um histórico compartilhado de transações validado pelas regras da rede.' },
   { id: 'custody', prompt: 'O que uma carteira realmente protege?', answer: 'As chaves que autorizam transações; as moedas ficam registradas na rede.' },
@@ -36,7 +37,7 @@ export function CourseDashboard() {
 
   return <div className="space-y-9">
     <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-      <div><p className="eyebrow">{translateUi("bom ter você de volta")}</p><h1 className="mt-3 font-display text-3xl font-medium tracking-[-.05em] text-[#edf4ef] sm:text-4xl">{translateUi("Olá, ")}{translateUi(user?.name.split(' ')[0])}.</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#90a298]">{translateUi("Seu próximo passo está logo aqui. Estude no seu ritmo e volte às decisões com mais contexto.")}</p></div>
+      <div><p className="eyebrow">{translateUi("bom ter você de volta")}</p><div className="mt-3 flex flex-wrap items-center gap-3"><h1 className="font-display text-3xl font-medium tracking-[-.05em] text-[#edf4ef] sm:text-4xl">{translateUi("Olá, ")}{translateUi(user?.name.split(' ')[0])}.</h1>{user && <FounderBadge isFounder={user.isFounder} />}</div><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#90a298]">{translateUi("Seu próximo passo está logo aqui. Estude no seu ritmo e volte às decisões com mais contexto.")}</p></div>
     </section>
 
     <section className="study-bento" aria-label={translateUi("Seu próximo passo")}>

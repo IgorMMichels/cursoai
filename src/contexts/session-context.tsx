@@ -5,6 +5,8 @@ import { getCloudProfile, saveCloudProfile } from '@/lib/profile-service'
 import { loadLessonProgress, saveLessonProgress } from '@/lib/learning-service'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 import { getReferralCode, type UserRole } from '@/lib/storage'
+import { forgetPasswordRecovery, hasPasswordRecovery, rememberPasswordRecovery } from '@/lib/auth-callback'
+import { useLocalization } from '@/contexts/localization-context'
 
 export type AppSession = {
   id: string
@@ -20,6 +22,8 @@ export type AppSession = {
   plan: PlanId | null
   planStartedAt: string
   expiresAt?: string
+  isFounder: boolean
+  founderNumber: number | null
   referralCode?: string
 }
 
@@ -28,9 +32,12 @@ type SessionContextValue = {
   loading: boolean
   authConfigured: boolean
   authError: string | null
+  isPasswordRecovery: boolean
   completedLessons: string[]
   signInWithPassword: (email: string, password: string) => Promise<AppSession>
-  signUpWithPassword: (name: string, username: string, email: string, password: string, marketingOptIn?: boolean) => Promise<AppSession | null>
+  sendMagicLink: (email: string, returnTo?: string) => Promise<void>
+  resendSignupConfirmation: (email: string, returnTo?: string) => Promise<void>
+  signUpWithPassword: (name: string, username: string, email: string, password: string, marketingOptIn?: boolean, returnTo?: string) => Promise<AppSession | null>
   joinAffiliateProgram: () => Promise<string>
   sendPasswordReset: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -46,6 +53,11 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Não foi possível validar sua sessão.'
 }
 
+function authCallbackUrl(returnTo?: string) {
+  const path = returnTo?.startsWith('/login') && !returnTo.startsWith('//') ? returnTo : '/login'
+  return `${window.location.origin}${path}`
+}
+
 function mapRole(roles: string[]): UserRole {
   if (roles.includes('admin')) return 'admin'
   return 'student'
@@ -56,9 +68,11 @@ function mapRoles(roles: string[]): UserRole[] {
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
+  const { locale } = useLocalization()
   const [user, setUser] = useState<AppSession | null>(null)
   const [loading, setLoading] = useState(isSupabaseConfigured)
   const [authError, setAuthError] = useState<string | null>(null)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
   const [completedLessons, setCompletedLessons] = useState<string[]>([])
   const activeAuthSyncs = useRef(new Map<string, Promise<AppSession>>())
 
@@ -69,14 +83,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const sync = (async () => {
       try {
         if (!supabase) throw new Error('Autenticação não configurada.')
-        const [rolesResult, subscriptionsResult, profile, progress] = await Promise.all([
+        const [rolesResult, subscriptionsResult, founderResult, profile, progress] = await Promise.all([
           supabase.from('app_roles').select('role').eq('user_id', authUser.id),
           supabase.from('subscriptions').select('plan_id, starts_at, expires_at').eq('user_id', authUser.id).eq('status', 'active').order('created_at', { ascending: false }),
+          supabase.from('profiles').select('is_founder, founder_number').eq('id', authUser.id).maybeSingle(),
           getCloudProfile(authUser.id),
           loadLessonProgress(authUser.id),
         ])
         if (rolesResult.error) throw rolesResult.error
         if (subscriptionsResult.error) throw subscriptionsResult.error
+        if (founderResult.error) throw founderResult.error
         const roles = mapRoles((rolesResult.data ?? []).map((entry) => entry.role))
         if (roles.length === 0) roles.push('student')
         const role = mapRole(roles)
@@ -87,7 +103,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           (!entry.starts_at || Date.parse(entry.starts_at) <= now)
           && (!entry.expires_at || Date.parse(entry.expires_at) > now),
         )
-        const activePlan: PlanId | null = subscription?.plan_id === 'month' || subscription?.plan_id === 'quarter' || subscription?.plan_id === 'annual' || subscription?.plan_id === 'lifetime'
+        const activePlan: PlanId | null = subscription?.plan_id === 'month' || subscription?.plan_id === 'quarter' || subscription?.plan_id === 'lifetime'
           ? subscription.plan_id
           : null
         const session: AppSession = {
@@ -102,6 +118,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           roles,
           isAffiliate: Boolean(affiliateProfile?.data && affiliateProfile.data.active),
           plan: activePlan,
+          isFounder: founderResult.data?.is_founder === true,
+          founderNumber: founderResult.data?.founder_number ?? null,
           planStartedAt: subscription?.starts_at ?? '',
           expiresAt: subscription?.expires_at ?? undefined,
           referralCode: profile?.username || affiliateProfile?.data?.referral_code || getReferralCode(),
@@ -127,12 +145,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     let isMounted = true
     const applyAuthSession = (session: Session | null) => {
       if (!session?.user) {
+        forgetPasswordRecovery(window.sessionStorage)
+        setIsPasswordRecovery(false)
         setUser(null)
         setCompletedLessons([])
         setAuthError(null)
         setLoading(false)
         return
       }
+      setIsPasswordRecovery(hasPasswordRecovery(window.sessionStorage, session.user.id))
       void syncSupabaseUser(session.user)
         .then(() => { if (isMounted) setAuthError(null) })
         .catch((error: unknown) => {
@@ -144,7 +165,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         .finally(() => { if (isMounted) setLoading(false) })
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session?.user) {
+        rememberPasswordRecovery(window.sessionStorage, session.user.id)
+        setIsPasswordRecovery(true)
+      } else if (event === 'SIGNED_OUT') {
+        forgetPasswordRecovery(window.sessionStorage)
+        setIsPasswordRecovery(false)
+      }
       window.setTimeout(() => { if (isMounted) applyAuthSession(session) }, 0)
     })
     void supabase.auth.getSession()
@@ -166,6 +194,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signInWithPassword = useCallback(async (email: string, password: string) => {
     if (!supabase) throw new Error('Autenticação indisponível no momento.')
+    forgetPasswordRecovery(window.sessionStorage)
+    setIsPasswordRecovery(false)
     const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
     if (error) throw error
     if (!data.user) throw new Error('Não foi possível validar a conta.')
@@ -173,22 +203,45 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return syncSupabaseUser(data.user)
   }, [syncSupabaseUser])
 
-  const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string, marketingOptIn = false) => {
+  const sendMagicLink = useCallback(async (email: string, returnTo?: string) => {
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: authCallbackUrl(returnTo),
+      },
+    })
+    if (error) throw error
+    setAuthError(null)
+  }, [])
+
+  const resendSignupConfirmation = useCallback(async (email: string, returnTo?: string) => {
+    if (!supabase) throw new Error('Autenticação indisponível no momento.')
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: { emailRedirectTo: authCallbackUrl(returnTo) },
+    })
+    if (error) throw error
+  }, [])
+
+  const signUpWithPassword = useCallback(async (name: string, username: string, email: string, password: string, marketingOptIn = false, returnTo?: string) => {
     if (!supabase) throw new Error('Autenticação indisponível no momento.')
     const referralCode = getReferralCode()
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { name: name.trim(), username, marketing_opt_in: marketingOptIn, ...(referralCode ? { referral_code: referralCode } : {}) },
-        emailRedirectTo: `${window.location.origin}/login`,
+        data: { name: name.trim(), username, marketing_opt_in: marketingOptIn, email_locale: locale, ...(referralCode ? { referral_code: referralCode } : {}) },
+        emailRedirectTo: authCallbackUrl(returnTo),
       },
     })
     if (error) throw error
     setAuthError(null)
     if (!data.session || !data.user) return null
     return syncSupabaseUser(data.user)
-  }, [syncSupabaseUser])
+  }, [syncSupabaseUser, locale])
 
   const joinAffiliateProgram = useCallback(async () => {
     if (!supabase || !user) throw new Error('Entre na sua conta para participar do programa de afiliados.')
@@ -214,9 +267,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const updatePassword = useCallback(async (password: string) => {
     if (!supabase) throw new Error('Autenticação indisponível no momento.')
+    if (!isPasswordRecovery) throw new Error('Solicite um link de recuperação válido para alterar sua senha.')
     const { error } = await supabase.auth.updateUser({ password })
     if (error) throw error
-  }, [])
+    forgetPasswordRecovery(window.sessionStorage)
+    setIsPasswordRecovery(false)
+  }, [isPasswordRecovery])
 
   const updateProfile = useCallback(async (input: { name: string; bio: string; location: string; avatarDataUrl?: string }, avatar?: Blob) => {
     if (!user) throw new Error('Entre na sua conta para editar o perfil.')
@@ -244,7 +300,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   const signOut = useCallback(() => {
+    forgetPasswordRecovery(window.sessionStorage)
     setUser(null)
+    setIsPasswordRecovery(false)
     setCompletedLessons([])
     if (supabase) void supabase.auth.signOut()
   }, [])
@@ -265,8 +323,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     loading,
     authConfigured: isSupabaseConfigured,
     authError,
+    isPasswordRecovery,
     completedLessons,
     signInWithPassword,
+    sendMagicLink,
+    resendSignupConfirmation,
     signUpWithPassword,
     joinAffiliateProgram,
     sendPasswordReset,
@@ -275,7 +336,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     signOut,
     completeLesson,
     refreshProgress,
-  }), [user, loading, authError, completedLessons, signInWithPassword, signUpWithPassword, joinAffiliateProgram, sendPasswordReset, updatePassword, updateProfile, signOut, completeLesson, refreshProgress])
+  }), [user, loading, authError, isPasswordRecovery, completedLessons, signInWithPassword, sendMagicLink, resendSignupConfirmation, signUpWithPassword, joinAffiliateProgram, sendPasswordReset, updatePassword, updateProfile, signOut, completeLesson, refreshProgress])
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
 }

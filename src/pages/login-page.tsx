@@ -1,7 +1,7 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Link2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, KeyRound, Link2, Mail } from 'lucide-react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { LocalizedLink as Link, useLocalizedNavigate as useNavigate } from '@/components/localized-router'
 import { OmegaLoginScene } from '@/components/omega-login-scene'
@@ -160,9 +160,11 @@ export function LoginPage() {
   const callbackState = useMemo(() => readAuthCallbackState(location.search, location.hash), [location.search, location.hash])
   const queryPlan = search.get('plano') as PlanId | null
   const chosenPlan = queryPlan && queryPlan in plans ? queryPlan : undefined
+  const requestedPayment = search.get('payment')
   const paymentMethod = search.get('payment') as PaymentMethod | null
   const chosenOffer = chosenPlan ? getPublishedRegionalOffer(regionalOffers[0]?.marketId ?? 'OTHER', chosenPlan, paymentMethod === 'fiat' || paymentMethod === 'crypto' ? paymentMethod : undefined) : undefined
   const chosenPrice = chosenOffer ? formatRegionalOffer(chosenOffer, locale) : null
+  const authReturnTo = chosenPlan ? `/login?plano=${encodeURIComponent(chosenPlan)}${requestedPayment === 'fiat' || requestedPayment === 'crypto' || requestedPayment === 'pix' ? `&payment=${requestedPayment}` : ''}` : undefined
   const referralParam = search.get('ref')?.trim()
   const [mode, setMode] = useState<LoginMode>(() => authConfigured && callbackState.isRecovery ? 'recovery' : 'signin')
   const [name, setName] = useState('')
@@ -215,17 +217,19 @@ export function LoginPage() {
   useEffect(() => {
     if (!user || mode === 'recovery' || callbackState.error) return
     const requestedPath = location.state?.from
-    const destination = chosenPlan && paymentMethod === 'fiat'
-      ? `${localizedPath('/checkout', locale)}?plan=${chosenPlan}&payment=fiat`
+    const destination = chosenPlan
+      ? `${localizedPath('/checkout', locale)}?plan=${chosenPlan}${requestedPayment === 'fiat' || requestedPayment === 'crypto' || requestedPayment === 'pix' ? `&payment=${requestedPayment}` : ''}`
       : requestedPath && user.role !== 'admin' && safeRedirectPath(requestedPath)
       ? requestedPath
       : destinationForRole(user.role)
     navigate(destination, { replace: true })
-  }, [user, mode, callbackState.error, location.state, navigate, chosenPlan, paymentMethod, locale])
+  }, [user, mode, callbackState.error, location.state, navigate, chosenPlan, requestedPayment, locale])
 
   const goToSession = (session: AppSession) => {
     const requestedPath = location.state?.from
-    const destination = requestedPath && session.role !== 'admin' && safeRedirectPath(requestedPath)
+    const destination = chosenPlan
+      ? `${localizedPath('/checkout', locale)}?plan=${chosenPlan}${requestedPayment === 'fiat' || requestedPayment === 'crypto' || requestedPayment === 'pix' ? `&payment=${requestedPayment}` : ''}`
+      : requestedPath && session.role !== 'admin' && safeRedirectPath(requestedPath)
       ? requestedPath
       : destinationForRole(session.role)
     navigate(destination, { replace: true })
@@ -248,7 +252,7 @@ export function LoginPage() {
     setResendCooldown(60)
     setIsSubmitting(true)
     try {
-      await resendSignupConfirmation(email)
+      await resendSignupConfirmation(email, authReturnTo)
       setMessage('Se houver uma confirmação pendente para esse e-mail, enviaremos outra mensagem.')
     } catch (resendError) {
       setError(authErrorText(resendError))
@@ -279,7 +283,7 @@ export function LoginPage() {
     try {
       if (mode === 'signin') {
         if (signInMethod === 'magic-link') {
-          await sendMagicLink(email)
+          await sendMagicLink(email, authReturnTo)
           setMessage('Se houver uma conta com esse e-mail, enviaremos um link seguro para entrar.')
         } else {
           const session = await signInWithPassword(email, password)
@@ -288,7 +292,7 @@ export function LoginPage() {
       } else if (mode === 'signup') {
         const available = await isAffiliateHandleAvailable(username)
         if (!available) throw new Error('Este ID já está em uso ou reservado. Escolha outro.')
-        const signedIn = await signUpWithPassword(name, username, email, password, marketingOptIn)
+        const signedIn = await signUpWithPassword(name, username, email, password, marketingOptIn, authReturnTo)
         if (signedIn) goToSession(signedIn)
         else {
           setCanResendConfirmation(true)
@@ -386,7 +390,7 @@ export function LoginPage() {
                 : marketLoading
                   ? (locale === 'en' ? 'Loading regional price…' : locale === 'es' ? 'Cargando precio regional…' : 'Carregando preço regional…')
                   : (locale === 'en' ? 'Price unavailable in this region.' : locale === 'es' ? 'Precio no disponible en esta región.' : 'Preço indisponível nesta região.')}</p>}
-              <p className="mt-2 text-[10px] leading-relaxed text-[#b7a77e]">{translateUi("Checkout ainda não está disponível; nenhum pagamento será processado por esta tela.")}</p>
+              <p className="mt-2 text-[10px] leading-relaxed text-[#b7a77e]">{translateUi("Sua escolha fica salva. Depois de entrar ou criar a conta, você volta para concluir o pagamento.")}</p>
             </div>
           )}
 
@@ -538,8 +542,9 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => { setSignInMethod((current) => current === 'password' ? 'magic-link' : 'password'); setPassword(''); setError(null); setMessage(null) }}
-                  className="w-full rounded-lg py-1 text-left text-xs font-medium text-[#b49cff] transition hover:text-white hover:underline"
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/[.1] bg-white/[.02] text-sm font-medium text-[#d7d4e0] transition hover:border-[#b49cff]/40 hover:bg-white/[.05] hover:text-white"
                 >
+                  {signInMethod === 'password' ? <Mail size={15} strokeWidth={1.8} /> : <KeyRound size={15} strokeWidth={1.8} />}
                   {translateUi(signInMethod === 'password' ? 'Entrar por link enviado ao e-mail' : 'Entrar com senha')}
                 </button>
               )}
@@ -548,7 +553,7 @@ export function LoginPage() {
                   type="button"
                   disabled={isSubmitting || !email.trim() || resendCooldown > 0}
                   onClick={resendConfirmation}
-                  className="w-full rounded-lg py-1 text-left text-xs text-[#8fa197] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-8 w-full items-center justify-center text-xs text-[#8fa197] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {translateUi('Reenviar e-mail de confirmação')}{resendCooldown > 0 ? ` (${resendCooldown}s)` : ''}
                 </button>
