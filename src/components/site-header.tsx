@@ -273,7 +273,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
   const activePlan = isLogged && hasActivePlan(user)
   const affiliateMode = mode === 'affiliate'
   const landing = location.pathname === '/landing'
-  const links = landing ? [{ label: 'O método', href: '#metodo' }, { label: 'A jornada', href: '#jornada' }, { label: 'Avaliações', href: '#avaliacoes' }, { label: 'Planos', href: '#planos' }, { label: 'Afiliados', href: '/afiliar' }] : [{ label: 'O método', href: '/landing#metodo' }, { label: 'A jornada', href: '/landing#jornada' }, { label: 'Avaliações', href: '/landing#avaliacoes' }, { label: 'Planos', href: '/landing#planos' }, { label: 'Afiliados', href: '/afiliar' }]
+  const links = landing ? [{ label: 'O método', href: '#metodo' }, { label: 'A jornada', href: '#jornada' }, { label: 'Avaliações', href: '#avaliacoes' }, { label: 'Planos', href: '/planos' }, { label: 'Afiliados', href: '/afiliar' }] : [{ label: 'O método', href: '/landing#metodo' }, { label: 'A jornada', href: '/landing#jornada' }, { label: 'Avaliações', href: '/landing#avaliacoes' }, { label: 'Planos', href: '/planos' }, { label: 'Afiliados', href: '/afiliar' }]
   const handleAnchorClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
       const id = href.slice(1)
@@ -284,6 +284,12 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
         scrollToSection(id)
         window.history.pushState(null, '', href)
       }
+      return
+    }
+    if (href === '/planos') {
+      event.preventDefault()
+      setOpen(false)
+      navigate('/planos')
       return
     }
     if (href.startsWith('/landing#')) {
@@ -326,7 +332,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
             <Link to="/simulador" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">{translateUi("Simulador")}</Link>
             <Link to="/ferramentas" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">{translateUi("Ferramentas")}</Link>
             <Link to={landing ? '#jornada' : '/landing#jornada'} onClick={(event) => handleAnchorClick(event, landing ? '#jornada' : '/landing#jornada')} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] hover:text-white">{translateUi("A jornada")}</Link>
-            <Link to={landing ? '#planos' : '/landing#planos'} onClick={(event) => handleAnchorClick(event, landing ? '#planos' : '/landing#planos')} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] hover:text-white">{translateUi("Planos")}</Link>
+            <Link to="/planos" className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] hover:text-white">{translateUi("Planos")}</Link>
           </>}
         </nav>
         <div className="hidden items-center justify-self-end gap-3 2xl:flex">
@@ -414,7 +420,7 @@ export function SiteFooter() {
           <Link to="/artigos">{translateUi("Artigos")}</Link>
           <a href="#jornada" onClick={(event) => handleFooterAnchor(event, '#jornada')}>{translateUi("A trilha")}</a>
           <a href="#avaliacoes" onClick={(event) => handleFooterAnchor(event, '#avaliacoes')}>{translateUi("Avaliações")}</a>
-          <a href="#planos" onClick={(event) => handleFooterAnchor(event, '#planos')}>{translateUi("Planos")}</a>
+          <Link to="/planos">{translateUi("Planos")}</Link>
           <Link to="/afiliar">{translateUi("Afiliados")}</Link>
         </nav>
         <Link to="/login" className="footer-cta">{translateUi("Acessar plataforma ")}<ArrowUpRight size={14} /></Link>

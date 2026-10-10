@@ -12,7 +12,7 @@ export default function regionalOffers(request: IncomingMessage, response: Serve
     return
   }
   // Vercel replaces this header at its edge. Local development ignores supplied headers.
-  const header = process.env.VERCEL === '1' ? request.headers['x-vercel-ip-country'] : process.env.OMEGA_DEV_COUNTRY
+  const header = process.env.VERCEL === '1' ? request.headers['x-vercel-ip-country'] : (process.env.OMEGA_DEV_COUNTRY || 'BR')
   const country = typeof header === 'string' && /^[A-Z]{2}$/i.test(header) ? header.toUpperCase() : null
   response.end(JSON.stringify(getRegionalCatalog(country)))
 }

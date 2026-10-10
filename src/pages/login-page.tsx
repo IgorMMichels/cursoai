@@ -594,7 +594,7 @@ export function LoginPage() {
           <div className="mt-8 flex items-center justify-center gap-4 border-t border-white/[.06] pt-5 text-[10px] text-[#76897e]">
             <Link to="/landing#jornada" className="transition hover:text-white">{translateUi("Conhecer a trilha")}</Link>
             <span className="size-1 rounded-full bg-[#52665a]" aria-hidden="true" />
-            <Link to="/landing#planos" className="transition hover:text-white">{translateUi("Ver planos")}</Link>
+            <Link to="/planos" className="transition hover:text-white">{translateUi("Ver planos")}</Link>
           </div>
         </div>
       </main>

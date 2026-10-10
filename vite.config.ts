@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
             response.end(JSON.stringify({ error: 'Method not allowed' }))
             return
           }
-          const country = serverEnvironment.OMEGA_DEV_COUNTRY?.toUpperCase() ?? null
+          // Local dev has no CDN country header; default to Brazil so prices render.
+          const country = (serverEnvironment.OMEGA_DEV_COUNTRY || 'BR').toUpperCase()
           response.end(JSON.stringify(getRegionalCatalog(country)))
         })
       },

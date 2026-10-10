@@ -1,4 +1,5 @@
 import { Brand, OmegaSymbol } from '@/components/brand'
+import { HeaderLanguageSelect } from '@/components/header-language-select'
 import { LocalizedLink as Link, useLocalizedNavigate } from '@/components/localized-router'
 import { PageMeta } from '@/components/tools/page-meta'
 import { useLocalization } from '@/contexts/localization-context'
@@ -29,7 +30,7 @@ const copy = {
     secure: 'Pagamento processado pela Stripe. A Ômega não guarda dados de cartão.',
     success: 'Estamos confirmando o pagamento e preparando seu acesso.', cancelled: 'Pagamento cancelado. Nenhuma cobrança foi concluída.',
     working: 'Abrindo pagamento seguro…', error: 'Não foi possível iniciar o pagamento. Tente novamente.',
-    secureBadge: 'Checkout seguro',
+    secureBadge: 'Checkout seguro', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
   },
   en: {
     title: 'Complete your purchase', subtitle: 'One access, no renewal. Choose how to pay and enter the course as soon as the payment is confirmed.',
@@ -45,7 +46,7 @@ const copy = {
     secure: 'Payment processed by Stripe. Omega does not store card details.',
     success: 'We’re confirming your payment and preparing your access.', cancelled: 'Payment cancelled. No charge was completed.',
     working: 'Opening secure payment…', error: 'We could not start the payment. Please try again.',
-    secureBadge: 'Secure checkout',
+    secureBadge: 'Secure checkout', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
   },
   es: {
     title: 'Finalizar compra', subtitle: 'Un acceso, sin renovación. Elige cómo pagar y entra al curso en cuanto se confirme el pago.',
@@ -61,14 +62,14 @@ const copy = {
     secure: 'Pago procesado por Stripe. Omega no guarda datos de la tarjeta.',
     success: 'Estamos confirmando el pago y preparando tu acceso.', cancelled: 'Pago cancelado. No se completó ningún cargo.',
     working: 'Abriendo el pago seguro…', error: 'No pudimos iniciar el pago. Inténtalo de nuevo.',
-    secureBadge: 'Pago seguro',
+    secureBadge: 'Pago seguro', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
   },
 } as const
 
 const numerals = ['I', 'II', 'III'] as const
 
 export function CheckoutPage() {
-  const { locale, market } = useLocalization()
+  const { locale, market, marketLoading, pricingError } = useLocalization()
   const { user } = useSession()
   const navigate = useLocalizedNavigate()
   const reducedMotion = useReducedMotion()
@@ -84,7 +85,8 @@ export function CheckoutPage() {
   const labels = copy[locale]
   const plan = planId ? plans[planId] : null
   const offer = planId ? getPublishedRegionalOffer(market, planId, selectedMethod === 'crypto' ? 'crypto' : 'fiat') : null
-  const priceLabel = offer ? formatRegionalOffer(offer, locale) : '—'
+  const priceLabel = offer ? formatRegionalOffer(offer, locale) : marketLoading ? '…' : '—'
+  const priceNotice = marketLoading || !planId || offer ? '' : pricingError ? labels.pricingError : labels.noPrice
   const currentStep = status === 'success' ? 2 : 1
   const options = [
     { id: 'crypto' as const, label: labels.crypto, hint: labels.cryptoSub, active: false },
@@ -103,7 +105,10 @@ export function CheckoutPage() {
     <PageMeta title={locale === 'en' ? 'Checkout · Omega' : locale === 'es' ? 'Pago · Omega' : 'Checkout · Ômega'} description={labels.subtitle} path="/checkout" />
     <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-5 sm:px-10">
       <Brand />
-      <span className="text-[11px] font-medium uppercase tracking-[.2em] text-[#8e8a97]">{localeLabel}</span>
+      <div className="flex items-center gap-3">
+        <span className="hidden text-[11px] font-medium uppercase tracking-[.2em] text-[#8e8a97] sm:inline">{localeLabel}</span>
+        <HeaderLanguageSelect />
+      </div>
     </header>
 
     <main className="mx-auto w-full max-w-6xl px-5 pb-24 sm:px-10">
@@ -148,7 +153,8 @@ export function CheckoutPage() {
               })}
             </div>
 
-            {selectedMethod === 'pix' && market !== 'BR' && <p role="status" className="mt-4 text-xs text-[#8e8a97]">{labels.region}</p>}
+            {priceNotice && <p role="status" className="mt-4 border-l-2 border-[#e8bc76]/60 pl-4 text-sm leading-6 text-[#e8bc76]">{priceNotice}</p>}
+            {selectedMethod === 'pix' && market !== 'BR' &&<p role="status" className="mt-4 text-xs text-[#8e8a97]">{labels.region}</p>}
 
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={status ?? (user ? selectedMethod : 'guest')} initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>
