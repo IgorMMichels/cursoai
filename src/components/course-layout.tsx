@@ -25,7 +25,7 @@ function routeMetadata(pathname: string) {
   if (pathname.includes('/modulo/')) return { title: 'Revisão do módulo', description: 'Pratique os conceitos do módulo com uma revisão interativa.' }
   if (pathname.startsWith('/curso/ferramentas')) return { title: 'Ferramentas do curso', description: 'Use simuladores educativos de criptoativos dentro da área do aluno.' }
   if (pathname === '/curso/simulador') return { title: 'Simulador de trade', description: 'Pratique paper trading com carteira fictícia e dados de mercado.' }
-  if (pathname === '/curso/radar') return { title: 'Radar de mercado', description: 'Acompanhe fontes e indicadores de mercado para estudar o contexto cripto.' }
+  if (pathname === '/curso/radar') return { title: 'Radar de Notícias', description: 'Acompanhe fontes e indicadores de mercado para estudar o contexto cripto.' }
   return { title: 'Área do aluno', description: 'Acompanhe suas aulas, jornadas e progresso de estudo na Omega.' }
 }
 
@@ -58,7 +58,7 @@ export function CourseLayout() {
     { to: '/curso#modulos', label: 'Minha trilha', icon: BookOpen, end: true },
     { to: '/plataformas', label: 'Plataformas', icon: LayoutGrid },
     { to: '/curso/ferramentas', label: 'Ferramentas', icon: SlidersHorizontal },
-    { to: '/curso/radar', label: 'Radar de mercado', icon: Radio },
+    { to: '/curso/radar', label: 'SISMO', icon: Radio },
     { to: '/curso/audios-extras', label: 'Áudios extras', icon: Headphones },
     { to: '/curso/simulador', label: 'Simulador de trade', icon: SlidersHorizontal },
     { to: '/acesso', label: 'Como pagar', icon: WalletCards },

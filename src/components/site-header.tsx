@@ -314,7 +314,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
           </> : <>
             <Link to="/simulador" aria-current={location.pathname === '/simulador' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] hover:text-white">{translateUi("Simulador")}</Link>
             <Link to="/ferramentas" aria-current={location.pathname.startsWith('/ferramentas') ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">{translateUi("Ferramentas")}</Link>
-            <Link to="/radar" aria-current={location.pathname === '/radar' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">{translateUi("Radar")}</Link>
+            <Link to="/radar" aria-current={location.pathname === '/radar' ? 'page' : undefined} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#c6b4ef] transition-colors hover:text-white">{translateUi("SISMO")}</Link>
             {links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="dock-link inline-flex h-8 items-center justify-center rounded-full px-3 text-[11px] text-[#a7a2b1] transition-all hover:text-white">{translateUi(item.label)}</a>)}
             {!landing && <StudentAreaDropdown />}
           </>}
@@ -359,7 +359,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
         </> : <>
         <Link to="/simulador" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Simulador de trade")}</Link>
         <Link to="/ferramentas" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Ferramentas gratuitas")}</Link>
-        <Link to="/radar" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Radar de mercado")}</Link>
+        <Link to="/radar" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("SISMO")}</Link>
         <Link to="/artigos" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Artigos e conceitos")}</Link>
         <div className="mx-auto flex max-w-xl flex-col gap-1">{links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{translateUi(item.label)}</a>)}
           {!landing && <><p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#8d839f]">{translateUi("Área do aluno")}</p>

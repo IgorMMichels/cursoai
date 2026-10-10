@@ -1,5 +1,21 @@
 /** Additional English and Spanish UI copy outside the core course catalog. */
 const entries = [
+  // SISMO news bot
+  ["SISMO","SISMO","SISMO"],
+  ["Radar de Notícias","News Radar","Radar de Noticias"],
+  ["SISMO — Radar de Notícias","SISMO — News Radar","SISMO — Radar de Noticias"],
+  ["SISMO · piloto","SISMO · pilot","SISMO · piloto"],
+  ["Abrir SISMO","Open SISMO","Abrir SISMO"],
+  ["Atualizar SISMO","Refresh SISMO","Actualizar SISMO"],
+  ["O SISMO aguarda o serviço","SISMO is waiting for the service","SISMO está esperando al servicio"],
+  ["Módulos do SISMO","SISMO sections","Secciones de SISMO"],
+  ["Conectando o SISMO…","Connecting to SISMO…","Conectando SISMO…"],
+  ["O SISMO destaca taxas a partir de ±","SISMO highlights rates starting at ±","SISMO destaca tasas a partir de ±"],
+  ["Seu resumo do SISMO.","Your SISMO summary.","Tu resumen de SISMO."],
+  ["Aguardando o SISMO","Waiting for SISMO","Esperando a SISMO"],
+  ["Como o SISMO avalia","How SISMO assesses information","Cómo evalúa la información SISMO"],
+  ["O SISMO ainda não foi conectado neste ambiente.","SISMO has not been connected in this environment yet.","SISMO aún no se ha conectado en este entorno."],
+  ["SISMO: notícias com fontes e filtros por tema e ativo","SISMO: news with sources and filters by topic and asset","SISMO: noticias con fuentes y filtros por tema y activo"],
   // Admin dashboard and affiliate enrollment
   ['operação', 'trading activity', 'operativa'],
   ['admin', 'administrator', 'administrador'],

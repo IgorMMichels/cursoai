@@ -13,7 +13,7 @@ const previewNav = [
   { id: 'trilha', label: 'Minha trilha', icon: BookOpen },
   { id: 'plataformas', label: 'Plataformas', icon: LayoutGrid },
   { id: 'ferramentas', label: 'Ferramentas', icon: SlidersHorizontal },
-  { id: 'radar', label: 'Radar de mercado', icon: Radio },
+  { id: 'radar', label: 'SISMO', icon: Radio },
   { id: 'audios', label: 'Áudios extras', icon: Headphones },
   { id: 'simulador', label: 'Simulador de trade', icon: SlidersHorizontal },
   { id: 'pagamento', label: 'Como pagar', icon: WalletCards },

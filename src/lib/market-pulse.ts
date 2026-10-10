@@ -39,7 +39,7 @@ function parseSnapshot(value: unknown): PulseSnapshot {
 
 export function useMarketPulse() {
   const [snapshot, setSnapshot] = useState<PulseSnapshot | null>(null)
-  const [error, setError] = useState<string | null>(apiBase ? null : 'O radar ainda não foi conectado neste ambiente.')
+  const [error, setError] = useState<string | null>(apiBase ? null : 'O SISMO ainda não foi conectado neste ambiente.')
   const [loading, setLoading] = useState(Boolean(apiBase))
   const [revision, setRevision] = useState(0)
   const [connected, setConnected] = useState(false)

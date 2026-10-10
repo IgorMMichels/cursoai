@@ -18,7 +18,7 @@ export function telegramText(message) {
   return `${message.title}\n\n${message.summary.slice(0, 3000)}${message.url ? `\n\n${message.url}` : ''}\n\n${disclaimer}`.slice(0, 4000)
 }
 export function discordPayload(message) {
-  return { allowed_mentions: { parse: [] }, embeds: [{ title: message.title.slice(0, 256), ...(message.url ? { url: message.url } : {}), description: `${message.summary.slice(0, 3000)}\n\n${disclaimer}`, color: 0xa78bfa, timestamp: message.timestamp, footer: { text: 'Omega · Market Pulse' } }] }
+  return { allowed_mentions: { parse: [] }, embeds: [{ title: message.title.slice(0, 256), ...(message.url ? { url: message.url } : {}), description: `${message.summary.slice(0, 3000)}\n\n${disclaimer}`, color: 0xa78bfa, timestamp: message.timestamp, footer: { text: 'Omega · SISMO' } }] }
 }
 export async function sendMessage(config, platform, message, fetchImpl = fetch) {
   if (platform === 'discord') {
