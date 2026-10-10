@@ -129,7 +129,8 @@ export default async function createCheckoutSession(request: IncomingMessage, re
     response.statusCode = 200
     response.setHeader('Content-Type', 'application/json; charset=utf-8')
     response.end(JSON.stringify({ url: session.url }))
-  } catch {
+  } catch (error) {
+    console.error('[checkout] session creation failed:', error instanceof Error ? error.message : error)
     if (createdOrderId) {
       try {
         const admin = createBillingAdmin(process.env)

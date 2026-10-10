@@ -25,7 +25,31 @@ export default defineConfig(({ mode }) => {
           response.end(JSON.stringify(getRegionalCatalog(country)))
         })
       },
-    }],
+    },
+    {
+      name: 'local-checkout-api',
+      // Vercel serves /api in production; mirror the two billing functions for `vite dev`.
+      configureServer(server) {
+        for (const [route, file] of [['/api/checkout/create-session', '/api/checkout/create-session.ts'], ['/api/stripe/webhook', '/api/stripe/webhook.ts']] as const) {
+          server.middlewares.use(route, async (request, response) => {
+            for (const [key, value] of Object.entries(localEnv)) if (process.env[key] === undefined) process.env[key] = value
+            // Return to the dev server after paying instead of the production domain.
+            const host = request.headers.host ?? ''
+            if (/^localhost(:\d+)?$/.test(host)) process.env.SITE_URL = `http://${host}`
+            try {
+              const module = await server.ssrLoadModule(file) as { default: (request: unknown, response: unknown) => Promise<void> | void }
+              await module.default(request, response)
+            } catch (error) {
+              console.error('[local-checkout-api]', error)
+              response.statusCode = 500
+              response.setHeader('Content-Type', 'application/json; charset=utf-8')
+              response.end(JSON.stringify({ error: 'Local API failed to load.' }))
+            }
+          })
+        }
+      },
+    },
+    ],
     server: {
       proxy: {
         '/bots-api': {
