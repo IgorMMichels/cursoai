@@ -1,5 +1,4 @@
 import { Brand, OmegaSymbol } from '@/components/brand'
-import { OmegaBrandScene } from '@/components/omega-brand-scene'
 import { LocalizedLink as Link } from '@/components/localized-router'
 import { PageMeta } from '@/components/tools/page-meta'
 import { useLocalization } from '@/contexts/localization-context'
@@ -109,11 +108,11 @@ export function CheckoutPage() {
     <main className="mx-auto w-full max-w-6xl px-5 pb-24 sm:px-10">
       <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-16">
         <div className="min-w-0">
-          <motion.div {...rise(0)}>
-            <Link to="/planos" className="text-[11px] uppercase tracking-[.18em] text-[#8e8a97] transition hover:text-[#d9d3e6]">← {labels.backPlans}</Link>
+          <motion.div {...rise(0)} className="relative">
+            <Link to="/planos" className="relative text-[11px] uppercase tracking-[.18em] text-[#8e8a97] transition hover:text-[#d9d3e6]">← {labels.backPlans}</Link>
             <p className="mt-10 text-[11px] font-semibold uppercase tracking-[.22em] text-[#a78bfa]">{labels.eyebrow}</p>
-            <h1 className="mt-3 font-display text-[44px] font-semibold leading-[1.02] tracking-[-.045em] sm:text-6xl">{labels.title}</h1>
-            <p className="mt-4 max-w-lg text-[15px] leading-7 text-[#aaa6b2]">{labels.subtitle}</p>
+            <h1 className="relative mt-3 font-display text-[44px] font-semibold leading-[1.02] tracking-[-.045em] sm:text-6xl">{labels.title}</h1>
+            <p className="relative mt-4 max-w-lg text-[15px] leading-7 text-[#aaa6b2]">{labels.subtitle}</p>
           </motion.div>
 
           <motion.ol {...rise(.08)} className="mt-9 flex items-center justify-between gap-3 border-y border-white/[.08] py-3 text-[11px] uppercase tracking-[.14em] sm:justify-start sm:gap-4 sm:tracking-[.16em]" aria-label={labels.title}>
@@ -127,19 +126,6 @@ export function CheckoutPage() {
             })}
           </motion.ol>
 
-          <motion.figure {...rise(.14)} className="relative mt-8 overflow-hidden bg-[#07060c]" aria-hidden="true">
-            <CropMarks />
-            <div className="relative mx-auto h-[250px] w-full sm:h-[320px]">
-              <div className="absolute inset-0 grid place-items-center">
-                <div className="w-[104px] text-[#b9a5ff]/65 sm:w-[124px] [&>svg]:size-full"><OmegaSymbol /></div>
-              </div>
-              <OmegaBrandScene className="absolute inset-0" still={!!reducedMotion} />
-            </div>
-            <figcaption className="flex items-center justify-between gap-4 border-t border-white/[.08] px-5 py-3 text-[11px] uppercase tracking-[.18em] text-[#7f7b88]">
-              <span>{labels.heroLine}</span>
-              <span className="shrink-0 whitespace-nowrap font-mono">{plan ? translateUi(plan.name) : '—'}</span>
-            </figcaption>
-          </motion.figure>
 
           <motion.section {...rise(.2)} className="mt-12">
             <h2 className="flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[.2em] text-[#d9d3e6]"><span className="font-mono text-[#a78bfa]">II</span>{labels.method}</h2>
@@ -265,16 +251,6 @@ export function CheckoutPage() {
   }
 }
 
-// Marcas de corte nos quatro cantos do quadro 3D, como em material de impressão.
-function CropMarks() {
-  const mark = 'absolute size-3 border-[#a78bfa]/50'
-  return <>
-    <span className={`${mark} left-3 top-3 border-l border-t`} />
-    <span className={`${mark} right-3 top-3 border-r border-t`} />
-    <span className={`${mark} bottom-[46px] left-3 border-b border-l`} />
-    <span className={`${mark} bottom-[46px] right-3 border-b border-r`} />
-  </>
-}
 
 // Selo tipográfico: o texto corre num anel estático e o Ω fica no centro.
 function FounderSeal({ text }: { text: string }) {
