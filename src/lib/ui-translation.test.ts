@@ -109,30 +109,56 @@ test('translates display copy while preserving source edge whitespace and techni
   assert.equal(translateString('Language', 'pt-BR', catalog), 'Language')
 })
 
-test('localized selector labels do not replace selected locale or market option values', async () => {
+test('localizes token simulator validation and market errors', () => {
+  assert.equal(translateString('Cole um endereço mint válido da Solana.', 'en'), 'Enter a valid Solana mint address.')
+  assert.equal(translateString('Cole um endereço mint válido da Solana.', 'es'), 'Introduce una dirección mint válida de Solana.')
+  assert.equal(translateString('A fonte de mercado está indisponível. Tente novamente em instantes.', 'en'), 'The market data source is unavailable. Try again shortly.')
+  assert.equal(translateString('Saldo fictício insuficiente.', 'es'), 'El saldo simulado es insuficiente.')
+})
+
+test('every user-facing paper simulator exception has a translation for English and Spanish', async () => {
+  const files = ['paper-market.ts', 'paper-order.ts', 'paper-trading.ts'].map((name) => fileURLToPath(new URL(`./${name}`, import.meta.url)))
+  const messages = new Set<string>()
+  for (const file of files) {
+    const source = await readFile(file, 'utf8')
+    for (const match of source.matchAll(/new Error\('([^']+)'\)/g)) {
+      if (match[1] !== 'invalid') messages.add(match[1])
+    }
+  }
+  messages.add('Ainda não há negócios para formar velas neste intervalo. Tente 1m ou aguarde novos negócios.')
+  for (const message of messages) {
+    assert.ok(uiTranslations[message]?.en, `Missing English translation for simulator error: ${message}`)
+    assert.ok(uiTranslations[message]?.es, `Missing Spanish translation for simulator error: ${message}`)
+  }
+})
+
+test('language preference is available in profile only and market cannot be selected', async () => {
   const file = fileURLToPath(new URL('../components/localization-selector.tsx', import.meta.url))
   const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
   assert.equal((source as ts.SourceFile & { parseDiagnostics: readonly unknown[] }).parseDiagnostics.length, 0)
-
-  const cases = [
-    { marker: 'data-language-select', selectedValue: 'locale' },
-    { marker: 'data-region-select', selectedValue: 'market' },
-  ]
   const selects = findJsxElements(source, 'select')
-  for (const { marker, selectedValue } of cases) {
-    const select = selects.find((element) => attribute(element.openingElement, marker))
-    assert.ok(select, `Expected a select marked ${marker}`)
-    const selected = attribute(select.openingElement, 'value')?.initializer
-    assert.ok(selected && ts.isJsxExpression(selected) && selected.expression)
-    assert.equal(selected.expression.getText(source), selectedValue)
-
-    const options = findJsxElements(select, 'option')
-    assert.ok(options.length > 0, `Expected options under ${marker}`)
-    for (const option of options) {
-      const optionValue = attribute(option.openingElement, 'value')?.initializer
-      assert.ok(optionValue && ts.isJsxExpression(optionValue) && optionValue.expression)
-      assert.equal(optionValue.expression.getText(source), 'code')
-      assert.doesNotMatch(optionValue.getText(source), /translateUi/)
-    }
+  assert.equal(selects.length, 1)
+  const select = selects[0]
+  assert.ok(attribute(select.openingElement, 'data-language-select'))
+  const selected = attribute(select.openingElement, 'value')?.initializer
+  assert.ok(selected && ts.isJsxExpression(selected) && selected.expression)
+  assert.equal(selected.expression.getText(source), 'locale')
+  const options = findJsxElements(select, 'option')
+  assert.ok(options.length > 0)
+  for (const option of options) {
+    const optionValue = attribute(option.openingElement, 'value')?.initializer
+    assert.ok(optionValue && ts.isJsxExpression(optionValue) && optionValue.expression)
+    assert.equal(optionValue.expression.getText(source), 'code')
+    assert.doesNotMatch(optionValue.getText(source), /translateUi/)
   }
+
+  const allSources = (await Promise.all(sourceRoots.map(collectTsxFiles))).flat()
+  const outsideProfile = await Promise.all(allSources.filter((item) => !item.endsWith('profile-settings.tsx') && !item.endsWith('localization-selector.tsx')).map(async (item) => {
+    const content = await readFile(item, 'utf8')
+    return content.includes('LocalizationSelector') ? item : null
+  }))
+  assert.deepEqual(outsideProfile.filter(Boolean), [])
+  const profile = await readFile(fileURLToPath(new URL('../components/profile-settings.tsx', import.meta.url)), 'utf8')
+  assert.match(profile, /<LocalizationSelector\b/)
+  assert.doesNotMatch(await readFile(file, 'utf8'), /data-region-select/)
 })
