@@ -1,0 +1,13 @@
+# E-mails de ciclo de vida
+
+O envio de marketing começa desativado. O cron diário de `GET /api/email/cron` processa no máximo 25 mensagens, e só envia depois que `MARKETING_EMAILS_ENABLED=true` e as configurações obrigatórias estiverem completas. Configure `CRON_SECRET`, credenciais administrativas do Supabase, `RESEND_API_KEY`, `RESEND_FROM`, `SITE_URL`, `RESEND_INTERESTED_SEGMENT_ID`, `EMAIL_UNSUBSCRIBE_SECRET`, `MARKETING_COMPANY_NAME` e `MARKETING_POSTAL_ADDRESS` no ambiente de produção. A Vercel deve executar `/api/email/cron` uma vez por dia com `Authorization: Bearer $CRON_SECRET`.
+
+`MARKETING_POSTAL_ADDRESS` precisa conter o endereço postal real da empresa responsável pelo envio. O sistema não usa endereço de exemplo; enquanto esse dado não for definido, os e-mails de campanha permanecem desativados. As reconciliações diárias de cancelamentos e segmentos ainda podem ocorrer com o cron, o Supabase e a chave do Resend configurados.
+
+O cron considera somente contas com e-mail confirmado e consentimento de marketing ativo. A preferência de idioma fica em `email_preferences.email_locale` (`pt-BR`, `en` ou `es`); ausências e valores desconhecidos usam português do Brasil. As tabelas de fila e preferências já foram aplicadas no projeto Supabase conectado. O idioma é copiado para a fila e o conteúdo completo do e-mail é salvo antes da primeira tentativa, para que novas tentativas usem o mesmo idioma, texto, links, remetente e cabeçalhos.
+
+Há três campanhas de ciclo de vida: boas-vindas para confirmação recente, primeira aula para assinantes ativos sem progresso e retomada para quem teve atividade entre 7 e 45 dias atrás. O segmento da assinatura usa as datas de início e expiração; contas sem acesso recebem links para os planos, sem alegação de que o curso está liberado. Cada conta recebe no máximo um envio em qualquer janela de 24 horas. Tentativas de rede, HTTP 429 e erros 5xx podem ser repetidas até cinco vezes, sempre com a mesma chave de idempotência, e a fila abandona tentativas após 20 horas.
+
+O token assinado de cancelamento bloqueia a preferência local imediatamente. O worker envia a revogação ao contato do Resend e reconcilia falhas no cron seguinte. Eventos do Resend são recebidos em `POST /api/email/webhook`; configure o segredo de assinatura em `RESEND_WEBHOOK_SECRET`. Erros de persistência retornam HTTP 500 para que o Resend repita o evento.
+
+O rodapé inclui o símbolo Ω, o crédito `© Omega Courses`, a identificação configurada, o endereço postal e um link de cancelamento. O cabeçalho `List-Unsubscribe` também oferece cancelamento compatível com clientes de e-mail. Os links de campanha carregam UTMs para medir origem, campanha e segmento.
