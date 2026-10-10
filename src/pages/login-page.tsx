@@ -1,18 +1,23 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { ArrowLeft, ArrowRight, BadgeCheck, Check, Eye, EyeOff, Link2 } from 'lucide-react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, Link2 } from 'lucide-react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { LocalizedLink as Link, useLocalizedNavigate as useNavigate } from '@/components/localized-router'
 import { OmegaLoginScene } from '@/components/omega-login-scene'
+import { OmegaBrandScene } from '@/components/omega-brand-scene'
 import { omegaCopy } from '@/lib/omega-copy'
 import { PageMeta } from '@/components/tools/page-meta'
 import { Brand } from '@/components/brand'
-import { LocalizationSelector } from '@/components/localization-selector'
 import { destinationForRole, useSession } from '@/contexts/session-context'
 import { isAffiliateHandleAvailable, isValidAffiliateHandle } from '@/lib/affiliate-service'
-import { plans, type Currency, type PlanId } from '@/lib/offers'
+import { plans, type PlanId } from '@/lib/offers'
+import { FounderBadge } from '@/components/founder-badge'
+import { useLocalization } from '@/contexts/localization-context'
+import { localizedPath } from '@/lib/localization'
+import { formatRegionalOffer, getPublishedRegionalOffer, type PaymentMethod } from '@/lib/regional-offers'
 import { rememberReferral } from '@/lib/storage'
+import { readAuthCallbackState } from '@/lib/auth-callback'
 import type { AppSession } from '@/contexts/session-context'
 
 type LoginMode = 'signin' | 'signup' | 'reset' | 'recovery'
@@ -140,25 +145,34 @@ export function LoginPage() {
     loading,
     authConfigured,
     authError,
+    isPasswordRecovery,
     signInWithPassword,
+    sendMagicLink,
+    resendSignupConfirmation,
     signUpWithPassword,
     sendPasswordReset,
     updatePassword,
   } = useSession()
   const [search] = useSearchParams()
+  const { locale, regionalOffers, marketLoading, pricingError } = useLocalization()
   const location = useLocation()
   const navigate = useNavigate()
+  const callbackState = useMemo(() => readAuthCallbackState(location.search, location.hash), [location.search, location.hash])
   const queryPlan = search.get('plano') as PlanId | null
-  const currencyParam = search.get('moeda') as Currency | null
   const chosenPlan = queryPlan && queryPlan in plans ? queryPlan : undefined
-  const chosenCurrency = currencyParam === 'SOL' || currencyParam === 'BRL' ? currencyParam : 'BRL'
+  const paymentMethod = search.get('payment') as PaymentMethod | null
+  const chosenOffer = chosenPlan ? getPublishedRegionalOffer(regionalOffers[0]?.marketId ?? 'OTHER', chosenPlan, paymentMethod === 'fiat' || paymentMethod === 'crypto' ? paymentMethod : undefined) : undefined
+  const chosenPrice = chosenOffer ? formatRegionalOffer(chosenOffer, locale) : null
   const referralParam = search.get('ref')?.trim()
-  const [mode, setMode] = useState<LoginMode>(() => authConfigured && search.get('recovery') === '1' ? 'recovery' : 'signin')
+  const [mode, setMode] = useState<LoginMode>(() => authConfigured && callbackState.isRecovery ? 'recovery' : 'signin')
   const [name, setName] = useState('')
   const [username, setUsername] = useState('')
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'invalid' | 'checking' | 'available' | 'taken' | 'error'>('idle')
   const [email, setEmail] = useState('')
   const [marketingOptIn, setMarketingOptIn] = useState(false)
+  const [signInMethod, setSignInMethod] = useState<'password' | 'magic-link'>('password')
+  const [canResendConfirmation, setCanResendConfirmation] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -168,6 +182,21 @@ export function LoginPage() {
   useEffect(() => {
     if (referralParam) rememberReferral(referralParam)
   }, [referralParam])
+
+  useEffect(() => {
+    if (callbackState.error) setError(callbackState.error)
+    if (isPasswordRecovery) {
+      setMode('recovery')
+      setError(null)
+      setMessage(null)
+    }
+  }, [callbackState, isPasswordRecovery])
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = window.setInterval(() => setResendCooldown((remaining) => Math.max(0, remaining - 1)), 1000)
+    return () => window.clearInterval(timer)
+  }, [resendCooldown > 0])
 
   useEffect(() => {
     if (mode !== 'signup') return
@@ -184,13 +213,15 @@ export function LoginPage() {
   }, [mode, username])
 
   useEffect(() => {
-    if (!user || mode === 'recovery') return
+    if (!user || mode === 'recovery' || callbackState.error) return
     const requestedPath = location.state?.from
-    const destination = requestedPath && user.role !== 'admin' && safeRedirectPath(requestedPath)
+    const destination = chosenPlan && paymentMethod === 'fiat'
+      ? `${localizedPath('/checkout', locale)}?plan=${chosenPlan}&payment=fiat`
+      : requestedPath && user.role !== 'admin' && safeRedirectPath(requestedPath)
       ? requestedPath
       : destinationForRole(user.role)
     navigate(destination, { replace: true })
-  }, [user, mode, location.state, navigate])
+  }, [user, mode, callbackState.error, location.state, navigate, chosenPlan, paymentMethod, locale])
 
   const goToSession = (session: AppSession) => {
     const requestedPath = location.state?.from
@@ -205,7 +236,25 @@ export function LoginPage() {
     setError(null)
     setMessage(null)
     setPassword('')
-    if (search.has('recovery')) navigate('/login', { replace: true })
+    setSignInMethod('password')
+    setCanResendConfirmation(false)
+    if (callbackState.isRecovery || callbackState.error) navigate('/login', { replace: true })
+  }
+
+  const resendConfirmation = async () => {
+    if (resendCooldown > 0 || isSubmitting) return
+    setError(null)
+    setMessage(null)
+    setResendCooldown(60)
+    setIsSubmitting(true)
+    try {
+      await resendSignupConfirmation(email)
+      setMessage('Se houver uma confirmação pendente para esse e-mail, enviaremos outra mensagem.')
+    } catch (resendError) {
+      setError(authErrorText(resendError))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -229,14 +278,22 @@ export function LoginPage() {
     setIsSubmitting(true)
     try {
       if (mode === 'signin') {
-        const session = await signInWithPassword(email, password)
-        goToSession(session)
+        if (signInMethod === 'magic-link') {
+          await sendMagicLink(email)
+          setMessage('Se houver uma conta com esse e-mail, enviaremos um link seguro para entrar.')
+        } else {
+          const session = await signInWithPassword(email, password)
+          goToSession(session)
+        }
       } else if (mode === 'signup') {
         const available = await isAffiliateHandleAvailable(username)
         if (!available) throw new Error('Este ID já está em uso ou reservado. Escolha outro.')
         const signedIn = await signUpWithPassword(name, username, email, password, marketingOptIn)
         if (signedIn) goToSession(signedIn)
-        else setMessage(`Conta criada. Confirme seu e-mail para entrar. Seu link de afiliado: ${window.location.origin}/${username}`)
+        else {
+          setCanResendConfirmation(true)
+          setMessage(`Conta criada. Confirme seu e-mail para entrar. Seu link de afiliado: ${window.location.origin}/${username}`)
+        }
       } else if (mode === 'reset') {
         await sendPasswordReset(email)
         setMessage('Se houver conta para este e-mail, você receberá um link para redefinir a senha.')
@@ -258,12 +315,33 @@ export function LoginPage() {
       ? 'Enviaremos um link seguro se houver conta para esse e-mail.'
       : mode === 'recovery'
         ? 'Escolha uma senha nova para proteger sua conta.'
-        : 'Acesse com seu e-mail e senha.'
+        : signInMethod === 'magic-link'
+          ? 'Enviaremos um link seguro ao seu e-mail para você entrar.'
+          : 'Acesse com seu e-mail e senha.'
   const displayHandle = username.trim().toLowerCase() || 'seu-id'
   const usernameHintColor = usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'
 
+  // Desktop: encaixa o formulário inteiro na altura da tela (sem rolagem), reduzindo a escala só se preciso.
+  const formRef = useRef<HTMLDivElement>(null)
+  const [fitZoom, setFitZoom] = useState(1)
+  useLayoutEffect(() => {
+    const fit = () => {
+      const el = formRef.current
+      if (!el) return
+      if (window.innerWidth < 1024) { el.style.zoom = '1'; setFitZoom(1); return }
+      el.style.zoom = '1'
+      const needed = el.scrollHeight + 48
+      const zoom = Math.min(1, window.innerHeight / needed)
+      el.style.zoom = String(zoom)
+      setFitZoom(zoom)
+    }
+    fit()
+    window.addEventListener('resize', fit)
+    return () => window.removeEventListener('resize', fit)
+  }, [mode, chosenPlan])
+
   return (
-    <div className="omega-login min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="omega-login min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:h-[100dvh] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:overflow-hidden">
       <PageMeta title={translateUi("Acesso")} description={translateUi("Entre na Omega para acessar suas jornadas e seu progresso de estudo.")} path="/login" privatePage />
       <style>{translateUi(`
         @keyframes login-shimmer-slide { from { transform: translateX(-120%); } to { transform: translateX(320%); } }
@@ -275,20 +353,17 @@ export function LoginPage() {
       `)}</style>
 
       {/* LEFT — form column */}
-      <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:px-12 xl:px-20">
-        <div className="relative m-auto w-full max-w-[420px] py-5 sm:py-8">
-          <div className="mb-12 flex items-center justify-between gap-4">
+      <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:h-[100dvh] lg:min-h-0 lg:overflow-hidden lg:px-12 xl:px-20">
+        <div ref={formRef} style={{ zoom: fitZoom }} className="relative m-auto w-full max-w-[420px] py-5 sm:py-8 lg:py-4">
+          <div className="mb-14 flex items-center justify-between gap-4">
             <Brand />
-            <LocalizationSelector compact />
+            {user?.isFounder && <FounderBadge isFounder={user.isFounder} />}
             <Link to="/landing" className="inline-flex items-center gap-2 rounded-lg px-2 py-2 text-xs font-medium text-[#a1aaa2] transition hover:text-white">
               <ArrowLeft size={13} /> {translateUi(" Voltar ao curso")}</Link>
           </div>
 
           <OmegaLoginScene compact />
           <div className="login-enter mb-8">
-            <div className="mb-5 grid size-10 place-items-center rounded-xl border border-[#a7b8a9]/20 bg-[#a7b8a9]/[.07] text-[#b7c8b7]">
-              <BadgeCheck size={19} />
-            </div>
             <p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#91a394]">{translateUi("Acesso à plataforma")}</p>
             <h2 className="mt-3 max-w-[18ch] font-display text-[34px] font-medium leading-[1.12] tracking-[-.045em] text-[#f0f2ee]">
               {translateUi(title)}
@@ -301,11 +376,16 @@ export function LoginPage() {
               <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#e4bc76]">{translateUi("Plano selecionado")}</p>
               <div className="mt-2 flex items-start justify-between gap-4">
                 <p className="pt-1 font-display text-lg font-medium tracking-[-.02em] text-[#e6efe8]">{translateUi("Plano ")}{translateUi(plans[chosenPlan].name)}</p>
-                <div className="text-right">
-                  <span className="inline-block rounded-full border border-white/[.1] bg-white/[.04] px-2.5 py-1 text-xs font-medium text-[#d2c4ff]">{translateUi(plans[chosenPlan].prices[chosenCurrency])}</span>
-                  <p className="mt-2 text-[10px] font-medium text-[#bca9e8]">{translateUi("ou ")}{translateUi(chosenCurrency === 'SOL' ? plans[chosenPlan].prices.BRL : plans[chosenPlan].prices.SOL)}</p>
-                </div>
+                {chosenPrice && <div className="text-right">
+                  <span className="inline-block rounded-full border border-white/[.1] bg-white/[.04] px-2.5 py-1 text-xs font-medium text-[#d2c4ff]">{chosenPrice}</span>
+                  <p className="mt-2 text-[10px] font-medium text-[#bca9e8]">{locale === 'en' ? 'one-time payment' : locale === 'es' ? 'pago único' : 'pagamento único'}</p>
+                </div>}
               </div>
+              {!chosenPrice && <p role={pricingError ? 'alert' : 'status'} className="mt-2 text-[10px] leading-relaxed text-[#bca9e8]">{pricingError
+                ? (locale === 'en' ? 'Regional price could not be loaded.' : locale === 'es' ? 'No se pudo cargar el precio regional.' : 'Não foi possível carregar o preço regional.')
+                : marketLoading
+                  ? (locale === 'en' ? 'Loading regional price…' : locale === 'es' ? 'Cargando precio regional…' : 'Carregando preço regional…')
+                  : (locale === 'en' ? 'Price unavailable in this region.' : locale === 'es' ? 'Precio no disponible en esta región.' : 'Preço indisponível nesta região.')}</p>}
               <p className="mt-2 text-[10px] leading-relaxed text-[#b7a77e]">{translateUi("Checkout ainda não está disponível; nenhum pagamento será processado por esta tela.")}</p>
             </div>
           )}
@@ -338,8 +418,12 @@ export function LoginPage() {
             </div>
           ) : mode === 'recovery' && loading ? (
             <div className="rounded-2xl border border-white/[.08] bg-white/[.03] p-4 text-sm text-[#8fa197]" role="status">{translateUi("Validando link de recuperação…")}</div>
-          ) : mode === 'recovery' && !user ? (
-            <div className="rounded-2xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]" role="alert">{translateUi("Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.")}</div>
+          ) : mode === 'recovery' && (!user || !isPasswordRecovery) ? (
+            <div className="rounded-2xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-xs leading-relaxed text-[#f2a8b2]">
+              <p role="alert">{translateUi(error ?? authError ?? "Link inválido ou expirado. Volte ao login e solicite outra recuperação de senha.")}</p>
+              <button type="button" onClick={() => setFormMode('reset')} className="mt-4 rounded-lg px-1 py-2 font-medium text-[#b49cff] hover:text-white">{translateUi('Solicitar novo link de recuperação')}</button>
+              <button type="button" onClick={() => setFormMode('signin')} className="ml-3 rounded-lg px-1 py-2 text-[#8fa197] hover:text-white">{translateUi('Voltar ao login')}</button>
+            </div>
           ) : (
             <form onSubmit={submit} className="login-enter-delay space-y-4">
               {authConfigured && mode === 'signup' && (
@@ -395,7 +479,7 @@ export function LoginPage() {
                 </div>
               )}
 
-              {authConfigured && mode !== 'reset' && (
+              {authConfigured && mode !== 'reset' && !(mode === 'signin' && signInMethod === 'magic-link') && (
                 <div>
                   <label htmlFor="password" className="mb-2 block text-xs font-semibold text-[#c3d0c6]">{translateUi(mode === 'recovery' ? 'Nova senha' : 'Senha')}</label>
                   <div className="relative">
@@ -450,18 +534,47 @@ export function LoginPage() {
                     {translateUi("Esqueci minha senha")}</button>
                 </div>
               )}
+              {mode === 'signin' && authConfigured && (
+                <button
+                  type="button"
+                  onClick={() => { setSignInMethod((current) => current === 'password' ? 'magic-link' : 'password'); setPassword(''); setError(null); setMessage(null) }}
+                  className="w-full rounded-lg py-1 text-left text-xs font-medium text-[#b49cff] transition hover:text-white hover:underline"
+                >
+                  {translateUi(signInMethod === 'password' ? 'Entrar por link enviado ao e-mail' : 'Entrar com senha')}
+                </button>
+              )}
+              {mode === 'signin' && authConfigured && (
+                <button
+                  type="button"
+                  disabled={isSubmitting || !email.trim() || resendCooldown > 0}
+                  onClick={resendConfirmation}
+                  className="w-full rounded-lg py-1 text-left text-xs text-[#8fa197] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {translateUi('Reenviar e-mail de confirmação')}{resendCooldown > 0 ? ` (${resendCooldown}s)` : ''}
+                </button>
+              )}
               {error && <p role="alert" className="rounded-2xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] px-3.5 py-2.5 text-xs leading-relaxed text-[#f2a8b2]">{translateUi(error)}</p>}
-              {authError && authConfigured && mode === 'signin' && <p role="alert" className="rounded-2xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] px-3.5 py-2.5 text-xs leading-relaxed text-[#f2a8b2]">{translateUi(authError)}</p>}
+              {authError && authConfigured && mode !== 'recovery' && <p role="alert" className="rounded-2xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] px-3.5 py-2.5 text-xs leading-relaxed text-[#f2a8b2]">{translateUi(authError)}</p>}
               {message && <p role="status" className="rounded-2xl border border-[#98abff]/20 bg-[#98abff]/[.06] px-3.5 py-2.5 text-xs leading-relaxed text-[#b5c2ff]">{translateUi(message)}</p>}
               <button
                 type="submit" disabled={isSubmitting || loading}
                 className="group flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#b49cff] px-4 text-sm font-semibold text-[#100c19] shadow-[0_10px_36px_rgba(180,156,255,.28)] transition hover:bg-[#c6b4ff] disabled:cursor-wait disabled:opacity-60"
               >
-                {translateUi(isSubmitting ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link de recuperação' : mode === 'recovery' ? 'Atualizar senha' : 'Entrar com e-mail')}
+                {translateUi(isSubmitting ? 'Aguarde…' : mode === 'signup' ? 'Criar conta' : mode === 'reset' ? 'Enviar link de recuperação' : mode === 'recovery' ? 'Atualizar senha' : signInMethod === 'magic-link' ? 'Enviar link para entrar' : 'Entrar com e-mail')}
                 <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5" />
               </button>
               {mode === 'reset' && <button type="button" onClick={() => setFormMode('signin')} className="w-full rounded-lg py-1.5 text-xs text-[#8fa197] transition hover:text-white">{translateUi("Voltar ao login")}</button>}
               {mode === 'recovery' && <button type="button" onClick={() => setFormMode('signin')} className="w-full rounded-lg py-1.5 text-xs text-[#8fa197] transition hover:text-white">{translateUi("Voltar ao login")}</button>}
+              {mode === 'signup' && canResendConfirmation && (
+                <button
+                  type="button"
+                  disabled={isSubmitting || !email.trim() || resendCooldown > 0}
+                  onClick={resendConfirmation}
+                  className="w-full rounded-lg py-1.5 text-xs text-[#b49cff] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {translateUi('Reenviar e-mail de confirmação')}{resendCooldown > 0 ? ` (${resendCooldown}s)` : ''}
+                </button>
+              )}
             </form>
           )}
 
@@ -481,9 +594,9 @@ export function LoginPage() {
         </div>
       </main>
 
-      <aside className="omega-login-panel relative hidden min-h-[100dvh] flex-col items-center justify-center px-10 py-16 lg:flex">
-        <OmegaLoginScene />
-        <p className="mt-8 text-center text-sm text-[#aaa3bc]">{translateUi(omegaCopy.sceneCaption)}</p>
+      <aside className="omega-login-panel relative hidden overflow-hidden lg:block lg:h-[100dvh]">
+        <OmegaBrandScene className="absolute inset-0" />
+        <p className="absolute inset-x-0 bottom-10 text-center text-sm text-[#aaa3bc]">{translateUi(omegaCopy.sceneCaption)}</p>
       </aside>
     </div>
   )
