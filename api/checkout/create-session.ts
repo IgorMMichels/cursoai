@@ -138,9 +138,11 @@ export default async function createCheckoutSession(request: IncomingMessage, re
         if (createdSession) await createStripeClient(process.env).checkout.sessions.expire(createdSession)
       } catch { /* A later reconciliation can handle an order if a provider is temporarily unavailable. */ }
     }
-    response.statusCode = 500
+    // Missing server configuration is an operator problem, not a transient one; say so without leaking values.
+    const notConfigured = error instanceof Error && /not configured|must use HTTPS/.test(error.message)
+    response.statusCode = notConfigured ? 503 : 500
     response.setHeader('Content-Type', 'application/json; charset=utf-8')
-    response.end(JSON.stringify({ error: 'Não foi possível iniciar o pagamento. Tente novamente em instantes.' }))
+    response.end(JSON.stringify({ error: 'Não foi possível iniciar o pagamento. Tente novamente em instantes.', code: notConfigured ? 'not_configured' : undefined }))
   }
 }
 

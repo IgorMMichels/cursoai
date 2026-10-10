@@ -30,7 +30,7 @@ const copy = {
     secure: 'Pagamento processado pela Stripe. A Ômega não guarda dados de cartão.',
     success: 'Estamos confirmando o pagamento e preparando seu acesso.', cancelled: 'Pagamento cancelado. Nenhuma cobrança foi concluída.',
     working: 'Abrindo pagamento seguro…', error: 'Não foi possível iniciar o pagamento. Tente novamente.',
-    secureBadge: 'Checkout seguro', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
+    secureBadge: 'Checkout seguro', notConfigured: 'O pagamento ainda não foi configurado no servidor (chaves da Stripe e do Supabase). Nada foi cobrado.', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
   },
   en: {
     title: 'Complete your purchase', subtitle: 'One access, no renewal. Choose how to pay and enter the course as soon as the payment is confirmed.',
@@ -46,7 +46,7 @@ const copy = {
     secure: 'Payment processed by Stripe. Omega does not store card details.',
     success: 'We’re confirming your payment and preparing your access.', cancelled: 'Payment cancelled. No charge was completed.',
     working: 'Opening secure payment…', error: 'We could not start the payment. Please try again.',
-    secureBadge: 'Secure checkout', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
+    secureBadge: 'Secure checkout', notConfigured: 'Payment is not configured on the server yet (Stripe and Supabase keys). Nothing was charged.', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
   },
   es: {
     title: 'Finalizar compra', subtitle: 'Un acceso, sin renovación. Elige cómo pagar y entra al curso en cuanto se confirme el pago.',
@@ -62,7 +62,7 @@ const copy = {
     secure: 'Pago procesado por Stripe. Omega no guarda datos de la tarjeta.',
     success: 'Estamos confirmando el pago y preparando tu acceso.', cancelled: 'Pago cancelado. No se completó ningún cargo.',
     working: 'Abriendo el pago seguro…', error: 'No pudimos iniciar el pago. Inténtalo de nuevo.',
-    secureBadge: 'Pago seguro', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
+    secureBadge: 'Pago seguro', notConfigured: 'El pago aún no está configurado en el servidor (claves de Stripe y Supabase). No se cobró nada.', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
   },
 } as const
 
@@ -254,7 +254,11 @@ export function CheckoutPage() {
         headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: selectedPlan, locale }),
       })
-      const result = await response.json() as { url?: string }
+      const result = await response.json() as { url?: string; code?: string }
+      if (result.code === 'not_configured') {
+        setError(labels.notConfigured)
+        return
+      }
       if (!response.ok || !result.url) throw new Error(labels.error)
       window.location.assign(result.url)
     } catch {
