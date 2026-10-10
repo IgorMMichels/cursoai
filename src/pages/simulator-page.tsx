@@ -23,7 +23,7 @@ const shortAddress = (value: string) => `${value.slice(0, 6)}…${value.slice(-5
 const timeText = (value: number) => new Date(value).toLocaleTimeString(getUiLocale(), { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 const ageText = (now: number, time: number) => { const seconds = Math.max(0, Math.floor((now - time) / 1000)); return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}min ${seconds % 60}s` }
 const numberInput = (value: string) => value.trim() === '' ? NaN : Number(value.replace(',', '.'))
-const errorText = (error: unknown) => error instanceof Error ? error.message : 'Não foi possível concluir. Tente novamente.'
+const errorText = (error: unknown) => translateUi(error instanceof Error ? error.message : 'Não foi possível concluir. Tente novamente.')
 const chainName: Record<PaperChain, string> = { solana: 'Solana', ethereum: 'Ethereum', base: 'Base' }
 function loadWallet() { try { return restorePaperWallet(localStorage.getItem(STORAGE_KEY)) } catch { return newPaperWallet() } }
 
