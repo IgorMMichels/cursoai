@@ -92,18 +92,27 @@ export default async function createCheckoutSession(request: IncomingMessage, re
           product_data: {
             name: `Ômega — ${planName}`,
             description: productDescription,
-            images: [`${siteUrl}/omega-checkout-orbits.webp`],
+            images: [`${siteUrl}/brand/omega/symbol-accent.png`],
           },
         },
       }],
       locale,
       branding_settings: {
-        background_color: '#080c0b',
+        background_color: '#07060c',
         border_style: 'rounded',
-        button_color: '#d8b66d',
+        button_color: '#a78bfa',
         display_name: 'Ômega',
         font_family: 'montserrat',
         icon: { type: 'url', url: `${siteUrl}/brand/omega/symbol-accent.svg` },
+      },
+      custom_text: {
+        submit: {
+          message: {
+            'pt-BR': 'Acesso liberado logo após a confirmação do pagamento.',
+            en: 'Your access is released as soon as the payment is confirmed.',
+            es: 'Tu acceso se libera en cuanto se confirma el pago.',
+          }[locale],
+        },
       },
       client_reference_id: orderId,
       customer_email: user.email,
