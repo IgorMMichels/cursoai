@@ -1,6 +1,6 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
@@ -19,14 +19,12 @@ import { getPlanIdsForMarket } from '@/lib/regional-offers'
 import { PlanPaymentOptions } from '@/components/plan-payment-options'
 import { PageMeta } from '@/components/tools/page-meta'
 import { SourceLanguageNotice } from '@/components/source-language-notice'
-import type { StageState } from '@/lib/omega-logo-stage'
 import { allLessons, modules } from '@/lib/course'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
-import '@/styles/platform-loading.css'
 
 const HeroWebGLShader = lazy(() => import('@/components/ui/hero-webgl-shader'))
-const OmegaGlbScene = lazy(() => import('@/components/ui/omega-glb-scene'))
+const AsciiModelViewer = lazy(() => import('@/components/ui/3d-ascii-model-viewer'))
 
 const journeyModuleCount = localJourneys.reduce((total, journey) => total + journey.modules.length, 0)
 const journeyLessonCount = localJourneys.reduce(
@@ -301,7 +299,7 @@ function HeroVisual() {
   return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
-        {!entryActive && <HeroOmegaScene />}
+        {!entryActive && <Suspense fallback={null}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
         <div className="absolute bottom-5 left-5 right-5 z-10 flex items-end justify-between gap-4">
           <div><p className="text-[9px] font-semibold uppercase tracking-[.16em] text-violet-100/80">{translateUi("trilha omega")}</p><p className="mt-2 max-w-[260px] font-display text-xl leading-tight tracking-[-.04em] text-white sm:text-2xl">{translateUi("Método antes do mercado.")}</p></div>
         </div>
@@ -311,18 +309,6 @@ function HeroVisual() {
   </motion.div>
 }
 
-function HeroOmegaScene() {
-  const spin = useRef<StageState>({ speed: 0.7, reveal: 1, boost: 0 })
-  const shell = useRef<HTMLDivElement>(null)
-  const [failed, setFailed] = useState(false)
-  const frame = useCallback(() => shell.current?.getBoundingClientRect(), [])
-  const noop = useCallback(() => {}, [])
-  const onFailure = useCallback(() => setFailed(true), [])
-  if (failed) return null
-  return <div ref={shell} className="omega-loading-stage is-ready absolute inset-0" aria-hidden="true">
-    <Suspense fallback={null}><OmegaGlbScene spin={spin} frame={frame} onProgress={noop} onReady={noop} onFailure={onFailure} /></Suspense>
-  </div>
-}
 
 
 function PracticeCard({ to, icon, number, title, copy, tone }: { to: string; icon: ReactNode; number: string; title: string; copy: string; tone: 'mint' | 'blue' | 'amber' }) {
