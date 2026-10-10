@@ -30,7 +30,7 @@ const copy = {
     secure: 'Pagamento processado pela Stripe. A Ômega não guarda dados de cartão.',
     success: 'Estamos confirmando o pagamento e preparando seu acesso.', cancelled: 'Pagamento cancelado. Nenhuma cobrança foi concluída.',
     working: 'Abrindo pagamento seguro…', error: 'Não foi possível iniciar o pagamento. Tente novamente.',
-    secureBadge: 'Checkout seguro', notConfigured: 'O pagamento ainda não foi configurado no servidor (chaves da Stripe e do Supabase). Nada foi cobrado.', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
+    secureBadge: 'Checkout seguro', cheaper: 'Mais barato', cryptoPerk: 'Pagando em cripto o valor é menor: queremos estimular o uso de criptomoedas, e é isso que praticamos aqui na plataforma.', notConfigured: 'O pagamento ainda não foi configurado no servidor (chaves da Stripe e do Supabase). Nada foi cobrado.', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
   },
   en: {
     title: 'Complete your purchase', subtitle: 'One access, no renewal. Choose how to pay and enter the course as soon as the payment is confirmed.',
@@ -46,7 +46,7 @@ const copy = {
     secure: 'Payment processed by Stripe. Omega does not store card details.',
     success: 'We’re confirming your payment and preparing your access.', cancelled: 'Payment cancelled. No charge was completed.',
     working: 'Opening secure payment…', error: 'We could not start the payment. Please try again.',
-    secureBadge: 'Secure checkout', notConfigured: 'Payment is not configured on the server yet (Stripe and Supabase keys). Nothing was charged.', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
+    secureBadge: 'Secure checkout', cheaper: 'Cheaper', cryptoPerk: 'Paying with crypto costs less: we want to encourage the use of cryptocurrencies, and that is what we practice on this platform.', notConfigured: 'Payment is not configured on the server yet (Stripe and Supabase keys). Nothing was charged.', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
   },
   es: {
     title: 'Finalizar compra', subtitle: 'Un acceso, sin renovación. Elige cómo pagar y entra al curso en cuanto se confirme el pago.',
@@ -62,7 +62,7 @@ const copy = {
     secure: 'Pago procesado por Stripe. Omega no guarda datos de la tarjeta.',
     success: 'Estamos confirmando el pago y preparando tu acceso.', cancelled: 'Pago cancelado. No se completó ningún cargo.',
     working: 'Abriendo el pago seguro…', error: 'No pudimos iniciar el pago. Inténtalo de nuevo.',
-    secureBadge: 'Pago seguro', notConfigured: 'El pago aún no está configurado en el servidor (claves de Stripe y Supabase). No se cobró nada.', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
+    secureBadge: 'Pago seguro', cheaper: 'Más barato', cryptoPerk: 'Pagando con cripto el valor es menor: queremos fomentar el uso de criptomonedas, y eso es lo que practicamos en esta plataforma.', notConfigured: 'El pago aún no está configurado en el servidor (claves de Stripe y Supabase). No se cobró nada.', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
   },
 } as const
 
@@ -88,10 +88,14 @@ export function CheckoutPage() {
   const priceLabel = offer ? formatRegionalOffer(offer, locale) : marketLoading ? '…' : '—'
   const priceNotice = marketLoading || !planId || offer ? '' : pricingError ? labels.pricingError : labels.noPrice
   const currentStep = status === 'success' ? 2 : 1
+  // Each method shows its own catalog price; the plans page keeps the fiat price and nothing is converted here.
+  const fiatOffer = planId ? getPublishedRegionalOffer(market, planId, 'fiat') : null
+  const cryptoOffer = planId ? getPublishedRegionalOffer(market, planId, 'crypto') : null
+  const withPrice = (hint: string, methodOffer: typeof offer) => methodOffer ? `${hint} · ${formatRegionalOffer(methodOffer, locale)}` : hint
   const options = [
-    { id: 'crypto' as const, label: labels.crypto, hint: labels.cryptoSub, active: false },
-    { id: 'fiat' as const, label: labels.stripe, hint: labels.stripeSub, active: true },
-    { id: 'pix' as const, label: labels.pix, hint: labels.pixSub, active: false },
+    { id: 'crypto' as const, label: labels.crypto, hint: withPrice(labels.cryptoSub, cryptoOffer), active: false, perk: !!cryptoOffer },
+    { id: 'fiat' as const, label: labels.stripe, hint: withPrice(labels.stripeSub, fiatOffer), active: true, perk: false },
+    { id: 'pix' as const, label: labels.pix, hint: labels.pixSub, active: false, perk: false },
   ]
   const localeLabel = labels.secureBadge
   // Uma entrada escalonada no carregamento; com movimento reduzido, tudo aparece de uma vez.
@@ -136,7 +140,7 @@ export function CheckoutPage() {
           <motion.section {...rise(.2)} className="mt-12">
             <h2 className="flex items-baseline gap-3 text-[11px] font-semibold uppercase tracking-[.2em] text-[#d9d3e6]"><span className="font-mono text-[#a78bfa]">II</span>{labels.method}</h2>
             <div className="mt-4 border-t border-white/[.1]" role="radiogroup" aria-label={labels.method}>
-              {options.map(({ id, label, hint, active }, index) => {
+              {options.map(({ id, label, hint, active, perk }, index) => {
                 const selected = selectedMethod === id
                 const disabled = id === 'pix' && market !== 'BR'
                 return <button key={id} type="button" role="radio" aria-checked={selected} aria-disabled={disabled || undefined}
@@ -145,7 +149,7 @@ export function CheckoutPage() {
                   {selected && <motion.span layoutId="omega-method-rule" className="absolute inset-y-0 -left-4 w-px bg-[#a78bfa]" transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 34 }} />}
                   <span className={`font-mono text-sm transition ${selected ? 'text-[#c4b5fd]' : 'text-[#5f5b68]'}`}>{String(index + 1).padStart(2, '0')}</span>
                   <span className="min-w-0">
-                    <span className={`block font-display text-lg font-medium tracking-[-.02em] transition ${selected ? 'text-[#f5f2fb]' : 'text-[#c9c4d2]'}`}>{label}</span>
+                    <span className={`block font-display text-lg font-medium tracking-[-.02em] transition ${selected ? 'text-[#f5f2fb]' : 'text-[#c9c4d2]'}`}>{label}{perk && <span className="ml-2 align-middle text-[10px] font-semibold uppercase tracking-[.16em] text-[#e4bc76]">{labels.cheaper}</span>}</span>
                     <span className="mt-1 block text-xs text-[#8e8a97]">{hint}</span>
                   </span>
                   <span className={`text-[10px] font-semibold uppercase tracking-[.16em] ${active ? 'text-[#a9e3c0]' : 'text-[#6f6b78]'}`}>{active ? labels.available : labels.soon}</span>
@@ -153,7 +157,8 @@ export function CheckoutPage() {
               })}
             </div>
 
-            {priceNotice && <p role="status" className="mt-4 border-l-2 border-[#e8bc76]/60 pl-4 text-sm leading-6 text-[#e8bc76]">{priceNotice}</p>}
+            {cryptoOffer && <p className="mt-4 text-xs leading-5 text-[#b9b1a0]">{labels.cryptoPerk}</p>}
+            {priceNotice &&<p role="status" className="mt-4 border-l-2 border-[#e8bc76]/60 pl-4 text-sm leading-6 text-[#e8bc76]">{priceNotice}</p>}
             {selectedMethod === 'pix' && market !== 'BR' &&<p role="status" className="mt-4 text-xs text-[#8e8a97]">{labels.region}</p>}
 
             <AnimatePresence mode="wait" initial={false}>

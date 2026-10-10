@@ -49,3 +49,9 @@ artifacts/
 /docs/omega-loading-glb.md
 /docs/plano-email-e-relacionamento.md
 /docs/radar-fontes-e-avaliacao.md
+
+# Secrets
+.env
+.env.*
+!.env.example
+.vercel
