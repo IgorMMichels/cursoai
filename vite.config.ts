@@ -33,6 +33,8 @@ export default defineConfig(({ mode }) => {
         for (const [route, file] of [['/api/checkout/create-session', '/api/checkout/create-session.ts'], ['/api/stripe/webhook', '/api/stripe/webhook.ts']] as const) {
           server.middlewares.use(route, async (request, response) => {
             for (const [key, value] of Object.entries(localEnv)) if (process.env[key] === undefined) process.env[key] = value
+            // No CDN country header locally; match the Brazil default used by /api/regional-offers so the server prices what the page shows.
+            process.env.OMEGA_DEV_COUNTRY ||= 'BR'
             // Return to the dev server after paying instead of the production domain.
             const host = request.headers.host ?? ''
             if (/^localhost(:\d+)?$/.test(host)) process.env.SITE_URL = `http://${host}`
