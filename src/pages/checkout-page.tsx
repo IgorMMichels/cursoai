@@ -1,5 +1,5 @@
 import { Brand, OmegaSymbol } from '@/components/brand'
-import { LocalizedLink as Link } from '@/components/localized-router'
+import { LocalizedLink as Link, useLocalizedNavigate } from '@/components/localized-router'
 import { PageMeta } from '@/components/tools/page-meta'
 import { useLocalization } from '@/contexts/localization-context'
 import { useSession } from '@/contexts/session-context'
@@ -70,6 +70,7 @@ const numerals = ['I', 'II', 'III'] as const
 export function CheckoutPage() {
   const { locale, market } = useLocalization()
   const { user } = useSession()
+  const navigate = useLocalizedNavigate()
   const reducedMotion = useReducedMotion()
   const [search, setSearch] = useSearchParams()
   const [busy, setBusy] = useState(false)
@@ -153,15 +154,12 @@ export function CheckoutPage() {
               <motion.div key={status ?? (user ? selectedMethod : 'guest')} initial={{ opacity: 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : .3 }}>
                 {status === 'success' ? <p role="status" className="mt-8 border-l-2 border-emerald-300/50 pl-4 text-sm leading-6 text-emerald-200">{labels.success}</p>
                   : status === 'cancelled' ? <p role="status" className="mt-8 border-l-2 border-white/20 pl-4 text-sm leading-6 text-[#d2ced8]">{labels.cancelled}</p>
-                    : !user && planId ? <div className="mt-8">
-                      <Link to={`/login?plano=${planId}&payment=${selectedMethod}`} className="flex min-h-12 w-full items-center justify-center bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff]">{labels.login}</Link>
-                      <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>
-                    </div>
-                      : selectedMethod === 'fiat' ? <div className="mt-8">
+                    : selectedMethod === 'fiat' ? <div className="mt-8">
                         <button type="button" disabled={busy || !planId || !offer} onClick={() => planId && void beginStripeCheckout(planId)} className="flex min-h-12 w-full items-center justify-center gap-3 bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff] disabled:cursor-wait disabled:opacity-60">
                           {busy && <Loader2 size={16} className="animate-spin" />}
-                          {busy ? labels.working : labels.continue}
+                          {busy ? labels.working : user ? labels.continue : labels.login}
                         </button>
+                        {!user && <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>}
                         <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.secure}</p>
                       </div>
                         : <p role="status" className="mt-8 border-l-2 border-white/20 pl-4 text-sm leading-6 text-[#aaa6b2]">{labels.unavailable}</p>}
@@ -230,12 +228,21 @@ export function CheckoutPage() {
   }
 
   async function beginStripeCheckout(selectedPlan: PlanId) {
-    if (!supabase || busy) return
+    if (busy) return
+    if (!supabase) {
+      setError(labels.error)
+      return
+    }
     setBusy(true)
     setError('')
     try {
       const { data, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError || !data.session?.access_token) throw new Error(labels.error)
+      if (sessionError) throw new Error(labels.error)
+      if (!data.session?.access_token) {
+        const params = new URLSearchParams({ plano: selectedPlan, payment: selectedMethod })
+        navigate(`/login?${params.toString()}`)
+        return
+      }
       const response = await fetch('/api/checkout/create-session', {
         method: 'POST',
         headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
@@ -246,6 +253,7 @@ export function CheckoutPage() {
       window.location.assign(result.url)
     } catch {
       setError(labels.error)
+    } finally {
       setBusy(false)
     }
   }
