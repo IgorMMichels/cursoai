@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom'
 import { LocalizedLink as Link } from '@/components/localized-router'
 import { Brand } from '@/components/brand'
 import { PageMeta } from '@/components/tools/page-meta'
+import { OmegaBrandScene } from '@/components/omega-brand-scene'
 
 export function NotFoundPage() {
   useUiTranslation();
@@ -27,6 +28,7 @@ export function NotFoundPage() {
         </motion.div>
         <motion.div className="not-found-art" initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .7, delay: .08, ease: [.16, 1, .3, 1] }} role="img" aria-label={translateUi("Visual do código de erro 404")}>
           <div className="not-found-art-head"><span className="not-found-art-mark">{translateUi("Ω")}</span><span>{translateUi("OMEGA ")}<i>·</i> {translateUi(" ROUTE STATUS")}</span><span className="not-found-art-code">{translateUi("0x194")}</span></div>
+          <div className="relative mx-auto h-[220px] w-full sm:h-[280px]"><OmegaBrandScene className="absolute inset-0" /></div>
           <div className="not-found-art-display"><span>404</span><div className="not-found-trace"><svg viewBox="0 0 520 88" fill="none" aria-hidden="true"><path d="M2 47h100l26-27h72l22 44h64l22-22h67" /><path d="M379 42h42m18 0h78" /><circle cx="102" cy="47" r="3" /><circle cx="286" cy="64" r="3" /><circle cx="353" cy="42" r="3" /><circle cx="421" cy="42" r="3" /></svg><span><SlidersHorizontal size={14} /> {translateUi(" rota sem destino")}</span></div></div>
           <div className="not-found-art-foot"><span>{translateUi("STATUS")}</span><strong><i /> {translateUi(" NOT FOUND")}</strong><span>{translateUi("OMEGA LEARNING SYSTEM")}</span></div>
         </motion.div>
