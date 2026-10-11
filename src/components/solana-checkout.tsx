@@ -131,7 +131,8 @@ function CryptoPanel({ planId, locale, priceLabel }: Props) {
     setPhase('creating')
     const result = await api<Partial<CryptoOrder> & { error?: string }>('/api/crypto/create-order', { planId })
     if (!result.ok || !result.data.orderId) {
-      fail(result.data.code === 'not_configured' ? 'errorNotConfigured' : 'errorGeneric')
+      // 404 means the /api routes are not being served (plain Vite dev server), which is also a server setup problem.
+      fail(result.data.code === 'not_configured' || result.status === 404 ? 'errorNotConfigured' : 'errorGeneric')
       return null
     }
     const created = result.data as CryptoOrder
