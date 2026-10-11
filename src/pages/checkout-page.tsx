@@ -11,10 +11,23 @@ import { supabase } from '@/lib/supabase'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { lazy, Suspense, useState } from 'react'
+import { Component, lazy, Suspense, useState, type ReactNode } from 'react'
 
 // Solana libraries are only downloaded when someone picks the crypto method.
 const SolanaCheckout = lazy(() => import('@/components/solana-checkout'))
+
+// A failed lazy import (offline, new deploy) must not blank the whole checkout.
+class LoadBoundary extends Component<{ message: string; retry: string; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() {
+    if (!this.state.failed) return this.props.children
+    return <div role="alert" className="mt-8 border-l-2 border-rose-300/50 pl-4 text-sm leading-6 text-rose-300">
+      {this.props.message}
+      <button type="button" onClick={() => window.location.reload()} className="mt-3 block min-h-11 text-xs font-medium uppercase tracking-[.16em] text-[#b9a5ff] underline underline-offset-4">{this.props.retry}</button>
+    </div>
+  }
+}
 
 type PaymentChoice = 'crypto' | 'fiat' | 'pix'
 
@@ -33,7 +46,7 @@ const copy = {
     secure: 'Pagamento processado pela Stripe. A Ômega não guarda dados de cartão.',
     success: 'Estamos confirmando o pagamento e preparando seu acesso.', cancelled: 'Pagamento cancelado. Nenhuma cobrança foi concluída.',
     working: 'Abrindo pagamento seguro…', error: 'Não foi possível iniciar o pagamento. Tente novamente.',
-    secureBadge: 'Checkout seguro', cheaper: 'Mais barato', cryptoPerk: 'Pagando em cripto o valor é menor: queremos estimular o uso de criptomoedas, e é isso que praticamos aqui na plataforma.', notConfigured: 'O pagamento ainda não foi configurado no servidor (chaves da Stripe e do Supabase). Nada foi cobrado.', pricingError: 'Não foi possível carregar o preço. Atualize a página.', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
+    secureBadge: 'Checkout seguro', cheaper: 'Mais barato', cryptoPerk: 'Pagando em cripto o valor é menor: queremos estimular o uso de criptomoedas, e é isso que praticamos aqui na plataforma.', notConfigured: 'O pagamento ainda não foi configurado no servidor (chaves da Stripe e do Supabase). Nada foi cobrado.', pricingError: 'Não foi possível carregar o preço. Atualize a página.', loadError: 'Não foi possível carregar o pagamento em cripto.', reload: 'Recarregar a página', noPrice: 'Este plano ainda não tem preço disponível na sua região.',
   },
   en: {
     title: 'Complete your purchase', subtitle: 'One access, no renewal. Choose how to pay and enter the course as soon as the payment is confirmed.',
@@ -49,7 +62,7 @@ const copy = {
     secure: 'Payment processed by Stripe. Omega does not store card details.',
     success: 'We’re confirming your payment and preparing your access.', cancelled: 'Payment cancelled. No charge was completed.',
     working: 'Opening secure payment…', error: 'We could not start the payment. Please try again.',
-    secureBadge: 'Secure checkout', cheaper: 'Cheaper', cryptoPerk: 'Paying with crypto costs less: we want to encourage the use of cryptocurrencies, and that is what we practice on this platform.', notConfigured: 'Payment is not configured on the server yet (Stripe and Supabase keys). Nothing was charged.', pricingError: 'We could not load the price. Refresh the page.', noPrice: 'This plan does not have a price available in your region yet.',
+    secureBadge: 'Secure checkout', cheaper: 'Cheaper', cryptoPerk: 'Paying with crypto costs less: we want to encourage the use of cryptocurrencies, and that is what we practice on this platform.', notConfigured: 'Payment is not configured on the server yet (Stripe and Supabase keys). Nothing was charged.', pricingError: 'We could not load the price. Refresh the page.', loadError: 'We could not load the crypto payment.', reload: 'Reload the page', noPrice: 'This plan does not have a price available in your region yet.',
   },
   es: {
     title: 'Finalizar compra', subtitle: 'Un acceso, sin renovación. Elige cómo pagar y entra al curso en cuanto se confirme el pago.',
@@ -65,7 +78,7 @@ const copy = {
     secure: 'Pago procesado por Stripe. Omega no guarda datos de la tarjeta.',
     success: 'Estamos confirmando el pago y preparando tu acceso.', cancelled: 'Pago cancelado. No se completó ningún cargo.',
     working: 'Abriendo el pago seguro…', error: 'No pudimos iniciar el pago. Inténtalo de nuevo.',
-    secureBadge: 'Pago seguro', cheaper: 'Más barato', cryptoPerk: 'Pagando con cripto el valor es menor: queremos fomentar el uso de criptomonedas, y eso es lo que practicamos en esta plataforma.', notConfigured: 'El pago aún no está configurado en el servidor (claves de Stripe y Supabase). No se cobró nada.', pricingError: 'No pudimos cargar el precio. Actualiza la página.', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
+    secureBadge: 'Pago seguro', cheaper: 'Más barato', cryptoPerk: 'Pagando con cripto el valor es menor: queremos fomentar el uso de criptomonedas, y eso es lo que practicamos en esta plataforma.', notConfigured: 'El pago aún no está configurado en el servidor (claves de Stripe y Supabase). No se cobró nada.', pricingError: 'No pudimos cargar el precio. Actualiza la página.', loadError: 'No pudimos cargar el pago en cripto.', reload: 'Recargar la página', noPrice: 'Este plan aún no tiene precio disponible en tu región.',
   },
 } as const
 
@@ -177,7 +190,7 @@ export function CheckoutPage() {
                         <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.secure}</p>
                       </div>
                         : selectedMethod === 'crypto' && cryptoOffer ? (user
-                          ? <Suspense fallback={<p role="status" className="mt-8 text-sm text-[#8e8a97]">{labels.working}</p>}><SolanaCheckout key={planId} planId={planId!} locale={locale} priceLabel={formatRegionalOffer(cryptoOffer, locale)} /></Suspense>
+                          ? <LoadBoundary message={labels.loadError} retry={labels.reload}><Suspense fallback={<p role="status" className="mt-8 text-sm text-[#8e8a97]">{labels.working}</p>}><SolanaCheckout key={planId} planId={planId!} locale={locale} priceLabel={formatRegionalOffer(cryptoOffer, locale)} /></Suspense></LoadBoundary>
                           : <div className="mt-8">
                             <button type="button" onClick={() => planId && navigate(`/login?${new URLSearchParams({ plano: planId, payment: 'crypto' }).toString()}`)} className="flex min-h-12 w-full items-center justify-center bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff]">{labels.login}</button>
                             <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>
