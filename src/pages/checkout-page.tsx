@@ -11,7 +11,10 @@ import { supabase } from '@/lib/supabase'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
+
+// Solana libraries are only downloaded when someone picks the crypto method.
+const SolanaCheckout = lazy(() => import('@/components/solana-checkout'))
 
 type PaymentChoice = 'crypto' | 'fiat' | 'pix'
 
@@ -93,7 +96,7 @@ export function CheckoutPage() {
   const cryptoOffer = planId ? getPublishedRegionalOffer(market, planId, 'crypto') : null
   const withPrice = (hint: string, methodOffer: typeof offer) => methodOffer ? `${hint} · ${formatRegionalOffer(methodOffer, locale)}` : hint
   const options = [
-    { id: 'crypto' as const, label: labels.crypto, hint: withPrice(labels.cryptoSub, cryptoOffer), active: false, perk: !!cryptoOffer },
+    { id: 'crypto' as const, label: labels.crypto, hint: withPrice(labels.cryptoSub, cryptoOffer), active: !!cryptoOffer, perk: !!cryptoOffer },
     { id: 'fiat' as const, label: labels.stripe, hint: withPrice(labels.stripeSub, fiatOffer), active: true, perk: false },
     { id: 'pix' as const, label: labels.pix, hint: labels.pixSub, active: false, perk: false },
   ]
@@ -173,6 +176,12 @@ export function CheckoutPage() {
                         {!user && <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>}
                         <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.secure}</p>
                       </div>
+                        : selectedMethod === 'crypto' && cryptoOffer ? (user
+                          ? <Suspense fallback={<p role="status" className="mt-8 text-sm text-[#8e8a97]">{labels.working}</p>}><SolanaCheckout key={planId} planId={planId!} locale={locale} priceLabel={formatRegionalOffer(cryptoOffer, locale)} /></Suspense>
+                          : <div className="mt-8">
+                            <button type="button" onClick={() => planId && navigate(`/login?${new URLSearchParams({ plano: planId, payment: 'crypto' }).toString()}`)} className="flex min-h-12 w-full items-center justify-center bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff]">{labels.login}</button>
+                            <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>
+                          </div>)
                         : <p role="status" className="mt-8 border-l-2 border-white/20 pl-4 text-sm leading-6 text-[#aaa6b2]">{labels.unavailable}</p>}
               </motion.div>
             </AnimatePresence>

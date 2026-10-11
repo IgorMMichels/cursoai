@@ -3,7 +3,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "crons": [
-    { "path": "/api/email/cron", "schedule": "0 12 * * *" }
+    { "path": "/api/email/cron", "schedule": "0 12 * * *" },
+    { "path": "/api/crypto/reconcile", "schedule": "*/10 * * * *" }
   ],
   "functions": {
     "api/email/**/*.ts": {
