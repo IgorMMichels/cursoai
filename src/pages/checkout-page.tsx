@@ -9,7 +9,7 @@ import { plans, type PlanId } from '@/lib/offers'
 import { formatRegionalOffer, getPublishedRegionalOffer } from '@/lib/regional-offers'
 import { supabase } from '@/lib/supabase'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { Component, lazy, Suspense, useState, type ReactNode } from 'react'
 
@@ -135,7 +135,7 @@ export function CheckoutPage() {
       <div className="grid items-start gap-12 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-16">
         <div className="min-w-0">
           <motion.div {...rise(0)} className="relative">
-            <Link to="/planos" className="relative text-[11px] uppercase tracking-[.18em] text-[#8e8a97] transition hover:text-[#d9d3e6]">← {labels.backPlans}</Link>
+            <Link to="/planos" className="relative text-[11px] uppercase tracking-[.18em] text-[#8e8a97] transition hover:text-[#d9d3e6]"><ArrowLeft aria-hidden="true" className="mr-1 inline size-3.5 align-[-2px]" />{labels.backPlans}</Link>
             <p className="mt-10 text-[11px] font-semibold uppercase tracking-[.22em] text-[#a78bfa]">{labels.eyebrow}</p>
             <h1 className="relative mt-3 font-display text-[44px] font-semibold leading-[1.02] tracking-[-.045em] sm:text-6xl">{labels.title}</h1>
             <p className="relative mt-4 max-w-lg text-[15px] leading-7 text-[#aaa6b2]">{labels.subtitle}</p>

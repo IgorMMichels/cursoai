@@ -3,6 +3,7 @@ import { useTranslation as useUiTranslation } from 'react-i18next'
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
+import { ArrowUpRight } from 'lucide-react'
 import '@/styles/platform-loading.css'
 
 gsap.registerPlugin(useGSAP)
@@ -166,7 +167,7 @@ export function PlatformLoadingScreen({ contentReady, onComplete, course = false
     </div>
     <header className="omega-loading-header">
       <div className="omega-loading-wordmark"><span>{translateUi("Omega")}</span></div>
-      <button type="button" className="omega-loading-skip" onClick={() => finish()}>{translateUi("Continuar ")}<span aria-hidden="true">↗</span></button>
+      <button type="button" className="omega-loading-skip" onClick={() => finish()}>{translateUi("Continuar ")}<ArrowUpRight aria-hidden="true" className="inline size-4 align-[-2px]" /></button>
     </header>
     <div ref={anchor} className="omega-loading-orbit-anchor" aria-hidden="true">
       <div className="omega-loading-orbit">
