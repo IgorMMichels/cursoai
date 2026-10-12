@@ -337,7 +337,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
         </nav>
         <div className="hidden items-center justify-self-end gap-3 2xl:flex">
           <HeaderLanguageSelect />
-          {affiliateMode ? <><ProfileSettings compact /><button type="button" onClick={() => { signOut(); navigate('/landing') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]" aria-label={translateUi("Sair da conta")} title={translateUi("Sair")}><LogOut size={15} /></button></> : landing ? (
+          {affiliateMode ? <><ProfileSettings compact /><button type="button" onClick={() => { signOut(); navigate('/landing') }} className="grid size-10 place-items-center rounded-xl border border-white/[.08] text-[#9b96a5] transition hover:border-[#f28c9a]/30 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#b49cff]" aria-label={translateUi("Sair da conta")} title={translateUi("Sair")}><LogOut size={15} /></button></> : landing && !isLogged ? (
             <><Link to="/login" className="dock-login inline-flex h-10 items-center justify-center px-3 text-xs text-[#b1abbc] hover:text-white">{translateUi("Entrar")}</Link><Link to="/explorar" className="button-motion dock-cta inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-xs font-semibold text-[#09090d] shadow-[0_0_25px_rgba(167,139,250,.18)] transition-all hover:-translate-y-0.5 hover:bg-[#c1acff]">{translateUi("Conhecer o curso")}<ArrowUpRight size={15} /></Link></>
           ) : isLogged ? (
             <>
@@ -383,7 +383,7 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
             </>
           ) : (
             <Link to="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{translateUi("Entrar na plataforma")}</Link>
-          )}</>}{landing && <div className="mt-2 flex gap-2 border-t border-white/[.07] pt-3"><Link to="/login" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[.1] text-sm text-[#c8c2d2]">{translateUi("Entrar")}</Link><Link to="/explorar" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#a78bfa] text-sm font-semibold text-[#09090d]">{translateUi("Conhecer o curso")}</Link></div>}</div>
+          )}</>}{landing && !isLogged && <div className="mt-2 flex gap-2 border-t border-white/[.07] pt-3"><Link to="/login" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[.1] text-sm text-[#c8c2d2]">{translateUi("Entrar")}</Link><Link to="/explorar" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#a78bfa] text-sm font-semibold text-[#09090d]">{translateUi("Conhecer o curso")}</Link></div>}</div>
         </>}
       </nav>}
     </header>
