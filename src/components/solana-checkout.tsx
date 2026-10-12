@@ -20,6 +20,7 @@ const copy = {
     stateExpired: 'O pedido expirou e nenhum pagamento foi encontrado. Gere um novo pedido para continuar.', newOrder: 'Gerar novo pedido',
     stateCancelled: 'Pagamento cancelado na carteira. Nada foi enviado.', retry: 'Tentar de novo',
     errorGeneric: 'Não foi possível concluir o pagamento. Se a carteira já enviou o valor, aguarde: confirmamos automaticamente.',
+    errorWallet: 'A carteira não conseguiu enviar a transação. Confira se ela está na rede certa (em testes, Solana Devnet) e se tem saldo para o valor mais a taxa. Nada foi cobrado.',
     errorInvalid: 'Encontramos um envio que não corresponde ao pedido (valor ou destino diferente). O acesso não foi liberado. Fale com o suporte.',
     errorNotConfigured: 'O pagamento em cripto ainda não foi configurado no servidor. Nada foi cobrado.',
     errorNetwork: 'A rede Solana demorou a responder. Continuamos tentando.',
@@ -35,6 +36,7 @@ const copy = {
     stateExpired: 'The order expired and no payment was found. Create a new order to continue.', newOrder: 'Create new order',
     stateCancelled: 'Payment cancelled in the wallet. Nothing was sent.', retry: 'Try again',
     errorGeneric: 'We could not complete the payment. If the wallet already sent the amount, wait: we confirm it automatically.',
+    errorWallet: 'The wallet could not send the transaction. Check that it is on the right network (for tests, Solana Devnet) and has enough balance for the amount plus the fee. Nothing was charged.',
     errorInvalid: 'We found a transfer that does not match the order (different amount or recipient). Access was not released. Contact support.',
     errorNotConfigured: 'Crypto payment is not configured on the server yet. Nothing was charged.',
     errorNetwork: 'The Solana network is slow to respond. We keep trying.',
@@ -50,6 +52,7 @@ const copy = {
     stateExpired: 'El pedido venció y no se encontró ningún pago. Crea un pedido nuevo para continuar.', newOrder: 'Crear pedido nuevo',
     stateCancelled: 'Pago cancelado en la billetera. No se envió nada.', retry: 'Intentar de nuevo',
     errorGeneric: 'No pudimos completar el pago. Si la billetera ya envió el importe, espera: lo confirmamos automáticamente.',
+    errorWallet: 'La billetera no pudo enviar la transacción. Revisa que esté en la red correcta (en pruebas, Solana Devnet) y que tenga saldo para el importe más la comisión. No se cobró nada.',
     errorInvalid: 'Encontramos un envío que no coincide con el pedido (importe o destino distinto). No se liberó el acceso. Contacta con soporte.',
     errorNotConfigured: 'El pago en cripto aún no está configurado en el servidor. No se cobró nada.',
     errorNetwork: 'La red Solana tarda en responder. Seguimos intentando.',
@@ -58,7 +61,7 @@ const copy = {
 } as const
 
 type Phase = 'idle' | 'creating' | 'choose' | 'connecting' | 'wallet' | 'network' | 'confirmed' | 'expired' | 'cancelled' | 'error'
-type ErrorKey = 'errorGeneric' | 'errorInvalid' | 'errorNotConfigured'
+type ErrorKey = 'errorWallet' | 'errorGeneric' | 'errorInvalid' | 'errorNotConfigured'
 
 const POLL_MS = 3500
 
@@ -154,7 +157,7 @@ function CryptoPanel({ planId, locale, priceLabel }: Props) {
     } catch (error) {
       if (import.meta.env.DEV) console.warn('[solana-checkout] send failed', error)
       if (isWalletRejection(error)) setPhase('cancelled')
-      else fail('errorGeneric')
+      else fail('errorWallet')
     }
   }, [publicKey, sendTransaction, fail])
 
