@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AudioLines, Pause, Play, RotateCcw, SkipBack, SkipForward } from 'lucide-react'
 import type { ExtraAudioBlock, ExtraAudioCaptionBlock, ExtraAudioLesson } from '@/lib/extra-audio'
 import { parseCaptions, wordDisplayEnd } from '@/lib/narration-timing'
+import { useProtectedMedia } from '@/lib/protected-media'
 
 const rates = [0.8, 1, 1.2, 1.5]
 const clock = (value: number) => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`
@@ -23,6 +24,9 @@ export function LessonAudioPlayer({ lesson, context = 'library' }: { lesson: Ext
   const [captionState, setCaptionState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [error, setError] = useState('')
   const block = lesson.blocks[blockIndex]
+  // Audio and transcripts are private: resolve short-lived signed URLs for this lesson only.
+  const media = useProtectedMedia([...lesson.blocks.map((item) => item.audioSrc), lesson.captionsSrc])
+  const captionUrl = media.urls[lesson.captionsSrc]
   const activeCaptions = captions.get(block.id)
   const activeWordIndex = useMemo(() => {
     if (!activeCaptions) return -1
@@ -38,23 +42,25 @@ export function LessonAudioPlayer({ lesson, context = 'library' }: { lesson: Ext
   }, [activeCaptions, time])
 
   useEffect(() => {
+    if (media.status === 'error') { setCaptionState('error'); return }
+    if (!captionUrl) return
     const controller = new AbortController()
     setCaptionState('loading')
-    fetch(lesson.captionsSrc, { signal: controller.signal })
+    fetch(captionUrl, { signal: controller.signal })
       .then((response) => { if (!response.ok) throw new Error('Transcrição indisponível'); return response.json() })
       .then((data: { blocks?: Array<{ id: string; transcript: string; duration: number; matchRatio: number; words: unknown }> }) => {
         if (!Array.isArray(data.blocks)) throw new Error('Arquivo de transcrição inválido')
         const result = new Map<string, ExtraAudioCaptionBlock>()
         for (const item of data.blocks) {
           const sourceBlock = lesson.blocks.find((candidate) => candidate.id === item.id)
-          if (!sourceBlock || item.transcript !== sourceBlock.transcript) throw new Error('A transcrição não corresponde ao clipe.')
+          if (!sourceBlock || typeof item.transcript !== 'string') throw new Error('A transcrição não corresponde ao clipe.')
           result.set(item.id, { id: item.id, transcript: item.transcript, duration: item.duration, matchRatio: item.matchRatio, words: parseCaptions(item, item.transcript, item.duration) })
         }
         if (!controller.signal.aborted) { setCaptions(result); setCaptionState('ready') }
       })
       .catch(() => { if (!controller.signal.aborted) { setCaptions(new Map()); setCaptionState('error') } })
     return () => controller.abort()
-  }, [lesson])
+  }, [lesson, captionUrl, media.status])
 
   useEffect(() => {
     if (!playing || !follow || activeWordIndex < 0) return
@@ -95,13 +101,14 @@ export function LessonAudioPlayer({ lesson, context = 'library' }: { lesson: Ext
   }
 
   const renderTranscript = (targetBlock: ExtraAudioBlock, index: number) => {
+    const text = captions.get(targetBlock.id)?.transcript ?? ''
     const cues = captions.get(targetBlock.id)?.words
-    if (!cues?.length) return targetBlock.transcript
-    return <>{cues.map((word, wordIndex) => <span key={word.charStart}>{translateUi(targetBlock.transcript.slice(wordIndex ? wordDisplayEnd(targetBlock.transcript, cues[wordIndex - 1]) : 0, word.charStart))}<button type="button" onClick={() => jumpToWord(targetBlock, word)} aria-label={translateUi(translateTemplate("Ouvir a partir de “{{value0}}”, clipe {{value1}}", [targetBlock.transcript.slice(word.charStart, word.charEnd), targetBlock.number]))} data-extra-active={index === blockIndex && wordIndex === activeWordIndex ? 'true' : undefined} className={`extra-audio-transcript-word ${index === blockIndex && wordIndex === activeWordIndex ? 'extra-audio-transcript-word-active' : word.end <= time && index === blockIndex ? 'text-[#e2ddec]' : ''}`}>{translateUi(targetBlock.transcript.slice(word.charStart, wordDisplayEnd(targetBlock.transcript, word)))}</button></span>)}{translateUi(targetBlock.transcript.slice(wordDisplayEnd(targetBlock.transcript, cues[cues.length - 1])))}</>
+    if (!cues?.length) return text
+    return <>{cues.map((word, wordIndex) => <span key={word.charStart}>{translateUi(text.slice(wordIndex ? wordDisplayEnd(text, cues[wordIndex - 1]) : 0, word.charStart))}<button type="button" onClick={() => jumpToWord(targetBlock, word)} aria-label={translateUi(translateTemplate("Ouvir a partir de “{{value0}}”, clipe {{value1}}", [text.slice(word.charStart, word.charEnd), targetBlock.number]))} data-extra-active={index === blockIndex && wordIndex === activeWordIndex ? 'true' : undefined} className={`extra-audio-transcript-word ${index === blockIndex && wordIndex === activeWordIndex ? 'extra-audio-transcript-word-active' : word.end <= time && index === blockIndex ? 'text-[#e2ddec]' : ''}`}>{translateUi(text.slice(word.charStart, wordDisplayEnd(text, word)))}</button></span>)}{translateUi(text.slice(wordDisplayEnd(text, cues[cues.length - 1])))}</>
   }
 
   return <section className="audio-console min-w-0 overflow-hidden rounded-xl border border-violet-300/20 bg-[#12121a]">
-    <audio ref={audioRef} src={block.audioSrc} preload="metadata" onLoadedMetadata={(event) => {
+    <audio ref={audioRef} src={media.urls[block.audioSrc]} preload="metadata" onLoadedMetadata={(event) => {
       const audio = event.currentTarget
       if (Number.isFinite(audio.duration)) setDuration(audio.duration)
       const pending = pendingRef.current
@@ -137,7 +144,7 @@ export function LessonAudioPlayer({ lesson, context = 'library' }: { lesson: Ext
       {captionState === 'loading' && <p role="status" className="mt-3 text-[10px] text-[#95909f]">{translateUi("Carregando transcrição e marcações de áudio…")}</p>}
       {captionState === 'error' && <p role="alert" className="mt-3 text-[10px] text-amber-200">{translateUi("Não foi possível carregar a transcrição sincronizada.")}</p>}
       <div ref={transcriptRef} className="audio-transcript mt-3 max-h-[min(55vh,560px)] overflow-y-auto rounded-xl border border-white/[.07] bg-black/20 p-4 sm:p-5" aria-label={translateUi("Transcrição personalizada dos clipes")}>
-        {lesson.blocks.map((item, index) => <section key={item.id} className={index ? 'border-t border-white/[.07] pt-5 mt-5' : ''}>
+        {captionState === 'ready' && lesson.blocks.map((item, index) => <section key={item.id} className={index ? 'border-t border-white/[.07] pt-5 mt-5' : ''}>
           <div className="mb-2 flex items-center justify-between gap-3"><p className="text-[9px] font-semibold uppercase tracking-[.12em] text-[#898594]">{translateUi("Trecho ")}{translateUi(String(item.number).padStart(2, '0'))}</p><button type="button" onClick={() => jumpTo(index, 0, true)} className="text-[9px] text-violet-200 hover:text-white">{translateUi("Ouvir trecho")}</button></div>
           <div className="whitespace-pre-wrap text-[13px] leading-[2] text-[#b9b5c4]">{translateUi(renderTranscript(item, index))}</div>
         </section>)}

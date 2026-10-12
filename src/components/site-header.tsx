@@ -142,8 +142,8 @@ function ProfileDropdown({ layout = 'desktop', onNavigate }: { layout?: 'desktop
     <div
       ref={rootRef}
       className={`relative ${layout === 'mobile' ? 'w-full' : ''}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={layout === 'desktop' ? () => setOpen(true) : undefined}
+      onMouseLeave={layout === 'desktop' ? () => setOpen(false) : undefined}
     >
       {layout === 'desktop' ? (
         <button
@@ -179,11 +179,11 @@ function ProfileDropdown({ layout = 'desktop', onNavigate }: { layout?: 'desktop
         </button>
       )}
       {open && (
-        <div className={`absolute top-full z-50 pt-2.5 ${layout === 'desktop' ? 'left-1/2 -translate-x-1/2' : 'left-1/2 -translate-x-1/2'}`}>
+        <div className={layout === 'desktop' ? 'absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2.5' : 'mt-2'}>
           <div
             role="menu"
             aria-label={translateUi(translateTemplate("Perfil de {{value0}}", [displayName]))}
-            className="w-64 overflow-hidden rounded-2xl border border-white/10 bg-[#121219]/95 p-1.5 shadow-[0_24px_60px_rgba(0,0,0,.5)] backdrop-blur-xl"
+            className={`${layout === 'desktop' ? 'w-64' : 'w-full'} overflow-hidden rounded-2xl border border-white/10 bg-[#121219]/95 p-1.5 shadow-[0_24px_60px_rgba(0,0,0,.5)] backdrop-blur-xl`}
             style={{ animation: 'dock-open .25s cubic-bezier(.16,1,.3,1) both' }}
           >
             <div className="flex items-center gap-3 rounded-xl px-3 py-2.5">
@@ -304,6 +304,12 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
       navigate({ pathname: '/landing', hash: `#${id}` })
     }
   }
+  const primaryMobileLinks = [
+    { label: 'Simulador de trade', href: '/simulador' },
+    { label: 'Ferramentas gratuitas', href: '/ferramentas' },
+    { label: 'SISMO', href: '/radar' },
+    { label: 'Artigos e conceitos', href: '/artigos' },
+  ]
   const affiliateLinks = [
     { label: 'Desempenho', href: '#desempenho' },
     { label: 'Recebimentos', href: '#recebimentos' },
@@ -357,35 +363,88 @@ export function SiteHeader({ mode = 'site' }: { mode?: 'site' | 'affiliate' }) {
         </div>
         <button type="button" className="dock-menu grid size-10 place-items-center rounded-full border border-white/10 text-white 2xl:hidden" aria-label={translateUi(open ? 'Fechar menu' : 'Abrir menu')} aria-expanded={open} aria-controls="site-mobile-navigation" onClick={() => setOpen((value) => !value)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
       </div>
-      {open && <nav id="site-mobile-navigation" className="site-mobile-nav absolute inset-x-3 top-[calc(100%+8px)] max-h-[calc(100dvh-130px)] overflow-y-auto rounded-2xl p-2 shadow-2xl 2xl:hidden" aria-label={translateUi(affiliateMode ? 'Navegação de afiliado' : 'Navegação móvel')}>
-        {affiliateMode ? <>
-          {affiliateLinks.map((item) => <a key={item.href} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi(item.label)}</a>)}
-          <Link to="/landing" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#b1abbc] hover:bg-white/[.06]">{translateUi("Voltar ao site")}</Link>
-          <div className="mt-2 border-t border-white/[.07] pt-2"><ProfileSettings compact /><button type="button" onClick={() => { setOpen(false); signOut(); navigate('/landing') }} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-[#b1abbc] hover:bg-white/[.06] hover:text-white"><LogOut size={15} />{translateUi("Sair da conta")}</button></div>
-        </> : <>
-        <Link to="/simulador" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Simulador de trade")}</Link>
-        <Link to="/ferramentas" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Ferramentas gratuitas")}</Link>
-        <Link to="/radar" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("SISMO")}</Link>
-        <Link to="/artigos" onClick={() => setOpen(false)} className="block rounded-xl px-3 py-3 text-sm text-[#c6b4ef] hover:bg-white/[.06]">{translateUi("Artigos e conceitos")}</Link>
-        <div className="mx-auto flex max-w-xl flex-col gap-1">{links.map((item) => <a key={item.label} href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{translateUi(item.label)}</a>)}
-          {!landing && <><p className="px-3 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[.14em] text-[#8d839f]">{translateUi("Área do aluno")}</p>
-          {studentAreaLinks.map((item) => <Link key={item.label} to={item.href} onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[#a78bfa]/[.09] hover:text-white"><span className="grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[.04] text-[#a78bfa]"><item.icon size={15} /></span><span><span className="block text-sm text-[#e8e4ee]">{translateUi(item.label)}</span><span className="block text-[11px] text-[#8b8793]">{translateUi(item.description)}</span></span></Link>)}
-          {isLogged ? (
-            <>
-              <Link
-                to={activePlan ? '/curso' : '/planos'}
-                onClick={() => setOpen(false)}
-                className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#a78bfa] px-4 text-sm font-semibold text-[#09090d] transition-all hover:bg-[#c1acff]"
-              >
-                {translateUi(activePlan ? 'Continuar' : 'Ver planos')}<ArrowUpRight size={15} />
-              </Link>
-              <ProfileDropdown layout="mobile" onNavigate={() => setOpen(false)} />
-            </>
-          ) : (
-            <Link to="/login" onClick={() => setOpen(false)} className="rounded-xl px-3 py-3 text-sm text-[#b1beb7] transition-colors hover:bg-white/[.06] hover:text-white">{translateUi("Entrar na plataforma")}</Link>
-          )}</>}{landing && !isLogged && <div className="mt-2 flex gap-2 border-t border-white/[.07] pt-3"><Link to="/login" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[.1] text-sm text-[#c8c2d2]">{translateUi("Entrar")}</Link><Link to="/explorar" onClick={() => setOpen(false)} className="flex h-11 flex-1 items-center justify-center rounded-xl bg-[#a78bfa] text-sm font-semibold text-[#09090d]">{translateUi("Conhecer o curso")}</Link></div>}</div>
-        </>}
-      </nav>}
+      {open && (
+        <nav id="site-mobile-navigation" className="mobile-nav 2xl:hidden" aria-label={translateUi(affiliateMode ? 'Navegação de afiliado' : 'Navegação móvel')}>
+          <div className="mobile-nav-scroll">
+            {affiliateMode ? <>
+              <ul className="mobile-nav-list">
+                {affiliateLinks.map((item, index) => (
+                  <li key={item.href} style={{ '--i': index } as React.CSSProperties}>
+                    <a href={item.href} onClick={(event) => handleAnchorClick(event, item.href)} className="mobile-nav-row">
+                      <span className="mobile-nav-index">{String(index + 1).padStart(2, '0')}</span>{translateUi(item.label)}<ArrowUpRight size={16} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <Link to="/landing" onClick={() => setOpen(false)} className="mobile-nav-quiet">{translateUi("Voltar ao site")}</Link>
+              <div className="mt-3 border-t border-white/[.07] pt-2">
+                <ProfileSettings compact />
+                <button type="button" onClick={() => { setOpen(false); signOut(); navigate('/landing') }} className="flex w-full items-center gap-3 rounded-xl px-1 py-3 text-sm text-[#b1abbc] transition-colors hover:text-white"><LogOut size={15} />{translateUi("Sair da conta")}</button>
+              </div>
+            </> : <>
+              <div className="mobile-nav-cols">
+              <div className="mobile-nav-col">
+              <ul className="mobile-nav-list">
+                {primaryMobileLinks.map((item, index) => (
+                  <li key={item.href} style={{ '--i': index } as React.CSSProperties}>
+                    <Link to={item.href} onClick={() => setOpen(false)} className="mobile-nav-row">
+                      <span className="mobile-nav-index">{String(index + 1).padStart(2, '0')}</span>{translateUi(item.label)}<ArrowUpRight size={16} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <ul className="mobile-nav-grid">
+                {links.map((item, index) => (
+                  <li key={item.label} style={{ '--i': index } as React.CSSProperties}>
+                    <a href={item.href} onClick={(event) => handleAnchorClick(event, item.href)}>{translateUi(item.label)}</a>
+                  </li>
+                ))}
+              </ul>
+              </div>
+              <div className="mobile-nav-col">
+              {!landing && (
+                <>
+                  <p className="mobile-nav-label">{translateUi("Área do aluno")}</p>
+                  <ul className="mobile-nav-student">
+                    {studentAreaLinks.map((item, index) => (
+                      <li key={item.label} style={{ '--i': index } as React.CSSProperties}>
+                        <Link to={item.href} onClick={() => setOpen(false)} className="flex items-center gap-3">
+                          <span className="mobile-nav-student-icon"><item.icon size={15} /></span>
+                          <span className="min-w-0">
+                            <span className="mobile-nav-student-text">{translateUi(item.label)}</span>
+                            <span className="mobile-nav-student-desc">{translateUi(item.description)}</span>
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {isLogged && <div className="mt-3"><ProfileDropdown layout="mobile" onNavigate={() => setOpen(false)} /></div>}
+              </div>
+              </div>
+            </>}
+          </div>
+          {!affiliateMode && (
+            isLogged ? (
+              <div className="mobile-nav-footer mobile-nav-footer--single">
+                <Link to={activePlan ? '/curso' : '/planos'} onClick={() => setOpen(false)} className="mobile-nav-btn mobile-nav-btn--solid">
+                  {translateUi(activePlan ? 'Continuar' : 'Ver planos')}<ArrowUpRight size={15} />
+                </Link>
+              </div>
+            ) : landing ? (
+              <div className="mobile-nav-footer">
+                <Link to="/login" onClick={() => setOpen(false)} className="mobile-nav-btn mobile-nav-btn--ghost">{translateUi("Entrar")}</Link>
+                <Link to="/explorar" onClick={() => setOpen(false)} className="mobile-nav-btn mobile-nav-btn--solid">{translateUi("Conhecer o curso")}<ArrowUpRight size={15} /></Link>
+              </div>
+            ) : (
+              <div className="mobile-nav-footer mobile-nav-footer--single">
+                <Link to="/login" onClick={() => setOpen(false)} className="mobile-nav-btn mobile-nav-btn--solid">{translateUi("Entrar na plataforma")}</Link>
+              </div>
+            )
+          )}
+        </nav>
+      )}
     </header>
   )
 }

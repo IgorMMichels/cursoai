@@ -1,6 +1,6 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, KeyRound, Link2, Mail } from 'lucide-react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { LocalizedLink as Link, useLocalizedNavigate as useNavigate } from '@/components/localized-router'
@@ -18,9 +18,13 @@ import { localizedPath } from '@/lib/localization'
 import { formatRegionalOffer, getPublishedRegionalOffer, type PaymentMethod } from '@/lib/regional-offers'
 import { rememberReferral } from '@/lib/storage'
 import { readAuthCallbackState } from '@/lib/auth-callback'
+import { supabase } from '@/lib/supabase'
+import type { EmailOtpType } from '@supabase/supabase-js'
 import type { AppSession } from '@/contexts/session-context'
 
 type LoginMode = 'signin' | 'signup' | 'reset' | 'recovery'
+
+const emailOtpTypes: EmailOtpType[] = ['signup', 'magiclink', 'recovery']
 
 function authErrorText(error: unknown) {
   const message = error instanceof Error ? error.message : ''
@@ -180,6 +184,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const tokenVerificationStarted = useRef(false)
 
   useEffect(() => {
     if (referralParam) rememberReferral(referralParam)
@@ -193,6 +198,21 @@ export function LoginPage() {
       setMessage(null)
     }
   }, [callbackState, isPasswordRecovery])
+
+  // Links enviados pelo Resend apontam para este site (token_hash), não para o Supabase.
+  // O token é trocado por sessão aqui; o link é de uso único.
+  useEffect(() => {
+    const tokenHash = search.get('token_hash')
+    const otpType = search.get('type')
+    if (!tokenHash || !supabase || tokenVerificationStarted.current) return
+    if (!otpType || !emailOtpTypes.includes(otpType as EmailOtpType)) return
+    tokenVerificationStarted.current = true
+    setIsSubmitting(true)
+    void supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType as EmailOtpType }).then(({ error: verifyError }) => {
+      navigate(otpType === 'recovery' ? '/login?recovery=1' : '/login', { replace: true })
+      if (verifyError) setError('Esse link é inválido ou expirou. Solicite um novo e-mail e tente novamente.')
+    }).finally(() => setIsSubmitting(false))
+  }, [search, navigate])
 
   useEffect(() => {
     if (resendCooldown <= 0) return
@@ -325,25 +345,6 @@ export function LoginPage() {
   const displayHandle = username.trim().toLowerCase() || 'seu-id'
   const usernameHintColor = usernameStatus === 'available' ? 'text-[#8ed7b7]' : usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'text-[#f2a8b2]' : usernameStatus === 'checking' ? 'text-[#b5a3e6]' : 'text-[#71847a]'
 
-  // Desktop: encaixa o formulário inteiro na altura da tela (sem rolagem), reduzindo a escala só se preciso.
-  const formRef = useRef<HTMLDivElement>(null)
-  const [fitZoom, setFitZoom] = useState(1)
-  useLayoutEffect(() => {
-    const fit = () => {
-      const el = formRef.current
-      if (!el) return
-      if (window.innerWidth < 1024) { el.style.zoom = '1'; setFitZoom(1); return }
-      el.style.zoom = '1'
-      const needed = el.scrollHeight + 48
-      const zoom = Math.min(1, window.innerHeight / needed)
-      el.style.zoom = String(zoom)
-      setFitZoom(zoom)
-    }
-    fit()
-    window.addEventListener('resize', fit)
-    return () => window.removeEventListener('resize', fit)
-  }, [mode, chosenPlan])
-
   return (
     <div className="omega-login min-h-[100dvh] w-full max-w-full bg-[#0b0d0c] text-[#e8ece8] lg:grid lg:h-[100dvh] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:overflow-hidden">
       <PageMeta title={translateUi("Acesso")} description={translateUi("Entre na Omega para acessar suas jornadas e seu progresso de estudo.")} path="/login" privatePage />
@@ -357,8 +358,8 @@ export function LoginPage() {
       `)}</style>
 
       {/* LEFT — form column */}
-      <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:h-[100dvh] lg:min-h-0 lg:overflow-hidden lg:px-12 xl:px-20">
-        <div ref={formRef} style={{ zoom: fitZoom }} className="relative m-auto w-full max-w-[420px] py-5 sm:py-8 lg:py-4">
+      <main className="relative flex min-h-[100dvh] p-5 sm:p-9 lg:h-[100dvh] lg:min-h-0 lg:overflow-y-auto lg:px-12 xl:px-20">
+        <div className="relative m-auto w-full max-w-[420px] py-5 sm:py-8 lg:py-6">
           <div className="mb-14 flex items-center justify-between gap-4">
             <Brand />
             {user?.isFounder && <FounderBadge isFounder={user.isFounder} />}

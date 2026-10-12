@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties } fr
 import { AudioLines, LoaderCircle, Pause, Play, RotateCcw } from 'lucide-react'
 import type { AudioWord, NarrationTrack } from '@/lib/narration-script'
 import { activeWordAt, parseCaptions, wordDisplayEnd } from '@/lib/narration-timing'
+import { useProtectedMedia } from '@/lib/protected-media'
 
 type Props = { title: string; track?: NarrationTrack; transcript: string; summary?: string; compact?: boolean }
 const rates = [0.8, 1, 1.2, 1.5]
@@ -30,6 +31,8 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
   const [error, setError] = useState('')
   const [follow, setFollow] = useState(true)
   const [showTranscript, setShowTranscript] = useState(!compact)
+  // Narration audio and captions are private; resolve signed URLs for this track.
+  const media = useProtectedMedia(track ? [track.src, track.captionsSrc] : [])
   const activeWord = useMemo(() => activeWordAt(words, time), [words, time])
   const progress = duration > 0 ? Math.min(1, time / duration) : 0
   const buttonStyle = 'rounded-xl border border-white/10 px-2.5 py-1.5 text-[10px] font-semibold text-[#cac6d4] hover:border-violet-200/30 hover:bg-violet-200/[.06] disabled:opacity-40'
@@ -42,8 +45,11 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
 
   useEffect(() => {
     if (!track) return
+    if (media.status === 'error') { setWords([]); setCaptionStatus('error'); return }
+    const captionUrl = media.urls[track.captionsSrc]
+    if (!captionUrl) return
     const controller = new AbortController()
-    fetch(track.captionsSrc, { signal: controller.signal })
+    fetch(captionUrl, { signal: controller.signal })
       .then(response => { if (!response.ok) throw new Error('Legendas indisponíveis'); return response.json() })
       .then(data => {
         const cues = parseCaptions(data, transcript, track.duration)
@@ -51,7 +57,7 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
       })
       .catch(() => { if (!controller.signal.aborted) { setWords([]); setCaptionStatus('error') } })
     return () => controller.abort()
-  }, [track, transcript, captionAttempt])
+  }, [track, transcript, captionAttempt, media])
 
   useEffect(() => {
     if (!playing) return
@@ -115,7 +121,7 @@ function NarrationPlayer({ title, track, transcript, summary, compact = false }:
   }
 
   return <section className={`audio-console ${compact ? 'audio-console-compact' : 'mt-7'} overflow-hidden rounded-xl border border-violet-300/20 bg-[#12121a]`} aria-label={translateUi(translateTemplate("Áudio da aula: {{value0}}", [title]))}>
-    {track && <audio ref={audioRef} preload="metadata" src={track.src}
+    {track && <audio ref={audioRef} preload="metadata" src={media.urls[track.src]}
       onLoadedMetadata={event => { if (Number.isFinite(event.currentTarget.duration)) setDuration(event.currentTarget.duration) }}
       onTimeUpdate={event => setTime(event.currentTarget.currentTime)}
       onSeeking={event => setTime(event.currentTarget.currentTime)}

@@ -55,3 +55,7 @@ artifacts/
 .env.*
 !.env.example
 .vercel
+
+# Mídia do curso: fora de public/ (é publicado); enviada ao bucket privado course-media
+public/audio/
+public/transcricoes/

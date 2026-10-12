@@ -5,7 +5,6 @@ export type ExtraAudioBlock = {
   id: string
   number: number
   audioSrc: string
-  transcript: string
   duration: number
 }
 

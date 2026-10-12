@@ -4,13 +4,24 @@
   "outputDirectory": "dist",
   "crons": [
     { "path": "/api/email/cron", "schedule": "0 12 * * *" },
-    { "path": "/api/crypto/reconcile", "schedule": "*/10 * * * *" }
+    { "path": "/api/crypto/reconcile", "schedule": "0 9 * * *" }
   ],
   "functions": {
     "api/email/**/*.ts": {
       "includeFiles": "server/email/**/*.ts"
     }
   },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/artigos", "destination": "/artigos/index.html" },
     { "source": "/artigos/:slug", "destination": "/artigos/:slug/index.html" },

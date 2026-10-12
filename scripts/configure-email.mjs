@@ -6,8 +6,10 @@ import { join } from 'node:path'
 const environment = process.env
 const apply = process.argv.includes('--apply')
 const projectRef = environment.SUPABASE_PROJECT_REF || 'lmapktqohocacdqxdzor'
-const origin = new URL(environment.SITE_URL || 'https://www.omega.courses').origin
-const required = ['RESEND_API_KEY', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ACCESS_TOKEN']
+const origin = new URL(environment.SITE_URL || 'https://omega.courses').origin
+// SMTP and Auth templates only require the Resend key and Supabase Management API access.
+// The service-role key is for the separate server-side lifecycle/marketing functions.
+const required = ['RESEND_API_KEY', 'SUPABASE_ACCESS_TOKEN']
 const missing = required.filter((name) => !environment[name]?.trim())
 if (missing.length) {
   console.error(`Configuração pendente: ${missing.join(', ')}.`)
@@ -61,11 +63,16 @@ async function configure() {
   for (const key of Object.keys(patch).filter((key) => key !== 'smtp_pass')) {
     if (String(applied[key]) !== String(patch[key])) throw new Error(`Supabase Auth: campo ${key} não foi confirmado.`)
   }
-  for (const name of ['RESEND_API_KEY', 'SUPABASE_SERVICE_ROLE_KEY']) {
-    await saveVercelSecret(name, environment[name].trim())
+  await saveVercelSecret('RESEND_API_KEY', environment.RESEND_API_KEY.trim())
+  if (environment.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    await saveVercelSecret('SUPABASE_SERVICE_ROLE_KEY', environment.SUPABASE_SERVICE_ROLE_KEY.trim())
   }
   console.log('SMTP, confirmação de e-mail, callbacks e templates aplicados e verificados no Supabase.')
-  console.log('Chaves de servidor salvas na Vercel. Envios de marketing continuam controlados por MARKETING_EMAILS_ENABLED.')
+  if (!environment.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    console.log('SUPABASE_SERVICE_ROLE_KEY não foi fornecida; as funções de ciclo de vida e marketing no servidor continuam indisponíveis.')
+  } else {
+    console.log('Chaves de servidor salvas na Vercel. Envios de marketing continuam controlados por MARKETING_EMAILS_ENABLED.')
+  }
 }
 
 function saveVercelSecret(name, value) {
