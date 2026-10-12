@@ -34,3 +34,10 @@ export async function readJson(request: AsyncIterable<Uint8Array>, limit = 16_00
 export function isNotConfigured(error: unknown) {
   return error instanceof Error && /not configured|must use HTTPS/.test(error.message)
 }
+
+// Supabase errors are plain objects, not Error instances. Log only the message and code, never request data.
+export function describeError(error: unknown) {
+  if (error instanceof Error) return error.message
+  const { message, code } = (error ?? {}) as { message?: unknown; code?: unknown }
+  return typeof message === 'string' ? `${message}${typeof code === 'string' ? ` (${code})` : ''}` : 'unknown error'
+}

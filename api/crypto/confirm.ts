@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createBillingAdmin, getAuthenticatedUser } from '../../server/stripe/runtime.ts'
 import { createSolanaConnection, getMerchantAddress } from '../../server/crypto/config.ts'
-import { bearerToken, isNotConfigured, readJson, requirePost, sendJson } from '../../server/crypto/http.ts'
+import { bearerToken, isNotConfigured, readJson, requirePost, sendJson, describeError } from '../../server/crypto/http.ts'
 import { createSupabaseStore, isSignatureShape, RpcUnavailableError, settleOrder, type SolanaOrder } from '../../server/crypto/payment.ts'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -41,7 +41,7 @@ export default async function confirmCryptoPayment(request: IncomingMessage, res
     })
     sendJson(response, 200, outcome)
   } catch (error) {
-    console.error('[crypto] confirmation failed:', error instanceof Error ? error.message : 'unknown error')
+    console.error('[crypto] confirmation failed:', describeError(error))
     if (error instanceof RpcUnavailableError) return sendJson(response, 503, { error: 'A rede Solana não respondeu. Tentaremos de novo.', code: 'rpc_unavailable' })
     const notConfigured = isNotConfigured(error)
     sendJson(response, notConfigured ? 503 : 500, { error: 'Não foi possível confirmar o pagamento agora.', code: notConfigured ? 'not_configured' : undefined })

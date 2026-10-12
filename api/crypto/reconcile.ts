@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { createBillingAdmin } from '../../server/stripe/runtime.ts'
 import { createSolanaConnection, getMerchantAddress } from '../../server/crypto/config.ts'
-import { sendJson } from '../../server/crypto/http.ts'
+import { sendJson, describeError } from '../../server/crypto/http.ts'
 import { createSupabaseStore, settleOrder, type SolanaOrder } from '../../server/crypto/payment.ts'
 
 const LOOKBACK_HOURS = 48
@@ -51,7 +51,7 @@ export default async function reconcileCryptoOrders(request: IncomingMessage, re
     await Promise.all(Array.from({ length: CONCURRENCY }, worker))
     sendJson(response, 200, { ok: true, ...totals })
   } catch (error) {
-    console.error('[crypto] reconcile failed:', error instanceof Error ? error.message : 'unknown error')
+    console.error('[crypto] reconcile failed:', describeError(error))
     sendJson(response, 503, { error: 'Reconcile job failed' })
   }
 }

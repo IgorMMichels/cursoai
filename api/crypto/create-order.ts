@@ -4,7 +4,7 @@ import { Keypair } from '@solana/web3.js'
 import { plans, type PlanId } from '../../src/lib/offers.ts'
 import { createBillingAdmin, getAuthenticatedUser } from '../../server/stripe/runtime.ts'
 import { getCluster, getCryptoOffer, getMerchantAddress, getRpcUrl, ORDER_TTL_MINUTES } from '../../server/crypto/config.ts'
-import { bearerToken, isNotConfigured, readJson, requirePost, sendJson } from '../../server/crypto/http.ts'
+import { bearerToken, isNotConfigured, readJson, requirePost, sendJson, describeError } from '../../server/crypto/http.ts'
 
 type OpenOrder = { id: string; reference: string; amount_lamports: number | string; expires_at: string }
 
@@ -72,7 +72,7 @@ export default async function createCryptoOrder(request: IncomingMessage, respon
       cluster: getCluster(environment),
     })
   } catch (error) {
-    console.error('[crypto] order creation failed:', error instanceof Error ? error.message : 'unknown error')
+    console.error('[crypto] order creation failed:', describeError(error))
     const notConfigured = isNotConfigured(error)
     sendJson(response, notConfigured ? 503 : 500, { error: 'Não foi possível iniciar o pagamento. Tente novamente em instantes.', code: notConfigured ? 'not_configured' : undefined })
   }
