@@ -6,7 +6,12 @@ import { join } from 'node:path'
 const environment = process.env
 const apply = process.argv.includes('--apply')
 const projectRef = environment.SUPABASE_PROJECT_REF || 'lmapktqohocacdqxdzor'
-const origin = new URL(environment.SITE_URL || 'https://omega.courses').origin
+const configuredSiteUrl = environment.SITE_URL?.trim() || 'https://www.omega.courses'
+const siteUrl = new URL(configuredSiteUrl)
+if (siteUrl.protocol !== 'https:' || siteUrl.hostname === 'localhost' || siteUrl.hostname === '127.0.0.1') {
+  throw new Error('SITE_URL precisa ser a origem pública HTTPS da Omega; não use localhost para configurar e-mails hospedados.')
+}
+const origin = siteUrl.origin
 // SMTP and Auth templates only require the Resend key and Supabase Management API access.
 // The service-role key is for the separate server-side lifecycle/marketing functions.
 const required = ['RESEND_API_KEY', 'SUPABASE_ACCESS_TOKEN']
@@ -34,6 +39,7 @@ async function configure() {
       ...(current.uri_allow_list || '').split(',').map((value) => value.trim()).filter(Boolean),
       `${origin}/login`, `${origin}/login?recovery=1`,
       'https://omega.courses/login', 'https://omega.courses/login?recovery=1',
+      'https://www.omega.courses/login', 'https://www.omega.courses/login?recovery=1',
     ])].join(','),
     mailer_autoconfirm: false,
     smtp_host: 'smtp.resend.com', smtp_port: '465', smtp_user: 'resend',

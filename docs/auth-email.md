@@ -50,7 +50,9 @@ curl --fail-with-body --request PATCH \
 
 Review the project ref and the generated JSON before applying it. To inspect the current template values first, use `GET https://api.supabase.com/v1/projects/{ref}/config/auth` with the same authorization header and select keys beginning with `mailer_templates_` and `mailer_subjects_`.
 
-Esse exemplo altera somente assuntos e corpos. O domínio está verificado no Resend; a configuração SMTP do Supabase Auth ainda precisa ser aplicada e verificada com acesso à Management API. O script `scripts/configure-email.mjs` prepara SMTP, templates e callbacks juntos. Permita a origem de produção com `/login` e `/login?recovery=1` nos redirects. O aplicativo preserva os parâmetros ao normalizar o callback para `/pt-BR/login`, `/en/login` ou `/es/login`.
+O script `scripts/configure-email.mjs` configura e verifica SMTP, templates e callbacks do Supabase hospedado. Ele usa `https://www.omega.courses` por padrão e rejeita uma `SITE_URL` local ou sem HTTPS para impedir que links de produção apontem para `localhost`. Permita as origens raiz e `www` com `/login` e `/login?recovery=1` nos redirects. O aplicativo preserva os parâmetros ao normalizar o callback para `/pt-BR/login`, `/en/login` ou `/es/login`.
+
+No Supabase local, `supabase/config.toml` também configura SMTP Resend e os mesmos três templates. Defina `RESEND_API_KEY` no `.env` local (arquivo ignorado pelo Git) e reinicie `supabase start` para aplicar alterações de configuração. As mensagens locais passam pelo Resend e os botões apontam para `https://www.omega.courses`; não use um endereço de cliente `localhost` nesses links de e-mail.
 
 ## Callback and delivery notes
 
