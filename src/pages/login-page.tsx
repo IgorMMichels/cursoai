@@ -316,7 +316,7 @@ export function LoginPage() {
         if (signedIn) goToSession(signedIn)
         else {
           setCanResendConfirmation(true)
-          setMessage(`Conta criada. Confirme seu e-mail para entrar. Seu link de afiliado: ${window.location.origin}/${username}`)
+          setMessage('Enviamos um link de confirmação para seu e-mail. Confirme para ativar sua conta e liberar seu link de afiliado.')
         }
       } else if (mode === 'reset') {
         await sendPasswordReset(email)
