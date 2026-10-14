@@ -29,7 +29,7 @@ function loadWallet() { try { return restorePaperWallet(localStorage.getItem(STO
 
 export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean }) {
   useUiTranslation();
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const [wallet, setWallet] = useState(loadWallet)
   const [market, setMarket] = useState<PaperMarket>(() => demoPaperMarket().market)
   const [points, setPoints] = useState<PaperPoint[]>(() => demoPaperMarket().points)
@@ -105,13 +105,14 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
           setMarket({ ...next, imageUrl: next.imageUrl ?? selectedRef.current.imageUrl }); setMarketError(''); setWallet((previous) => markPaperWallet(previous, next))
         }
       } catch (error) { if (!signal.aborted && epoch === selectionEpoch.current) setMarketError(errorText(error)); throw error }
-    }, 5_000, browserPaperRuntime())
+    }, 2_000, browserPaperRuntime())
   }, [market.id, market.demo, selectionVersion])
 
   useEffect(() => {
     if (market.demo) return
     const epoch = selectionEpoch.current
     let historical: PaperPoint[] = [], historyAt = 0, historyWarning = ''
+    // Sub-minute candles need fresh trades; minute+ intervals keep the lighter cadence.
     return startPaperPolling(async (signal) => {
       setHistoryLoading(true)
       try {
@@ -134,7 +135,7 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
         if (tradesResult.status === 'rejected') throw tradesResult.reason
       } catch (error) { if (!signal.aborted && epoch === selectionEpoch.current) setChartError(errorText(error)); throw error }
       finally { if (!signal.aborted && epoch === selectionEpoch.current) setHistoryLoading(false) }
-    }, 15_000, browserPaperRuntime())
+    }, interval.endsWith('s') ? 4_000 : 15_000, browserPaperRuntime())
   }, [market.id, market.demo, interval, selectionVersion])
 
   useEffect(() => {
@@ -177,7 +178,10 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
     selectionEpoch.current++
     orderRequestRef.current?.abort(); orderRequestRef.current = null; setExecuting(false)
     selectedRef.current = next
-    setSearchParams(next.demo ? {} : { rede: next.chain, ca: next.address, pool: next.pair }, { replace: true })
+    // Not setSearchParams: AppRoutes hands routes a locale-stripped location, so the router
+    // would navigate to the bare path and the locale redirect would loop with it.
+    const query = next.demo ? '' : `?${new URLSearchParams({ rede: next.chain, ca: next.address, pool: next.pair })}`
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${query}${window.location.hash}`)
     setSelectionVersion((version) => version + 1)
     const supply = next.marketCap && next.marketCap > 0 ? next.marketCap / next.price : null
     setChartSupply(supply); if (!supply) setChartMetric('price')
@@ -246,7 +250,7 @@ export function SimulatorPage({ insideCourse = false }: { insideCourse?: boolean
 
       <div className={`paper-workspace ${loading ? 'is-loading' : ''}`} aria-busy={loading}>
         <section className="paper-chart-panel" aria-label={translateUi("Preço e gráfico do token")}>
-          <div className="paper-market-top"><div className="paper-token-heading"><div className="paper-token-name"><span className="paper-token-avatar">{market.imageUrl && failedImage !== market.imageUrl ? <img src={market.imageUrl} alt={translateUi(translateTemplate("Logo de {{value0}}", [market.name]))} referrerPolicy="no-referrer" onError={() => setFailedImage(market.imageUrl ?? '')}/> : market.symbol.slice(0, 1)}</span><div><h2>{translateUi(market.name)}<span>{translateUi(market.symbol)}</span></h2><p>{translateUi(market.demo ? 'Token fictício · exemplo didático' : translateTemplate("{{value0}} · {{value1}}", [chainName[market.chain], shortAddress(market.address)]))}</p></div></div><span className={`paper-source ${market.demo ? 'is-demo' : ''}`}>{translateUi(market.demo ? 'DEMONSTRAÇÃO' : 'DADOS DE MERCADO')}</span></div>
+          <div className="paper-market-top"><div className="paper-token-heading"><div className="paper-token-name"><span className="paper-token-avatar">{market.imageUrl && failedImage !== market.imageUrl ? <img loading="lazy" decoding="async" src={market.imageUrl} alt={translateUi(translateTemplate("Logo de {{value0}}", [market.name]))} referrerPolicy="no-referrer" onError={() => setFailedImage(market.imageUrl ?? '')}/> : market.symbol.slice(0, 1)}</span><div><h2>{translateUi(market.name)}<span>{translateUi(market.symbol)}</span></h2><p>{translateUi(market.demo ? 'Token fictício · exemplo didático' : translateTemplate("{{value0}} · {{value1}}", [chainName[market.chain], shortAddress(market.address)]))}</p></div></div><span className={`paper-source ${market.demo ? 'is-demo' : ''}`}>{translateUi(market.demo ? 'DEMONSTRAÇÃO' : 'DADOS DE MERCADO')}</span></div>
           <div className="paper-quote"><div className="paper-main-cap"><span>{translateUi("Market cap")}</span><strong title={translateUi(market.marketCap === null ? 'Market cap não informado pela fonte' : money(market.marketCap))}>{translateUi(market.marketCap === null ? '—' : compactUSD(market.marketCap))}</strong></div><div className="paper-secondary-price"><span>{translateUi("Preço")}</span><strong>{translateUi(priceUSD(market.price))}</strong>{market.change24h !== null && <small className={market.change24h >= 0 ? 'paper-positive' : 'paper-negative'}>{translateUi(market.change24h > 0 ? '+' : '')}{translateUi(market.change24h.toFixed(2))}{translateUi("% · 24h")}</small>}</div></div></div>
           <div className="paper-chart-toolbar"><div className="paper-chart-view"><button aria-pressed={chartMetric === 'price'} onClick={() => setChartMetric('price')}>{translateUi("Preço")}</button><button aria-pressed={chartMetric === 'mcap'} disabled={!chartSupply} title={translateUi("Capitalização estimada usando a oferta implícita na consulta inicial")} onClick={() => setChartMetric('mcap')}>{translateUi("MCap")}</button></div><span>{translateUi("USD · ")}{translateUi(market.demo ? 'cenário sintético' : interval.endsWith('s') ? 'velas de negócios recentes' : 'velas históricas')}</span>{market.demo ? <div className="paper-timeframes"><button aria-pressed={demoPlaying} onClick={() => setDemoPlaying((playing) => !playing)} disabled={demoStep.current >= 500}>{translateUi(demoPlaying ? 'Pausar exemplo' : 'Reproduzir exemplo')}</button><button className="paper-ghost" onClick={advanceDemo} disabled={demoStep.current >= 500}>{translateUi("Avançar ")}<SkipForward size={14}/></button></div> : <div className="paper-timeframes">{paperIntervals.map((frame) => <button key={frame} aria-pressed={interval === frame} onClick={() => { if (frame !== interval) { setPoints([]); setChartError(''); setIntervalValue(frame) } }}>{translateUi(frame)}</button>)}</div>}</div>
           <div className="paper-chart" role="group" aria-label={translateUi(translateTemplate("Gráfico de {{value0}}, preço atual {{value1}}. {{value2}}", [market.symbol, priceUSD(market.price), market.demo ? 'Dados fictícios.' : 'Atualizações periódicas.']))}>
