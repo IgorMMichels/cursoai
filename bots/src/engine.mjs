@@ -1,18 +1,23 @@
 import { collectNews, sources, relevantNews } from './news.mjs'
 import { collectFunding } from './funding.mjs'
 import { loadState, saveState } from './store.mjs'
-import { destinationKey, drainQueue, fundingMessage, newsMessage, platforms, disclaimer } from './delivery.mjs'
+import { destinationKey, digestMessage, drainQueue, fundingMessage, newsMessage, platforms, disclaimer } from './delivery.mjs'
+import { displayTitle, flagOf, selectDigest } from './digest.mjs'
 import { publicError } from './network.mjs'
 import { assessNews, enrichWithAi, mergeNews } from './assessment.mjs'
 
 const iso = (time) => new Date(time).toISOString()
 const extreme = (rate, threshold) => Math.abs(rate) >= threshold ? Math.sign(rate) : 0
 
-export function makeBrief(news, funding, now = Date.now(), mode = 'live') {
-  const recent = news.filter((item) => Date.parse(item.publishedAt) >= now - 86400_000).sort((a, b) => (b.importance?.score ?? 0) - (a.importance?.score ?? 0) || Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 3)
-  const lines = [mode === 'demo' ? 'Resumo de demonstração · Omega' : 'Resumo do radar · Omega', '', `Atualizado: ${iso(now)}`, '', 'Destaques nas últimas 24 horas', ...recent.map((item) => `• ${item.title} (${item.source})${item.importance ? ` · Importância ${item.importance.score}/10 (${item.importance.method === 'ai' ? 'IA' : 'regras'})` : ''}\n${item.url}`)]
-  if (!recent.length) lines.push('Nenhuma notícia recente disponível.')
-  lines.push('', 'Funding de contratos perpétuos', ...funding.map((item) => `• ${item.asset}: ${(item.rate * 100).toFixed(4)}% · ${item.exchange} · observado ${item.observedAt}`), '', 'Manchetes originais e taxas da fonte. Nenhuma checagem independente de veracidade foi realizada.', '', disclaimer)
+export function makeBrief(news, funding, now = Date.now(), mode = 'live', limit = 10) {
+  const sections = selectDigest(news, now, { limit })
+  const lines = [mode === 'demo' ? 'Resumo de demonstração · Omega' : 'Resumo do radar · Omega', '', `Atualizado: ${iso(now)}`, '']
+  for (const section of sections) {
+    lines.push(`${section.emoji} ${section.label}`, ...section.items.map((item) => `• ${flagOf(item.language)} ${displayTitle(item)} (${item.source})${item.importance ? ` · Importância ${item.importance.score}/10 (${item.importance.method === 'ai' ? 'IA' : 'regras'})` : ''}
+${item.url}`), '')
+  }
+  if (!sections.length) lines.push('Nenhuma notícia recente disponível.', '')
+  lines.push('Funding de contratos perpétuos', ...funding.map((item) => `• ${item.asset}: ${(item.rate * 100).toFixed(4)}% · ${item.exchange} · observado ${item.observedAt}`), '', 'Manchetes originais e taxas da fonte. Nenhuma checagem independente de veracidade foi realizada.', '', disclaimer)
   return lines.join('\n')
 }
 export class PulseEngine {
@@ -39,7 +44,7 @@ export class PulseEngine {
       newsAnalysis: { enabled: this.config.newsAiEnabled && !this.config.demo, configured: Boolean(this.config.newsAiKey), model: this.config.newsAiModel, status: this.config.demo || !this.config.newsAiEnabled ? 'disabled' : !this.config.newsAiKey ? 'not_configured' : state.newsAnalysis?.status ?? 'waiting', lastSuccessAt: state.newsAnalysis?.lastSuccessAt ?? null, error: state.newsAnalysis?.error ?? null },
       sources: state.sources, fundingSources: state.fundingSources ?? [],
       fundingThresholdPercent: this.config.fundingThreshold * 100,
-      brief: makeBrief(state.news, state.funding, now, this.config.demo ? 'demo' : 'live'),
+      brief: makeBrief(state.news, state.funding, now, this.config.demo ? 'demo' : 'live', this.config.digestItems),
       channels: platforms.map((platform) => {
         const configured = Boolean(destinationKey(this.config, platform))
         const last = state.deliveryLog.filter((row) => row.platform === platform).at(-1)
@@ -77,6 +82,7 @@ export class PulseEngine {
       collectFunding(this.fetchImpl),
     ])
     const messages = []
+    const fresh = []
     const known = new Set(state.knownIds)
     const initialized = new Set(state.initializedSources)
     const merged = new Map(state.news.filter(relevantNews).map((item) => [item.id, item]))
@@ -86,7 +92,7 @@ export class PulseEngine {
       if (result.status === 'rejected') return { id: source.id, name: source.name, region: source.region, primary: Boolean(source.primary), status: 'error', lastAttemptAt: iso(now), lastSuccessAt: previous?.lastSuccessAt ?? null, itemCount: previous?.itemCount ?? 0, error: publicError(result.reason) }
       const first = !initialized.has(source.id)
       for (const item of result.value) {
-        if (!known.has(item.id) && !first && this.config.newsCategories.includes(item.category) && Date.parse(item.publishedAt) >= now - 3600_000) messages.push(newsMessage(item))
+        if (!known.has(item.id) && !first && Date.parse(item.publishedAt) >= now - 3600_000) fresh.push(item.id)
         known.add(item.id)
         merged.set(item.id, mergeNews(merged.get(item.id), item))
       }
@@ -94,9 +100,11 @@ export class PulseEngine {
       return { id: source.id, name: source.name, region: source.region, primary: Boolean(source.primary), status: 'live', lastAttemptAt: iso(now), lastSuccessAt: iso(now), itemCount: result.value.length, error: null }
     })
     state.news = assessNews([...merged.values()].filter((item) => Date.parse(item.publishedAt) >= now - 7 * 86400_000).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 300), now)
-    for (let index = 0; index < messages.length; index += 1) {
-      const item = state.news.find((row) => `news:${row.id}` === messages[index].id)
-      if (item) messages[index] = newsMessage(item)
+    // Alerta: tema configurado ou importância mínima. Previsão de preço e promessa de ganho nunca alertam.
+    for (const id of new Set(fresh)) {
+      const item = state.news.find((row) => row.id === id)
+      if (!item || item.clickbait) continue
+      if (this.config.newsCategories.includes(item.category) || (this.config.alertMinImportance >= 0 && item.importance.score >= this.config.alertMinImportance)) messages.push(newsMessage(item))
     }
     state.knownIds = [...known].slice(-5000)
     state.initializedSources = [...initialized]
@@ -112,10 +120,14 @@ export class PulseEngine {
     })
     state.funding = [...funding.values()]
     state.lastCycleAt = iso(now)
-    if (this.config.briefHour !== -1 && new Date(now).getUTCHours() === this.config.briefHour && state.lastBriefDate !== iso(now).slice(0, 10) && state.sources.some((source) => source.status === 'live')) {
-      const date = iso(now).slice(0, 10)
-      messages.push({ id: `brief:${date}`, module: 'brief', title: 'Resumo diário · Omega', summary: makeBrief(state.news, state.funding, now), timestamp: iso(now) })
-      state.lastBriefDate = date
+    const today = iso(now).slice(0, 10)
+    const briefDue = this.config.digestNow || (this.config.briefHour !== -1 && new Date(now).getUTCHours() >= this.config.briefHour)
+    if (briefDue && state.lastBriefDate !== today && state.sources.some((source) => source.status === 'live')) {
+      const sections = selectDigest(state.news, now, { limit: this.config.digestItems })
+      if (sections.length) {
+        messages.push(digestMessage(today, sections, state.funding, iso(now), makeBrief(state.news, state.funding, now, 'live', this.config.digestItems)))
+        state.lastBriefDate = today
+      }
     }
     for (const platform of platforms) {
       const key = destinationKey(this.config, platform)

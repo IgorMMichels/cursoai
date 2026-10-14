@@ -1,6 +1,6 @@
 # Omega Market Bots
 
-Serviço independente para Market Pulse (RSS), Funding Monitor (BTC/ETH/SOL) e resumo diário. Pode ficar em qualquer pasta ou numa VM; não importa arquivos do frontend, não usa chaves do Vite e não depende do banco do curso.
+Serviço independente (SISMO) para Market Pulse (RSS em EN/PT/ES), Funding Monitor (BTC/ETH/SOL) e resumo diário por módulo do curso, entregue no site, Discord e Telegram. Pode ficar em qualquer pasta ou numa VM; não importa arquivos do frontend, não usa chaves do Vite e não depende do banco do curso.
 
 ## Rodar local
 
@@ -29,8 +29,11 @@ Abra `/radar` no endereço informado pelo Vite. A página também aparece em `/c
 - SSE publica uma atualização ao concluir cada ciclo; o site também consulta a cada 15 segundos.
 - Timeout de rede e limite de tamanho por resposta; fontes falham independentemente.
 - Notícias sem URL HTTPS da fonte ou data válida são descartadas. Histórico limitado a 7 dias/300 notícias; manchetes iguais são deduplicadas e preservam os links dos outros publicadores.
-- Dez fontes: CoinDesk, Cointelegraph, Decrypt, InfoMoney, Forbes Brasil, Livecoins, Portal do Bitcoin, CryptoSlate, Bitcoin Magazine e Federal Reserve.
-- Decrypt é filtrado por cripto; InfoMoney/Forbes por cripto ou macroeconomia. Câmbio, juros, inflação, política monetária e contexto econômico das eleições podem entrar.
+- 17 fontes em inglês, português e espanhol (lista e critérios em `docs/sismo-v2.md`). Decrypt é filtrado por cripto; InfoMoney/Forbes por cripto ou macroeconomia. Câmbio, juros, inflação e política monetária entram.
+- Nicho do curso: cada notícia recebe `module` (Fundamentos, Memecoins, Trading, Futuros) e `topics`; previsão de preço/promessa de ganho recebe nota 2 e nunca alerta nem entra no resumo.
+- Alerta imediato: tema em `NEWS_ALERT_CATEGORIES` ou importância ≥ `ALERT_MIN_IMPORTANCE` (padrão 7).
+- Resumo diário por módulo (`DAILY_BRIEF_UTC_HOUR`, `DIGEST_ITEMS`); `npm run digest` roda um ciclo e envia o resumo do dia (uso com cron).
+- Com IA ligada, manchetes EN/ES ganham título e resumo em PT-BR (`translation`); sem IA vão no idioma original com bandeira.
 - Feed do Fed acessível sem comunicado nos últimos sete dias aparece com zero notícias, sem fingir uma falha de conexão.
 - Valores antigos de funding permanecem com o horário original quando a API falha. A interface identifica falha/desatualização.
 - Não há fallback silencioso para dados fictícios no modo real.

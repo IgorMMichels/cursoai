@@ -358,6 +358,8 @@ export const courseTranslations: Record<string, { en: string; es: string }> = {
   'Filtrar por importância': { en: 'Filter by importance', es: 'Filtrar por importancia' },
   'Brasil': { en: 'Brazil', es: 'Brasil' },
   'Exterior': { en: 'International', es: 'Exterior' },
+  'Futuros': { en: 'Futures', es: 'Futuros' },
+  'Memecoins': { en: 'Memecoins', es: 'Memecoins' },
   'Toda importância': { en: 'Any importance', es: 'Cualquier importancia' },
   'Importância': { en: 'Importance', es: 'Importancia' },
   'Apuração pendente': { en: 'Verification pending', es: 'Verificación pendiente' },

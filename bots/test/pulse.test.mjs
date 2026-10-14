@@ -68,7 +68,7 @@ test('Primeiro ciclo cria linha de base, agrega os feeds sem duplicar e não env
   assert.equal(f.engine.state.funding.length, 3)
   assert.equal(f.calls.length, 0)
   assert.equal(f.engine.state.sources.filter((row) => row.status === 'live').length, sources.length)
-  assert.equal(f.engine.state.news[0].verification.outlets, sources.length)
+  assert.equal(f.engine.state.news[0].verification.outlets, Math.min(sources.length, 12))
   assert.equal(f.engine.state.news[0].verification.score, null)
   const publicData = JSON.stringify(f.engine.snapshot())
   assert.ok(!publicData.includes('fake-token'))
@@ -202,4 +202,19 @@ test('SSE mantém a conexão para dois snapshots maiores que o buffer HTTP padr�
   service.engine.onUpdate(service.engine.snapshot())
   assert.equal((await readEvent()).news[0].title, 'Segundo snapshot fictício')
   await reader.cancel()
+})
+
+test('Resumo diário sai uma vez por dia nos dois canais; alerta por importância fora das categorias', async (t) => {
+  const f = await fixture(t, { DELIVERY_ENABLED: 'true', DISCORD_WEBHOOK_URL: 'https://discord.com/api/webhooks/123/fake-token', TELEGRAM_BOT_TOKEN: 'fake-token', TELEGRAM_CHAT_ID: 'test-chat', NEWS_ALERT_CATEGORIES: 'Tecnologia' })
+  await f.engine.cycle()
+  f.engine.config.briefHour = 0
+  await f.engine.cycle()
+  await f.engine.cycle()
+  const digests = f.calls.filter((row) => (row.body.embeds?.[0]?.title ?? row.body.text).includes('Resumo diário'))
+  assert.equal(digests.length, 2)
+  assert.equal(f.calls.filter((row) => row.platform === 'telegram')[0].body.parse_mode, 'HTML')
+  assert.ok(digests.find((row) => row.platform === 'discord').body.embeds[0].fields.length >= 1)
+  f.setTitle('SEC changes Bitcoin regulation again')
+  await f.engine.cycle()
+  assert.equal(f.calls.filter((row) => row.platform === 'telegram' && row.body.text.includes('SEC changes Bitcoin')).length, 1)
 })

@@ -37,6 +37,10 @@ export function loadConfig(env = process.env) {
     newsCategories: (env.NEWS_ALERT_CATEGORIES ?? 'Regulação,Segurança,Institucional').split(',').map((value) => value.trim()),
     fundingThreshold: threshold / 100,
     briefHour: integer('DAILY_BRIEF_UTC_HOUR', -1, -1, 23),
+    // --digest: envia o resumo do dia neste ciclo, em vez de esperar a hora configurada (uso com cron/timer).
+    digestNow: process.argv.includes('--digest'),
+    digestItems: integer('DIGEST_ITEMS', 10, 3, 20),
+    alertMinImportance: integer('ALERT_MIN_IMPORTANCE', 7, -1, 10),
     newsAiEnabled: env.NEWS_AI_ENABLED === 'true',
     newsAiKey: env.OPENAI_API_KEY?.trim() || '',
     newsAiModel: env.NEWS_AI_MODEL?.trim() || 'gpt-5-mini',

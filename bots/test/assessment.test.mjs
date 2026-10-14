@@ -11,8 +11,10 @@ const responseOf = (rows) => ({ status: 'completed', output: [{ type: 'message',
 const aiConfig = () => loadConfig({ NEWS_AI_ENABLED: 'true', OPENAI_API_KEY: 'fake-private-key', NEWS_AI_BATCH_SIZE: '2', NEWS_AI_MAX_BATCHES_PER_DAY: '1' })
 
 test('Catálogo tem Brasil, exterior e comunicado oficial, sem URLs fora dos publicadores', () => {
-  assert.equal(sources.length, 10)
-  assert.equal(sources.filter((row) => row.region === 'Brasil').length, 4)
+  assert.equal(sources.length, 17)
+  assert.equal(sources.filter((row) => row.region === 'Brasil').length, 5)
+  assert.equal(new Set(sources.map((row) => row.id)).size, sources.length)
+  assert.deepEqual([...new Set(sources.map((row) => row.language))].sort(), ['en', 'es', 'pt-BR'])
   assert.ok(sources.some((row) => row.primary))
   assert.ok(sources.every((row) => new URL(row.url).protocol === 'https:'))
 })
@@ -99,10 +101,11 @@ test('IA usa lote validado, cache, limite diário persistido e não altera a apu
     assert.equal(body.tools, undefined)
     assert.match(body.instructions, /conteúdo não confiável/)
     assert.equal(persisted, 1)
-    return Response.json(responseOf([{ id: 'a', score: 8, reason: 'Regra pode alterar acesso aos fundos.', cryptoContext: 'Avalie o alcance, sem previsão de preço.' }]))
+    return Response.json(responseOf([{ id: 'a', score: 8, reason: 'Regra pode alterar acesso aos fundos.', cryptoContext: 'Avalie o alcance, sem previsão de preço.', titlePt: 'SEC aprova ETF de Bitcoin à vista após decisão judicial', summaryPt: 'Nova regra para fundos de Bitcoin.' }]))
   }
   await enrichWithAi(state, config, fetchImpl, now, async () => { persisted++ })
   assert.equal(state.news[0].importance.method, 'ai')
+  assert.equal(state.news[0].translation.title, 'SEC aprova ETF de Bitcoin à vista após decisão judicial')
   assert.equal(state.news[0].verification.verdict, 'not_checked')
   assert.ok(!JSON.stringify(state).includes('fake-private-key'))
   await enrichWithAi(state, config, fetchImpl, now + 1000)
@@ -114,11 +117,12 @@ test('IA usa lote validado, cache, limite diário persistido e não altera a apu
 })
 
 test('IA incompleta, IDs trocados e nota inválida são rejeitados; erro preserva regras', async () => {
-  const rows = [{ id: 'a', score: 8, reason: 'Contexto.', cryptoContext: 'Contexto cripto.' }]
+  const rows = [{ id: 'a', score: 8, reason: 'Contexto.', cryptoContext: 'Contexto cripto.', titlePt: '', summaryPt: '' }]
   assert.throws(() => parseAiResponse({ ...responseOf(rows), status: 'incomplete' }, [article()]))
   assert.throws(() => parseAiResponse(responseOf([{ ...rows[0], id: 'unknown' }]), [article()]))
   assert.throws(() => parseAiResponse(responseOf([{ ...rows[0], score: 11 }]), [article()]))
   assert.throws(() => parseAiResponse(responseOf([]), [article()]))
+  assert.throws(() => parseAiResponse(responseOf([{ id: 'a', score: 8, reason: 'Contexto.', cryptoContext: 'Contexto cripto.' }]), [article()]))
   const state = { news: assessNews([article()], now) }
   await enrichWithAi(state, aiConfig(), async () => new Response('{}', { status: 401 }), now)
   assert.equal(state.newsAnalysis.status, 'error')
@@ -138,6 +142,7 @@ test('Resumo seleciona maior importância e mantém indicação de ausência de 
   const news = [article('routine', { title: 'Market price update', summary: 'Routine prices.', category: 'Mercado' }), article('important')]
   const brief = makeBrief(assessNews(news, now), [], now)
   assert.ok(brief.indexOf('SEC approves') < brief.indexOf('Market price update'))
+  assert.ok(brief.indexOf('SEC approves') > -1)
   assert.match(brief, /Importância 7\/10/)
   assert.match(brief, /Nenhuma checagem independente/)
 })
