@@ -1,6 +1,6 @@
 import { translateUi } from '@/lib/ui-translation'
 import { useTranslation as useUiTranslation } from 'react-i18next'
-import { lazy, Suspense, useEffect, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useRef, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { ReviewsSection } from '@/components/ui/reviews-section'
 import { AmbientShader } from '@/components/ui/ambient-shader'
@@ -20,6 +20,7 @@ import { PlanPaymentOptions } from '@/components/plan-payment-options'
 import { PageMeta } from '@/components/tools/page-meta'
 import { SourceLanguageNotice } from '@/components/source-language-notice'
 import { allLessons, modules } from '@/lib/course'
+import { useLandingMotion } from '@/lib/landing-motion'
 import localJourneys from '@/lib/generated/journeys.json'
 import '@/styles/landing.css'
 
@@ -62,6 +63,8 @@ export function LandingPage() {
   const entryActive = usePlatformEntryActive()
   const { locale, market, regionalOffers, marketLoading, pricingError } = useLocalization()
   const location = useLocation()
+  const rootRef = useRef<HTMLDivElement>(null)
+  useLandingMotion(rootRef)
   useEffect(() => {
     if (!location.hash) return
     const id = location.hash.slice(1)
@@ -88,7 +91,8 @@ export function LandingPage() {
     document.addEventListener('click', onClick)
     return () => document.removeEventListener('click', onClick)
   }, [])
-  return <div className="min-h-screen overflow-x-clip bg-[#09090d] pb-10 text-[#e6eee9]">
+  return <div ref={rootRef} className="min-h-screen overflow-x-clip bg-[#09090d] pb-10 text-[#e6eee9]">
+    <div data-scroll-progress className="landing-scroll-progress" aria-hidden="true" />
     <PageMeta title={translateUi("Curso de criptoativos e ferramentas gratuitas")} description={translateUi("Aprenda criptoativos com jornadas práticas, aulas narradas e ferramentas gratuitas para estudar risco, Bitcoin, DeFi e mercado.")} path="/landing" />
     <SiteHeader />
     <main className="w-full max-w-full overflow-x-hidden">
@@ -104,11 +108,11 @@ export function LandingPage() {
               <span className="h-px w-10 shrink-0 bg-[#a78bfa]/70" aria-hidden="true" />
               <p className="text-[11px] font-semibold uppercase tracking-[.22em] text-[#c6baf0]">{translateUi(TOTAL_JOURNEYS)} {translateUi(" jornadas · do zero ao plano de trade")}</p>
             </motion.div>
-            <motion.h1 variants={heroItemReveal} className="landing-hero-title text-[#edf4ef]">{translateUi("Entenda cripto.")}<span>{translateUi("Decida com critério.")}</span></motion.h1>
+            <h1 data-hero-title className="landing-hero-title text-[#edf4ef]">{translateUi("Entenda cripto.")}<span>{translateUi("Decida com critério.")}</span></h1>
             <SourceLanguageNotice />
             <motion.p variants={heroItemReveal} className="body-lg mt-6 max-w-[580px] text-[15px] leading-[1.8] text-[#b3b0bd] sm:text-base">{translateUi(TOTAL_LESSONS)} {translateUi(" aulas narradas com transcrição, exercício em toda aula, quiz explicado por módulo e certificado de conclusão. De Bitcoin e carteiras a memecoins, DeFi e futuros — com checklist de segurança em cada passo. Sem promessa de lucro.")}</motion.p>
             <motion.div variants={heroItemReveal} className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
-              <Link to="/login" className="button-motion focus-ring inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white sm:w-auto">{translateUi("Criar minha conta ")}<ArrowUpRight size={16} /></Link>
+              <Link to="/login" data-magnetic className="button-motion focus-ring inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ececf0] px-6 text-sm font-semibold text-[#17171c] transition-colors hover:bg-white sm:w-auto">{translateUi("Criar minha conta ")}<ArrowUpRight size={16} /></Link>
               <a href="#jornada" className="button-motion inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-white/[.15] bg-white/[.02] px-5 text-sm text-[#c1c2cb] backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/[.05] sm:w-auto">{translateUi("Ver conteúdo do curso ")}<ArrowDown size={15} /></a>
             </motion.div>
             <motion.div variants={heroItemReveal} className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-white/[.07] pt-6 text-[11px] tracking-wide text-[#8ca096]">
@@ -123,16 +127,16 @@ export function LandingPage() {
           <HeroVisual />
         </div>
         <dl className="page-shell relative z-10 grid grid-cols-3 border-t border-white/[.07] bg-[#09090d]/60 py-5 backdrop-blur-sm">
-          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">{translateUi("Jornadas")}</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_JOURNEYS)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("jornadas · do zero ao avançado")}</dd></div>
-          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">{translateUi("Aulas narradas")}</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_LESSONS)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("aulas narradas com exercício")}</dd></div>
-          <div className="px-2 sm:px-7"><dt className="sr-only">{translateUi("Módulos")}</dt><dd className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_MODULES)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("módulos com quiz explicado")}</dd></div>
+          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">{translateUi("Jornadas")}</dt><dd data-count={TOTAL_JOURNEYS} className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_JOURNEYS)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("jornadas · do zero ao avançado")}</dd></div>
+          <div className="border-r border-white/[.07] px-2 sm:px-7"><dt className="sr-only">{translateUi("Aulas narradas")}</dt><dd data-count={TOTAL_LESSONS} className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_LESSONS)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("aulas narradas com exercício")}</dd></div>
+          <div className="px-2 sm:px-7"><dt className="sr-only">{translateUi("Módulos")}</dt><dd data-count={TOTAL_MODULES} className="font-display text-xl font-medium tracking-[-.04em] text-[#e7efe9] sm:text-2xl">{translateUi(TOTAL_MODULES)}</dd><dd className="mt-1 text-[10px] text-[#74877c] sm:text-xs">{translateUi("módulos com quiz explicado")}</dd></div>
         </dl>
       </section>
 
       <section id="metodo" className="learning-method scroll-mt-24 py-20 sm:py-28">
         <div className="page-shell">
           <div className="learning-method-heading">
-            <div><p className="eyebrow">{translateUi("uma estrutura para pensar")}</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Um método para pensar cripto.")}<br /><span>{translateUi("Sem prever o próximo movimento.")}</span></h2></div>
+            <div><p className="eyebrow">{translateUi("uma estrutura para pensar")}</p><h2 data-reveal-heading className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Um método para pensar cripto.")}<br /><span>{translateUi("Sem prever o próximo movimento.")}</span></h2></div>
             <p className="max-w-md text-sm leading-relaxed text-[#9695a0]">{translateUi("Mercado mistura dado, opinião e ruído. A trilha organiza perguntas que você pode levar para qualquer ativo — sem tentar adivinhar o próximo movimento.")}</p>
           </div>
           <div className="learning-method-body mt-11">
@@ -158,7 +162,7 @@ export function LandingPage() {
 
       <section className="omega-features-section py-20 sm:py-28" aria-labelledby="comparison-title">
         <div className="page-shell">
-          <h2 id="comparison-title" className="display-lg max-w-3xl text-[#eaf2ec]">{translateUi(omegaCopy.featuresTitle)}</h2>
+          <h2 id="comparison-title" data-reveal-heading className="display-lg max-w-3xl text-[#eaf2ec]">{translateUi(omegaCopy.featuresTitle)}</h2>
           <div className="omega-feature-list mt-10">{omegaCopy.features.map((feature, index) => <article key={feature.title} className="omega-feature">
             <span className="omega-feature-number" aria-hidden="true">0{translateUi(index + 1)}</span>
             <div><h3>{translateUi(feature.title)}</h3><p>{translateUi(feature.text)}</p></div>
@@ -170,7 +174,7 @@ export function LandingPage() {
       <section className="landing-overview-section border-y border-white/[.055] bg-[#0d0e13] py-20 sm:py-24">
         <div className="page-shell">
           <div className="landing-overview-heading">
-            <div><p className="eyebrow">{translateUi("dentro da trilha")}</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Uma visão ampla do mercado. Critério em cada decisão.")}</h2></div>
+            <div><p className="eyebrow">{translateUi("dentro da trilha")}</p><h2 data-reveal-heading className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Uma visão ampla do mercado. Critério em cada decisão.")}</h2></div>
             <p className="max-w-md text-sm leading-relaxed text-[#92959e]">{translateUi("Bitcoin é ponto de partida. A trilha também cobre Ethereum, custódia, DeFi e futuros, com atenção ao risco de cada tema.")}</p>
           </div>
 
@@ -228,7 +232,7 @@ export function LandingPage() {
         <div className="page-shell curriculum-layout">
           <div className="curriculum-intro">
             <p className="eyebrow">{translateUi("O que você vai aprender")}</p>
-            <h2 id="curriculum-title">{translateUi("Da primeira pergunta ao seu próprio processo.")}</h2>
+            <h2 id="curriculum-title" data-reveal-heading>{translateUi("Da primeira pergunta ao seu próprio processo.")}</h2>
             <p>{translateUi("Veja as aulas de cada módulo. Comece pelos fundamentos e avance no seu ritmo.")}</p>
             <p className="curriculum-note">{translateUi("Ao final, você organiza um plano de estudo e segurança. Nenhuma atividade exige comprar cripto.")}</p>
             <a href="#planos" className="curriculum-action">{translateUi("Comparar planos ")}<ArrowRight size={16} /></a>
@@ -241,7 +245,7 @@ export function LandingPage() {
         <AmbientShader className="practice-shader" />
         <div className="page-shell">
           <div className="practice-section-heading">
-            <div><p className="eyebrow">{translateUi("estudo aplicado")}</p><h2 className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Aprenda testando, não apostando.")}</h2></div>
+            <div><p className="eyebrow">{translateUi("estudo aplicado")}</p><h2 data-reveal-heading className="display-lg mt-4 max-w-2xl text-[#eaf2ec]">{translateUi("Aprenda testando, não apostando.")}</h2></div>
             <p className="max-w-md text-sm leading-relaxed text-[#8da096]">{translateUi("Exercícios com cenários fictícios ajudam a transformar conceitos em decisões mais cuidadosas. Nenhum exige comprar cripto.")}</p>
           </div>
           <div className="practice-bento mt-10">
@@ -296,7 +300,7 @@ export function LandingPage() {
 function HeroVisual() {
   useUiTranslation();
   const entryActive = usePlatformEntryActive()
-  return <motion.div className="relative mx-auto w-full max-w-[570px] lg:ml-auto" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
+  return <div data-hero-visual className="relative mx-auto w-full max-w-[570px] lg:ml-auto"><motion.div className="relative" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}>
     <GlowCard glowColor="purple" customSize className="w-full p-[1px]">
       <div className="hero-ascii-shell aspect-[.92] sm:aspect-[1.08]">
         {!entryActive && <Suspense fallback={null}><AsciiModelViewer className="absolute inset-0" /></Suspense>}
@@ -306,7 +310,7 @@ function HeroVisual() {
         <div className="image-grain pointer-events-none absolute inset-0 z-10" />
       </div>
     </GlowCard>
-  </motion.div>
+  </motion.div></div>
 }
 
 

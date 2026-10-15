@@ -1,4 +1,5 @@
 import { Brand, OmegaSymbol } from '@/components/brand'
+import PixCheckout from '@/components/pix-checkout'
 import { HeaderLanguageSelect } from '@/components/header-language-select'
 import { LocalizedLink as Link, useLocalizedNavigate } from '@/components/localized-router'
 import { PageMeta } from '@/components/tools/page-meta'
@@ -108,10 +109,12 @@ export function CheckoutPage() {
   const fiatOffer = planId ? getPublishedRegionalOffer(market, planId, 'fiat') : null
   const cryptoOffer = planId ? getPublishedRegionalOffer(market, planId, 'crypto') : null
   const withPrice = (hint: string, methodOffer: typeof offer) => methodOffer ? `${hint} · ${formatRegionalOffer(methodOffer, locale)}` : hint
+  // Pix charges the BRL price, so it is available only where the Brazilian fiat offer exists.
+  const pixOffer = market === 'BR' && fiatOffer?.currency === 'BRL' ? fiatOffer : null
   const options = [
     { id: 'crypto' as const, label: labels.crypto, hint: withPrice(labels.cryptoSub, cryptoOffer), active: !!cryptoOffer, perk: !!cryptoOffer },
     { id: 'fiat' as const, label: labels.stripe, hint: withPrice(labels.stripeSub, fiatOffer), active: true, perk: false },
-    { id: 'pix' as const, label: labels.pix, hint: labels.pixSub, active: false, perk: false },
+    { id: 'pix' as const, label: labels.pix, hint: withPrice(labels.pixSub, pixOffer), active: !!pixOffer, perk: false },
   ]
   const localeLabel = labels.secureBadge
   // Uma entrada escalonada no carregamento; com movimento reduzido, tudo aparece de uma vez.
@@ -193,6 +196,12 @@ export function CheckoutPage() {
                           ? <LoadBoundary message={labels.loadError} retry={labels.reload}><Suspense fallback={<p role="status" className="mt-8 text-sm text-[#8e8a97]">{labels.working}</p>}><SolanaCheckout key={planId} planId={planId!} locale={locale} priceLabel={formatRegionalOffer(cryptoOffer, locale)} /></Suspense></LoadBoundary>
                           : <div className="mt-8">
                             <button type="button" onClick={() => planId && navigate(`/login?${new URLSearchParams({ plano: planId, payment: 'crypto' }).toString()}`)} className="flex min-h-12 w-full items-center justify-center bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff]">{labels.login}</button>
+                            <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>
+                          </div>)
+                        : selectedMethod === 'pix' && planId && pixOffer ? (user
+                          ? <PixCheckout key={planId} planId={planId} locale={locale} priceLabel={formatRegionalOffer(pixOffer, locale)} />
+                          : <div className="mt-8">
+                            <button type="button" onClick={() => navigate(`/login?${new URLSearchParams({ plano: planId, payment: 'pix' }).toString()}`)} className="flex min-h-12 w-full items-center justify-center bg-[#a78bfa] px-5 text-sm font-semibold tracking-[.02em] text-[#17131e] transition hover:bg-[#c4b5fd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e4d9ff]">{labels.login}</button>
                             <p className="mt-3 text-center text-xs text-[#8e8a97]">{labels.loginHint}</p>
                           </div>)
                         : <p role="status" className="mt-8 border-l-2 border-white/20 pl-4 text-sm leading-6 text-[#aaa6b2]">{labels.unavailable}</p>}

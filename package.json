@@ -18,7 +18,8 @@
     "email:configure": "node scripts/configure-email.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test:crypto": "node --experimental-strip-types --test server/crypto/*.test.ts"
+    "test:crypto": "node --experimental-strip-types --test server/crypto/*.test.ts",
+    "test:pix": "node --experimental-strip-types --test src/lib/cpf.test.ts server/pix/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

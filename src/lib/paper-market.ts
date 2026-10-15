@@ -99,7 +99,8 @@ export type PaperTick = { id: string; time: number; price: number; volume: numbe
 const tradeCache = new Map<string, { fetchedAt: number; ticks: PaperTick[] }>()
 export async function recentPaperTrades(market: PaperMarket, signal: AbortSignal): Promise<PaperTick[]> {
   const previous = tradeCache.get(market.id)
-  if (previous && Date.now() - previous.fetchedAt < 14_000) return previous.ticks
+  // Must stay below the trade polling cadence (4s for sub-minute intervals), or polls reuse stale trades.
+  if (previous && Date.now() - previous.fetchedAt < 3_000) return previous.ticks
   const result = object(await request(`https://api.geckoterminal.com/api/v2/networks/${network[market.chain]}/pools/${encodeURIComponent(market.pair)}/trades`, signal))
   if (!Array.isArray(result.data)) throw new Error('Negócios recentes indisponíveis para esta pool.')
   const ticks = new Map((previous?.ticks ?? []).map((tick) => [tick.id, tick]))

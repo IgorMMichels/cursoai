@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       name: 'local-checkout-api',
       // Vercel serves /api in production; mirror the billing and crypto functions for `vite dev`.
       configureServer(server) {
-        for (const [route, file] of [['/api/checkout/create-session', '/api/checkout/create-session.ts'], ['/api/stripe/webhook', '/api/stripe/webhook.ts'], ['/api/crypto/create-order', '/api/crypto/create-order.ts'], ['/api/crypto/confirm', '/api/crypto/confirm.ts'], ['/api/crypto/rpc', '/api/crypto/rpc.ts'], ['/api/crypto/reconcile', '/api/crypto/reconcile.ts'], ['/api/course-media/sign', '/api/course-media/sign.ts']] as const) {
+        for (const [route, file] of [['/api/checkout/create-session', '/api/checkout/create-session.ts'], ['/api/stripe/webhook', '/api/stripe/webhook.ts'], ['/api/crypto/create-order', '/api/crypto/create-order.ts'], ['/api/crypto/confirm', '/api/crypto/confirm.ts'], ['/api/crypto/rpc', '/api/crypto/rpc.ts'], ['/api/crypto/reconcile', '/api/crypto/reconcile.ts'], ['/api/pix/create-order', '/api/pix/create-order.ts'], ['/api/asaas/webhook', '/api/asaas/webhook.ts'], ['/api/course-media/sign', '/api/course-media/sign.ts']] as const) {
           server.middlewares.use(route, async (request, response) => {
             for (const [key, value] of Object.entries(localEnv)) if (process.env[key] === undefined) process.env[key] = value
             // No CDN country header locally; match the Brazil default used by /api/regional-offers so the server prices what the page shows.
