@@ -57,7 +57,7 @@ export function CoursePreview({ area = 'visao-geral', journeyId }: { area?: stri
             <Link className="preview-button mt-6" to="/planos">{translateUi("Ver planos de acesso")}<ArrowRight size={15} /></Link>
           </div>
           <div className="relative flex min-h-64 items-end bg-[#13131c] p-6 sm:p-8">
-            <img src={moduleCovers.m1} alt={translateUi("")} className="absolute inset-0 size-full object-cover opacity-40" />
+            <img loading="lazy" decoding="async" src={moduleCovers.m1} alt={translateUi("")} className="absolute inset-0 size-full object-cover opacity-40" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#101018] to-transparent" />
             <div className="relative"><p className="eyebrow">{translateUi("primeiro módulo · Cripto do Zero")}</p><h2 className="mt-3 font-display text-2xl text-white">{translateUi(catalog[0]?.modules[0]?.title)}</h2><p className="mt-2 text-sm text-[#c2bdcc]">{translateUi(catalog[0]?.modules[0]?.subtitle)}</p></div>
           </div>

@@ -43,7 +43,7 @@ export function CourseDashboard() {
     <section className="study-bento" aria-label={translateUi("Seu próximo passo")}>
       <Card className="bento-panel study-hero">
         <AmbientShader className="study-hero-shader" />
-        <div className="study-hero-art" aria-hidden="true"><img src={moduleCovers[next.moduleId] ?? moduleCovers.m1} alt={translateUi("")} /><span /></div>
+        <div className="study-hero-art" aria-hidden="true"><img loading="lazy" decoding="async" src={moduleCovers[next.moduleId] ?? moduleCovers.m1} alt={translateUi("")} /><span /></div>
         <div className="study-hero-copy">
           <div className="flex flex-wrap items-center gap-2"><span className="bento-kicker">{translateUi("Continuar de onde parou")}</span><span className="text-[11px] text-[#a29bad]">{translateUi("Módulo ")}{translateUi(nextModule.number)}</span></div>
           <h2>{translateUi(next.title)}</h2>

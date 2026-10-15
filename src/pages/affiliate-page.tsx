@@ -141,7 +141,7 @@ export function AffiliatePage() {
       {error && <p role="alert" className="mb-5 mt-7 rounded-xl border border-[#f28c9a]/20 bg-[#f28c9a]/[.06] p-4 text-sm text-[#f2a8b2]">{translateUi(error)}</p>}
       {!loading && data && <>
         <section className="affiliate-hero relative isolate mt-8 overflow-hidden rounded-2xl border border-white/[.09] sm:mt-10" aria-labelledby="affiliate-title">
-          <img className="affiliate-hero-image" src="/affiliate/bitcoin-hero.png" alt={translateUi("")} />
+          <img decoding="async" className="affiliate-hero-image" src="/affiliate/bitcoin-hero.webp" alt={translateUi("")} />
           <div className="affiliate-hero-wash" />
           <div className="affiliate-hero-copy relative z-10 grid min-h-[440px] items-center gap-10 px-6 py-10 sm:px-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(300px,.7fr)] lg:px-14 lg:py-14">
             <div>

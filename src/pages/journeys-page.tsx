@@ -47,7 +47,7 @@ export function JourneysPage() {
       <div className="mt-5">{translateUi(catalogNotice)}</div>
       <div className="mt-5 overflow-hidden rounded-2xl border border-white/[.07] bg-[#0d0e14]">
         <div className="relative isolate flex min-h-[300px] items-end overflow-hidden p-6 sm:min-h-[360px] sm:p-9">
-          <img src={journey.coverUrl ?? fallbackJourneyCover} alt={translateUi(translateTemplate("{{value0}}: estudante analisando gráficos e materiais de estudo", [journey.title]))} className="absolute inset-0 -z-20 size-full object-cover object-center" />
+          <img loading="lazy" decoding="async" src={journey.coverUrl ?? fallbackJourneyCover} alt={translateUi(translateTemplate("{{value0}}: estudante analisando gráficos e materiais de estudo", [journey.title]))} className="absolute inset-0 -z-20 size-full object-cover object-center" />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#090a10]/95 via-[#090a10]/75 to-[#090a10]/20" />
           <div className="w-full max-w-3xl">
             <span className="grid size-12 place-items-center rounded-2xl border border-white/10 bg-black/25" style={{ color: colors[journey.color] ?? colors.mint }}><Icon size={25} /></span>

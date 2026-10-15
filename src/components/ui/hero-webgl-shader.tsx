@@ -90,7 +90,9 @@ export default function HeroWebGLShader({ className = '' }: { className?: string
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
     const smallScreen = window.innerWidth < 768
-    const staticMode = prefersReduced || coarsePointer || smallScreen
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+    const lowEnd = Boolean(connection?.saveData) || (navigator.hardwareConcurrency || 8) <= 4
+    const staticMode = prefersReduced || coarsePointer || smallScreen || lowEnd
 
     const gl = canvas.getContext('webgl', {
       antialias: false,

@@ -107,6 +107,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   background:
     radial-gradient(ellipse at 12% -12%, rgba(130, 93, 223, .14), transparent 36rem),
     radial-gradient(ellipse at 97% 13%, rgba(49, 154, 184, .07), transparent 34rem),
@@ -129,7 +130,7 @@ body::before {
 }
 button.rounded-full, a.rounded-full { border-radius: 12px; }
 ::selection { color: #100c19; background: #b49cff; }
-#root { position: relative; z-index: 1; min-height: 100vh; isolation: isolate; }
+#root { position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; isolation: isolate; }
 
 .font-display { font-family: var(--font-display-family), sans-serif; }
 .page-shell { width: min(100% - 56px, 1240px); margin-inline: auto; }
@@ -838,4 +839,17 @@ details > summary:hover { color: #fff; transform: translateX(3px); }
   .guide-screenshot[data-layout="portrait"] img { height: 250px; }
   .guide-screenshot[data-layout="phone-video"] { width: 190px; height: 284px; }
   .guide-screenshot[data-layout="panels"] { grid-column: 2; grid-row: 2; }
+}
+
+/* Cross-platform baseline: stable text size on iOS/Android, no tap delay, notch-safe, high-contrast and reduced-motion support. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+a, button, summary, [role="button"], label, select { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+@media (forced-colors: active) {
+  :focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+  button, a { forced-color-adjust: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }

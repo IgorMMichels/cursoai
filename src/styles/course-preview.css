@@ -1,4 +1,4 @@
-.preview-shell{min-height:100vh;background:#09090d}
+.preview-shell{min-height:100vh;min-height:100dvh;background:#09090d}
 .preview-sidebar{display:none}
 .preview-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;height:68px;padding:0 24px;border-bottom:1px solid #ffffff12;background:#09090ded;backdrop-filter:blur(18px)}
 .preview-panel{border:1px solid #ffffff12;border-radius:16px;background:#12121a}
@@ -17,4 +17,4 @@
 .preview-stats dd{font-size:26px;color:#eeeaf4;font-weight:500}
 .course-preview a:focus-visible,.course-preview button:focus-visible,.course-preview summary:focus-visible,.preview-shell nav a:focus-visible{outline:2px solid #b49cff;outline-offset:4px}
 @media(min-width:640px){.preview-stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(min-width:1024px){.preview-shell{display:grid;grid-template-columns:252px minmax(0,1fr)}.preview-sidebar{display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid #ffffff12;background:#0d0e14}.preview-mobile-nav{display:none}.preview-header{padding:0 40px}}
+@media(min-width:1024px){.preview-shell{display:grid;grid-template-columns:252px minmax(0,1fr)}.preview-sidebar{display:flex;flex-direction:column;position:sticky;top:0;height:100vh;height:100dvh;overflow-y:auto;border-right:1px solid #ffffff12;background:#0d0e14}.preview-mobile-nav{display:none}.preview-header{padding:0 40px}}
